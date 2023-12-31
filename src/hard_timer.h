@@ -1,3 +1,7 @@
+/*
+Автор: JackFromBB - jack@boringbar.ru / https://github.com/jackfrombb/
+*/
+
 #include <Arduino.h>
 #include "driver/timer.h"
 

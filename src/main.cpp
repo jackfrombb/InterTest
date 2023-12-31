@@ -153,11 +153,11 @@ void drawBack()
     for (uint8_t x = 0; x < displayWidth-1; x += 8)
     {
       int titlePos = displayWidth - 8;
-
+      
       if (x >= titlePos)
       {
         u8g2.setCursor(titlePos, tickY + 10);
-        u8g2.print(titlePos);
+        u8g2.print(v);
       }
 
       u8g2.drawPixel(x, tickY);
