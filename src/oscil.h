@@ -1,3 +1,10 @@
+/* **********************************************
+Author: JackFromBB - jack@boringbar.ru / 
+Placement from: https://github.com/jackfrombb/
+The library for ESP32 under Arduino Environment
+************************************************ */
+
+
 #include <Arduino.h>
 
 #define BUFFER_LENGTH 168
