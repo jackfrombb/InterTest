@@ -30,7 +30,7 @@
 #define ENC_VCC GPIO_NUM_38
 #define ENC_CLCK GPIO_NUM_37
 #define ENC_DT GPIO_NUM_39
-#define ENC_SW GPIO_NUM_40
+#define ENC_SW GPIO_NUM_40 // Кнопка
 
 #define BUFFER_LENGTH 84
 
@@ -150,16 +150,14 @@ void drawBack()
   {
     int tickY = displayHeight - ((displayHeight * v) / sectionsCountH);
 
-    for (uint8_t x = 0; x < displayWidth; x += 8)
+    for (uint8_t x = 0; x < displayWidth-1; x += 8)
     {
-      int displayVSect = displayWidth - (displayWidth + 1);
+      int titlePos = displayWidth - 8;
 
-      if (x >= displayVSect)
+      if (x >= titlePos)
       {
-        int sectionValue = v;
-
-        u8g2.setCursor(displayVSect, tickY + 10);
-        u8g2.print(sectionValue);
+        u8g2.setCursor(titlePos, tickY + 10);
+        u8g2.print(titlePos);
       }
 
       u8g2.drawPixel(x, tickY);
@@ -217,7 +215,7 @@ void drawOscilograf(int buf[])
 int missTick = 0;            // Подсчитываем пропущеные тики
 int synchTick = 0;           // Пропускаем для синхронизауии записи в буффер
 
-// прерыване для измерений
+// прерывание для измерений
 bool IRAM_ATTR oscillTimerInterrupt(void *args)
 {
   static ulong prevInterTime = 0;      // Предыдущее время тика
@@ -260,6 +258,9 @@ bool IRAM_ATTR oscillTimerInterrupt(void *args)
   return false;
 }
 
+/// @brief Прерывание для обработки пропущенных считываний энкодера
+/// @param args = NULL
+/// @return nothing
 bool IRAM_ATTR encTick(void *args)
 {
   enc.tickISR();
