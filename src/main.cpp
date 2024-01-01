@@ -16,6 +16,7 @@
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
 #include "helpers.h"
+#include "buzzer.h"
 //#include "esp32-hal-ledc.h" библиотека ledc
 
 #ifdef U8X8_HAVE_HW_SPI
@@ -24,6 +25,7 @@
 #include <U8g2lib.h>
 
 #include "encoder.h"
+#include "keypad.h"
 
 #include <driver/adc.h>
 
@@ -330,6 +332,8 @@ void setup()
   ledcWrite(2, 10);
 
   setup_encoder();
+  setup_keypad();
+  setup_buzzer();
 
   // Настройка шим
   ledcAttachPin(GPIO_NUM_35, 3);
@@ -347,6 +351,7 @@ void loop()
 {
   
   loop_encoder();
+  loop_keypad();
 
   // Если буфер готов то начинаем прорисовку
   if (bufferReady)

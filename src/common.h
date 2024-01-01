@@ -31,4 +31,18 @@ In cooperatiion with svdpfaf (svddevelop@gmail.com)
 //#define BUFFER_LENGTH 84
 
 
+#define KEY_DELAY_PERIOD           400 // Supress of key jitter with ms_delay
+
+#define PIN_KEYPAD_KEY1             16 
+#define PIN_KEYPAD_KEY2             17 
+#define PIN_KEYPAD_KEY3             19
+#define PIN_KEYPAD_KEY4             18
+#define PIN_KEYPAD_KEYSHUNT         18
+
+#define PIN_MC_A7                   13
+
+#define PIN_MK_BUZZ                 21
+#define MK_BUZZ_ACTIVE              LOW
+#define MK_BUZZ_INACTIVE            HIGH
+
 
