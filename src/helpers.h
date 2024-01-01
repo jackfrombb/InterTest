@@ -12,9 +12,6 @@ int range(int input, int min, int max, bool infin = false)
   return input < min ? (infin ? max : min) : (input > max ? (infin ? min : max) : input);
 }
 
-
-extern void copy(int *src, int *dst, int len);
-
 float mK = 0.4; // коэффициент фильтрации, 0.0-1.0
 /// бегущее среднее
 float expRunningAverage(float newVal)

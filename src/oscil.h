@@ -5,9 +5,9 @@ The library for ESP32 under Arduino Environment
 ************************************************ */
 
 
-#include <Arduino.h>
-
 #define BUFFER_LENGTH 168
+
+#include <Arduino.h>
 
 class oscil
 {

@@ -5,8 +5,8 @@
 #define EXCLUDE_GIVER_ 1
  
 
+#define BUFFER_LENGTH 168
 
-#include "helpers.h"
 #ifndef  EXCLUDE_OSCIL_
    #include "oscil.h"
 #endif
