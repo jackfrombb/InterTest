@@ -13,10 +13,7 @@ int range(int input, int min, int max, bool infin = false)
 }
 
 
-static void copy(int *src, int *dst, int len)
-{
-  memcpy(dst, src, sizeof(src[0]) * len);
-}
+extern void copy(int *src, int *dst, int len);
 
 float mK = 0.4; // коэффициент фильтрации, 0.0-1.0
 /// бегущее среднее

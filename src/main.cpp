@@ -1,8 +1,18 @@
 #include <Arduino.h>
 //  USE_SSD1306 // Use I2C OLED screen on SSD1306 chipset
-#include <helpers.h>
-#include <oscil.h>
-#include <hard_timer.h>
+#define EXCLUDE_OSCIL_ 1 
+//#define EXCLUDE_HARDTIMER_ 1
+#define EXCLUDE_GIVER_ 1
+ 
+
+
+#include "helpers.h"
+#ifndef  EXCLUDE_OSCIL_
+   #include "oscil.h"
+#endif
+#ifndef  EXCLUDE_HARDTIMER_
+   #include "hard_timer.h"
+#endif
 
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
@@ -12,7 +22,12 @@
 #include <SPI.h>
 #endif
 #include <U8g2lib.h>
-#include <EncButton.h>
+
+#ifndef EXCLUDE_GIVER_
+  #include <EncButton.h>
+#endif
+
+#include <driver/adc.h>
 
 //#define S2MINI
 #define WROOM32
@@ -42,8 +57,11 @@ const int displayWidth = u8g2.getDisplayWidth();
 
 esp_adc_cal_characteristics_t *adc_chars;
 
+
 // Энкодер
-EncButton enc(ENC_DT, ENC_CLCK, 2);
+#ifndef EXCLUDE_GIVER_
+EncButton enc(ENC_DT, ENC_CLCK, ENC_SW);
+#endif
 
 bool IRAM_ATTR oscillTimerInterrupt(void *args);
 bool IRAM_ATTR encTick(void *args);
@@ -204,7 +222,7 @@ volatile int maxMeasure = BUFFER_LENGTH;
 bool interfaceDrawInProcess = false; // Флаг начала прорисовки интерфейса
 bool bufferReady = false;            // Флаг окончания заполнения буфера значениями
 // Отрисовка в режиме осцилографа
-void drawOscilograf(int buf[])
+void drawOscilograf(int32_t buf[])
 {
   u8g2.firstPage();
   drawBack();
@@ -263,13 +281,18 @@ bool IRAM_ATTR oscillTimerInterrupt(void *args)
 /// @return nothing
 bool IRAM_ATTR encTick(void *args)
 {
+#ifndef EXCLUDE_GIVER_
   enc.tickISR();
-  return false;
+#endif
+  return false;  //объясни почему false???
 }
 
 float vRef = 1.1;
+
+
 void encEvent()
 {
+#ifndef EXCLUDE_GIVER_
   // EB_PRESS - нажатие на кнопку
   // EB_HOLD - кнопка удержана
   // EB_STEP - импульсное удержание
@@ -323,9 +346,11 @@ void encEvent()
     }
     break;
   }
+#endif
 }
 
-int dropFps = 0;
+//int dropFps = 0;
+
 bool IRAM_ATTR drawInterrupt(void *args)
 {
   // Если интерфейс всё еще в прорисовке то пропускаем тик и засчитываем пропущенный кадр
@@ -385,7 +410,9 @@ void setup()
   // Запитываем энкодер и подключаем к нему событие
   pinMode(ENC_VCC, OUTPUT);
   digitalWrite(ENC_VCC, 1);
+  #ifndef EXCLUDE_GIVER_
   enc.attach(encEvent);
+  #endif
 
   // Настройка шим
   ledcAttachPin(GPIO_NUM_35, 3);
@@ -401,7 +428,9 @@ void setup()
 
 void loop()
 {
+  #ifndef EXCLUDE_GIVER_
   enc.tick();
+  #endif
 
   // Если буфер готов то начинаем прорисовку
   if (bufferReady)
