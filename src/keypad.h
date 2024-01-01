@@ -10,23 +10,5 @@ Communication with encoder. Depended with the library from Alex Giver.
 ************************************************ */
 #pragma once
 
-
-#ifndef EXCLUDE_GIVER_
-  #include <EncButton.h>
-#endif
-#include "hard_timer.h"
-
-extern hard_timer encoderTimer;
-
-extern float vRef;
-
-#ifndef EXCLUDE_GIVER_
-extern EncButton enc;
-#endif
-
-
-extern void encEvent();
-extern void setup_encoder();
-extern void loop_encoder();
-
-
+extern void setup_kepad();
+extern void loop_keypad();

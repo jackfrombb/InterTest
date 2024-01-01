@@ -8,6 +8,9 @@ In cooperatiion with svdpfaf (svddevelop@gmail.com)
 ************************************************ */
 #pragma once
 
+//#define EXCLUDE_OSCIL_ 1 
+//#define EXCLUDE_HARDTIMER_ 1
+#define EXCLUDE_GIVER_ 1
 
 
 // Nokia PCD8544 display

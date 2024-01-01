@@ -2,10 +2,8 @@
 
 #include <Arduino.h>
 //  USE_SSD1306 // Use I2C OLED screen on SSD1306 chipset
-//#define EXCLUDE_OSCIL_ 1 
-//#define EXCLUDE_HARDTIMER_ 1
-#define EXCLUDE_GIVER_ 1
 
+#include "common.h"
 #define BUFFER_LENGTH 168
 
 #ifndef  EXCLUDE_OSCIL_
@@ -25,9 +23,7 @@
 #endif
 #include <U8g2lib.h>
 
-#ifndef EXCLUDE_GIVER_
-  #include <EncButton.h>
-#endif
+#include "encoder.h"
 
 #include <driver/adc.h>
 
@@ -59,17 +55,13 @@ const int displayWidth = u8g2.getDisplayWidth();
 
 esp_adc_cal_characteristics_t *adc_chars;
 
-// Энкодер
-#ifndef EXCLUDE_GIVER_
-EncButton enc(ENC_DT, ENC_CLCK, ENC_SW);
-#endif
 
 bool IRAM_ATTR oscillTimerInterrupt(void *args);
 
-bool IRAM_ATTR encTick(void *args);
+
 
 hard_timer oscilTimer = hard_timer(oscillTimerInterrupt, TIMER_GROUP_0, TIMER_1, 4500, 2);
-hard_timer encoderTimer = hard_timer(encTick, TIMER_GROUP_1, TIMER_0, 600, 80);
+
 
 // Буфер измерений
 int32_t buffer[BUFFER_LENGTH];
@@ -278,78 +270,6 @@ bool IRAM_ATTR oscillTimerInterrupt(void *args)
   return false;
 }
 
-/// @brief Прерывание для обработки пропущенных считываний энкодера
-/// @param args = NULL
-/// @return nothing
-bool IRAM_ATTR encTick(void *args)
-{
-#ifndef EXCLUDE_GIVER_
-  enc.tickISR();
-#endif
-  return false;  //объясни почему false???
-}
-
-float vRef = 1.1;
-
-
-void encEvent()
-{
-#ifndef EXCLUDE_GIVER_
-  // EB_PRESS - нажатие на кнопку
-  // EB_HOLD - кнопка удержана
-  // EB_STEP - импульсное удержание
-  // EB_RELEASE - кнопка отпущена
-  // EB_CLICK - одиночный клик
-  // EB_CLICKS - сигнал о нескольких кликах
-  // EB_TURN - поворот энкодера
-  // EB_REL_HOLD - кнопка отпущена после удержания
-  // EB_REL_HOLD_C - кнопка отпущена после удержания с предв. кликами
-  // EB_REL_STEP - кнопка отпущена после степа
-  // EB_REL_STEP_C - кнопка отпущена после степа с предв. кликами
-  Serial.println("Enc action: " + String(enc.action()));
-  switch (enc.action())
-  {
-  case EB_HOLD:
-    settingsVal = range(settingsVal + enc.dir(), 0, 2, true);
-    framesForMenuTitleTimer = millis();
-    break;
-
-  case EB_CLICK:
-    Serial.println(oscilTimer.playPause() ? "Pause - Oscil" : "Play - Oscil");
-    break;
-
-  case EB_TURN:
-    if (settingsVal == 0)
-    {
-      const int steep = 1;
-      // uint64_t val = timerAlarmReadMicros(measureTimer) + steep * enc.dir();
-      // timerAlarmWrite(measureTimer, val, true);
-      // timer_pause(TIMER_GROUP_0, TIMER_1);
-      // uint64_t alarm_value;
-      // timer_get_alarm_value(TIMER_GROUP_0, TIMER_1, &alarm_value);
-      // timer_set_alarm_value(TIMER_GROUP_0, TIMER_1, alarm_value + steep * enc.dir());
-      // timer_start(TIMER_GROUP_0, TIMER_1);
-      auto alarm_value = oscilTimer.getTickTime() + (enc.dir() * steep);
-      oscilTimer.setNewTickTime(alarm_value);
-      Serial.println("Frq accur: " + String(alarm_value));
-    }
-    else if (settingsVal == 1)
-    {
-      const int steep = 100;
-      auto alarm_value = oscilTimer.getTickTime() + (enc.dir() * steep);
-      oscilTimer.setNewTickTime(alarm_value);
-      Serial.println("Frq fast: " + String(alarm_value));
-    }
-    else if (settingsVal == 2)
-    {
-      pwmF = range(pwmF + enc.dir() * 100, 0, 200000);
-      ledcSetup(3, pwmF, 8);
-      Serial.println("PWM: " + String(pwmF));
-    }
-    break;
-  }
-#endif
-}
 
 //int dropFps = 0;
 
@@ -409,12 +329,7 @@ void setup()
   ledcSetup(2, 100, 8);
   ledcWrite(2, 10);
 
-  // Запитываем энкодер и подключаем к нему событие
-  pinMode(ENC_VCC, OUTPUT);
-  digitalWrite(ENC_VCC, 1);
-  #ifndef EXCLUDE_GIVER_
-  enc.attach(encEvent);
-  #endif
+  setup_encoder();
 
   // Настройка шим
   ledcAttachPin(GPIO_NUM_35, 3);
@@ -430,9 +345,8 @@ void setup()
 
 void loop()
 {
-  #ifndef EXCLUDE_GIVER_
-  enc.tick();
-  #endif
+  
+  loop_encoder();
 
   // Если буфер готов то начинаем прорисовку
   if (bufferReady)
