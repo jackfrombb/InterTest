@@ -3,7 +3,6 @@
 #define EXCLUDE_OSCIL_ 1 
 //#define EXCLUDE_HARDTIMER_ 1
 #define EXCLUDE_GIVER_ 1
- 
 
 #define BUFFER_LENGTH 168
 
@@ -16,6 +15,7 @@
 
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
+#include "helpers.h"
 //#include "esp32-hal-ledc.h" библиотека ledc
 
 #ifdef U8X8_HAVE_HW_SPI
@@ -56,7 +56,6 @@ const int displayHeight = u8g2.getDisplayHeight();
 const int displayWidth = u8g2.getDisplayWidth();
 
 esp_adc_cal_characteristics_t *adc_chars;
-
 
 // Энкодер
 #ifndef EXCLUDE_GIVER_
