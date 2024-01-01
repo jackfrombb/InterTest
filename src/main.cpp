@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 //  USE_SSD1306 // Use I2C OLED screen on SSD1306 chipset
-#define EXCLUDE_OSCIL_ 1 
+//#define EXCLUDE_OSCIL_ 1 
 //#define EXCLUDE_HARDTIMER_ 1
 #define EXCLUDE_GIVER_ 1
 
@@ -34,22 +34,22 @@
 //#define S2MINI
 #define WROOM32
 
-// Nokia PCD8544 display
-#define RST 2                       // Pin1 (RST)  GPIO2
-#define CE 15                       // Pin2 (CE)  GPIO15
-#define DC 4                        // Pin3 (DC)  GPIO4
-#define DIN 17                      // Pin4 (Din)  GPIO17
-#define CLK 18                      // Pin5 (Clk)  GPIO18
-                                    // Pin6 (Vcc)  3.3V
-#define DISPLAY_LED_PIN GPIO_NUM_10 // Pin7 (BL)
+//// Nokia PCD8544 display
+//#define RST 2                       // Pin1 (RST)  GPIO2
+//#define CE 15                       // Pin2 (CE)  GPIO15
+//#define DC 4                        // Pin3 (DC)  GPIO4
+//#define DIN 17                      // Pin4 (Din)  GPIO17
+//#define CLK 18                      // Pin5 (Clk)  GPIO18
+//                                    // Pin6 (Vcc)  3.3V
+//#define DISPLAY_LED_PIN GPIO_NUM_10 // Pin7 (BL)
                                     // Pin8 (GND)  GND
 
-// Энкодер
-#define ENC_VCC GPIO_NUM_38
-#define ENC_CLCK GPIO_NUM_37
-#define ENC_DT GPIO_NUM_39
-//#define ENC_SW GPIO_NUM_40 // Кнопка
-//#define BUFFER_LENGTH 84
+//// Энкодер
+//#define ENC_VCC GPIO_NUM_38
+//#define ENC_CLCK GPIO_NUM_37
+//#define ENC_DT GPIO_NUM_39
+////#define ENC_SW GPIO_NUM_40 // Кнопка
+////#define BUFFER_LENGTH 84
 
 // Переменная дисплея
 U8G2_PCD8544_84X48_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/CLK, /* data=*/DIN, /* cs=*/CE, /* dc=*/DC, /* reset=*/RST);
@@ -65,6 +65,7 @@ EncButton enc(ENC_DT, ENC_CLCK, ENC_SW);
 #endif
 
 bool IRAM_ATTR oscillTimerInterrupt(void *args);
+
 bool IRAM_ATTR encTick(void *args);
 
 hard_timer oscilTimer = hard_timer(oscillTimerInterrupt, TIMER_GROUP_0, TIMER_1, 4500, 2);
