@@ -1,4 +1,4 @@
-// #include <Arduino.h>
+#include <Arduino.h>
 //  USE_SSD1306 // Use I2C OLED screen on SSD1306 chipset
 #include <helpers.h>
 #include <oscil.h>
@@ -6,15 +6,16 @@
 
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
-//#include "driver/timer.h"
-// #include "esp_timer.h"
-//  #include "esp_adc_cal.h"
+//#include "esp32-hal-ledc.h" библиотека ledc
 
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
 #endif
 #include <U8g2lib.h>
 #include <EncButton.h>
+
+//#define S2MINI
+#define WROOM32
 
 // Nokia PCD8544 display
 #define RST 2                       // Pin1 (RST)  GPIO2
@@ -30,9 +31,8 @@
 #define ENC_VCC GPIO_NUM_38
 #define ENC_CLCK GPIO_NUM_37
 #define ENC_DT GPIO_NUM_39
-#define ENC_SW GPIO_NUM_40 // Кнопка
-
-#define BUFFER_LENGTH 84
+//#define ENC_SW GPIO_NUM_40 // Кнопка
+//#define BUFFER_LENGTH 84
 
 // Переменная дисплея
 U8G2_PCD8544_84X48_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/CLK, /* data=*/DIN, /* cs=*/CE, /* dc=*/DC, /* reset=*/RST);
@@ -43,7 +43,7 @@ const int displayWidth = u8g2.getDisplayWidth();
 esp_adc_cal_characteristics_t *adc_chars;
 
 // Энкодер
-EncButton enc(ENC_DT, ENC_CLCK, ENC_SW);
+EncButton enc(ENC_DT, ENC_CLCK, 2);
 
 bool IRAM_ATTR oscillTimerInterrupt(void *args);
 bool IRAM_ATTR encTick(void *args);
@@ -241,7 +241,7 @@ bool IRAM_ATTR oscillTimerInterrupt(void *args)
   oscillInterruptTime = micros() - prevInterTime;
 
   // Измерение
-  uint32_t reading = adc1_get_raw(ADC1_CHANNEL_8);
+  uint32_t reading = adc1_get_raw(ADC1_CHANNEL_2);
   buffer[lastPos] = reading;
 
   if (lastPos == BUFFER_LENGTH)
@@ -344,19 +344,9 @@ bool IRAM_ATTR drawInterrupt(void *args)
 
 void setup()
 {
-  // pinMode(12, INPUT_PULLUP);  // 1 кнопка от юсб разьема
-  //  pinMode(7, INPUT_PULLUP);  // 2 кнопка от юсб разьема
-  // pinMode(8, INPUT_PULLUP);   // 3 кнопка от юсб разьема
-  // pinMode(5, INPUT_PULLUP);   // пин а5 вольтметр и осцилограф
-  // pinMode(4, INPUT);          // пин 4 ввод данных частотомер
-  //  pinMode(9, OUTPUT);        // пин 9 выход на генератор
-  // pinMode(13, OUTPUT);        // пин 13 генератор для проверки осцила и частотомера
-
   u8g2.begin(); // Инициализируем дисплей
   u8g2.enableUTF8Print();
   u8g2.setFont(u8g2_font_10x20_t_cyrillic); // Выставляем шрифт (шрифты жрут прорву памяти так что аккуратнее если меняете)
-  u8g2.sendBuffer();                        // Отсылаем данные на дисплей
-                                            // u8g2.setDisplayRotation(U8G2_R2);   // Поворачиваем дисплей на 180
 
   String hello = "Привет";
   point pHello = getDisplayCener(hello);
@@ -365,11 +355,25 @@ void setup()
 
   u8g2.sendBuffer();
 
+  #ifdef S2MINI
   adc1_config_width(ADC_WIDTH_BIT_13);
   adc1_config_channel_atten(ADC1_CHANNEL_8, ADC_ATTEN_DB_11);
+  #endif
+
+  #ifdef WROOM32
+  adc1_config_width(ADC_WIDTH_12Bit);
+  adc1_config_channel_atten(ADC1_CHANNEL_2, ADC_ATTEN_DB_11);
+  #endif
 
   adc_chars = (esp_adc_cal_characteristics_t *)calloc(1, sizeof(esp_adc_cal_characteristics_t));
+
+  #ifdef S2MINI
   esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_11db, ADC_WIDTH_BIT_13, 1.1, adc_chars);
+  #endif
+
+  #ifdef WROOM32
+  esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_11db, ADC_WIDTH_12Bit, 1.1, adc_chars);
+  #endif
 
   delay(300);
 
@@ -388,42 +392,7 @@ void setup()
   ledcSetup(3, pwmF, 8);
   ledcWrite(3, 254 / 2);
 
-  // const timer_config_t config_accur = {
-  //     .alarm_en = TIMER_ALARM_EN,
-  //     .counter_en = TIMER_PAUSE,
-  //     .intr_type = TIMER_INTR_LEVEL,
-  //     .counter_dir = TIMER_COUNT_UP,
-  //     .auto_reload = TIMER_AUTORELOAD_EN,
-  //     .divider = 2,
-  // };
-
-  // const timer_config_t config_slow = {
-  //     .alarm_en = TIMER_ALARM_EN,
-  //     .counter_en = TIMER_PAUSE,
-  //     .intr_type = TIMER_INTR_LEVEL,
-  //     .counter_dir = TIMER_COUNT_UP,
-  //     .auto_reload = TIMER_AUTORELOAD_EN,
-  //     .divider = 80,
-  // };
-
-  // // Прерывние измерений
-  // timer_init(TIMER_GROUP_0, TIMER_1, &config_accur);
-  // timer_set_counter_value(TIMER_GROUP_0, TIMER_1, 0);
-  // timer_set_alarm_value(TIMER_GROUP_0, TIMER_1, 4500);
-  // timer_isr_callback_add(TIMER_GROUP_0, TIMER_1, oscillTimerInterrupt, NULL, 0);
-  // timer_enable_intr(TIMER_GROUP_0, TIMER_1);
-  // timer_start(TIMER_GROUP_0, TIMER_1);
-
-  // Прерывание энкодера
-  // timer_init(TIMER_GROUP_1, TIMER_0, &config_slow);
-  // timer_set_counter_value(TIMER_GROUP_1, TIMER_0, 0);
-  // timer_set_alarm_value(TIMER_GROUP_1, TIMER_0, 600);
-  // timer_isr_callback_add(TIMER_GROUP_1, TIMER_0, encTick, NULL, 0);
-  // timer_enable_intr(TIMER_GROUP_1, TIMER_0);
-  // timer_start(TIMER_GROUP_1, TIMER_0);
-  //encoderTimer = hard_timer(encTick, TIMER_GROUP_1, TIMER_0, 600, 80);
-
-  Serial.begin();
+  Serial.begin(9600);
   delay(1000);
 
   oscilTimer.init();
