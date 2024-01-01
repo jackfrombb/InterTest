@@ -13,12 +13,12 @@ Communication with encoder. Depended with the library from Alex Giver.
 #include "buzzer.h"
 #include "common.h"
 
-extern void setup_buzzer(){
+void setup_buzzer(){
 
     pinMode(PIN_MK_BUZZ, OUTPUT);
 }
 
-extern void do_buzz( int a_period ){
+void do_buzz( int a_period ){
 
     digitalWrite( PIN_MK_BUZZ, MK_BUZZ_ACTIVE );
     Serial.printf_P(PSTR("buzz:%d\r\n"), a_period );
