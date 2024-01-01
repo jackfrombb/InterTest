@@ -1,3 +1,5 @@
+//ver: 0_0_j (номер релиза_любой номер комита_автор)
+
 #include <Arduino.h>
 //  USE_SSD1306 // Use I2C OLED screen on SSD1306 chipset
 #define EXCLUDE_OSCIL_ 1 

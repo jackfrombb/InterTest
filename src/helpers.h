@@ -3,7 +3,7 @@ Author: JackFromBB - jack@boringbar.ru /
 Placement from: https://github.com/jackfrombb/
 The library for ESP32 under Arduino Environment
 ************************************************ */
-
+#pragma once
 #include <stdio.h>
 #include <Arduino.h>
 
