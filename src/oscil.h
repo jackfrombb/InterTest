@@ -4,8 +4,9 @@ Placement from: https://github.com/jackfrombb/
 The library for ESP32 under Arduino Environment
 ************************************************ */
 
-
+#ifndef BUFFER_LENGTH
 #define BUFFER_LENGTH 168
+#endif
 
 #include <Arduino.h>
 
