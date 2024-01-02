@@ -19,6 +19,7 @@ Communication with encoder. Depended with the library from Alex Giver.
 extern HardTimer encoderTimer;
 
 extern float vRef;
+extern int pwmF;
 
 #ifndef EXCLUDE_GIVER_
 extern EncButton enc;

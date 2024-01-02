@@ -13,7 +13,7 @@ Communication with encoder. Depended with the library from Alex Giver.
 #include "buzzer.h"
 #include "common.h"
 
-#ifdef BUZZER
+#ifdef BUZZER_
 void setup_buzzer(){
     pinMode(PIN_MK_BUZZ, OUTPUT);
 }

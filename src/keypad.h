@@ -14,20 +14,24 @@ Keys processing
 
 #include <Arduino.h>
 
-typedef struct {
-    uint8_t key1:1;
-    uint8_t key2:1;
-    uint8_t key3:1;
-    //uint8_t key4:1;
-    uint8_t keyshunt:1;
-} keys_t;
+#ifdef KEYPAD_
 
-typedef union {   
-    uint8_t as_int;
-    keys_t as_keys;
-} keypad_t;
- 
+    typedef struct {
+        uint8_t key1:1;
+        uint8_t key2:1;
+        uint8_t key3:1;
+        //uint8_t key4:1;
+        uint8_t keyshunt:1;
+    } keys_t;
 
-extern keypad_t Keypad;
-extern void setup_keypad();
-extern void loop_keypad();
+    typedef union {   
+        uint8_t as_int;
+        keys_t as_keys;
+    } keypad_t;
+    
+
+    extern keypad_t Keypad;
+    extern void setup_keypad();
+    extern void loop_keypad();
+
+#endif

@@ -17,11 +17,11 @@ In cooperatiion with svdpfaf (svddevelop@gmail.com)
 //#define S2MINI
 
 //Выбор способа упрвления
-#define ENCODER
-//#define KEYPAD
+#define ENCODER_
+#define KEYPAD_
 
 //Доп функции
-//#define BUZZ
+//#define BUZZ_
 
 #ifdef S2MINI
 // Nokia PCD8544 display
@@ -47,7 +47,7 @@ In cooperatiion with svdpfaf (svddevelop@gmail.com)
                                              // Pin8 (GND)  GND
 #endif
 
-#ifdef ENCODER
+#ifdef ENCODER_
 #ifdef S2MINI
 // Энкодер
 #define ENC_VCC GPIO_NUM_38
@@ -65,22 +65,22 @@ In cooperatiion with svdpfaf (svddevelop@gmail.com)
 #endif
 
 
-#ifdef KEYPAD
-#define KEY_DELAY_PERIOD           400 // Supress of key jitter with ms_delay
+#ifdef KEYPAD_
+    #define KEY_DELAY_PERIOD           400 // Supress of key jitter with ms_delay
 
-#define PIN_KEYPAD_KEY1             16 
-#define PIN_KEYPAD_KEY2             17 
-#define PIN_KEYPAD_KEY3             19
-#define PIN_KEYPAD_KEY4             18
-#define PIN_KEYPAD_KEYSHUNT         18
+    #define PIN_KEYPAD_KEY1             16 
+    #define PIN_KEYPAD_KEY2             17 
+    #define PIN_KEYPAD_KEY3             19
+    #define PIN_KEYPAD_KEY4             18
+    #define PIN_KEYPAD_KEYSHUNT         18
 
-#define PIN_MC_A7                   13
+    #define PIN_MC_A7                   13
 #endif
 
-#ifdef BUZZ
-#define PIN_MK_BUZZ                 21
-#define MK_BUZZ_ACTIVE              LOW
-#define MK_BUZZ_INACTIVE            HIGH
+#ifdef BUZZ_
+    #define PIN_MK_BUZZ                 21
+    #define MK_BUZZ_ACTIVE              LOW
+    #define MK_BUZZ_INACTIVE            HIGH
 #endif
 
 
