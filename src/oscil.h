@@ -1,5 +1,5 @@
 /* **********************************************
-Author: JackFromBB - jack@boringbar.ru / 
+Author: JackFromBB - jack@boringbar.ru /
 Placement from: https://github.com/jackfrombb/
 The library for ESP32 under Arduino Environment
 ************************************************ */
@@ -10,56 +10,83 @@ The library for ESP32 under Arduino Environment
 #endif
 
 #include <Arduino.h>
+#include "hard_timer.h"
 
-class oscil
+/// @brief Делегирование функции считывания, для облегчения совместимости между платами
+typedef uint32_t (*value_read_func)();
+
+class Oscilloscope
 {
 private:
-    int32_t _buffer[BUFFER_LENGTH];
-    int _bufferLenght;
-    bool _bufferReady = false;
-    int *_measureTime;
-    int _lastPos = 0;
-    uint32_t (*_readValue)(void);
-
-    ulong _interruptTime = 0;
-
 public:
-    oscil(int bufferLength, uint32_t(readValue)(void), int *measureTime)
+    bool _bufferReady = false;
+    // static bool IRAM_ATTR timerInterrupt(void *args);
+    const int bufferLength = BUFFER_LENGTH;
+    int32_t _buffer[BUFFER_LENGTH];
+    int _measureTime;
+    int _lastPos = 0;
+    value_read_func _readValue;
+    ulong _interruptTime = 0;
+    HardTimer oscilTimer; // = HardTimer(oscil_TimerInterrupt, TIMER_GROUP_0, TIMER_1, 4500, 2);
+
+    // bool IRAM_ATTR oscillTimerInterrupt(void *args);
+    Oscilloscope() {} // Для неинициализированных объектов
+    Oscilloscope(value_read_func readValue, int measureTime)
     {
-        _bufferLenght = bufferLength;
         _readValue = readValue;
+        _measureTime = measureTime;
     }
     // oscil(int32_t &buffer, int bufferLength, uint32_t (readValue)(void), int *measureTime);
-    ~oscil() {
-
+    ~Oscilloscope()
+    {
     }
 
-    // прерыване для измерений
-    bool IRAM_ATTR oscillTimerInterrupt(void *args)
+    ulong prevInterTime = 0; // Предыдущее время тика
+    int missTick = 0;        // Подсчитываем пропущеные тики
+    int synchTick = 0;       // Пропускаем для синхронизауии записи в буффер
+
+    static bool IRAM_ATTR timerInterrupt(void *args)
     {
-        if (_bufferReady)
+        Oscilloscope *oscil = (Oscilloscope *)args;
+
+
+        // Если буфер готов то пропускаем заполнение
+        if (oscil->_bufferReady)
         {
-            delayMicroseconds(_interruptTime);
+            oscil->missTick += 1;
             return false;
         }
-        static ulong prevInerTime = 0;
-        _interruptTime = micros() - prevInerTime;
+
+        if (oscil->missTick > 0)
+        {
+            oscil->synchTick = oscil->missTick % oscil->bufferLength;
+            oscil->missTick = 0;
+        }
+
+        if (oscil->synchTick > 0)
+        {
+            oscil->synchTick -= 1;
+            return false;
+        }
+
+        oscil->_interruptTime = micros() - oscil->prevInterTime;
 
         // Измерение
-        uint32_t reading = _readValue();
-        _buffer[_lastPos] = reading;
+        uint32_t reading = oscil->_readValue(); // adc1_get_raw(ADC1_CHANNEL_2);
+        oscil->_buffer[oscil->_lastPos] = reading;
 
-        if (_lastPos == BUFFER_LENGTH)
+        if (oscil->_lastPos == BUFFER_LENGTH)
         {
-            _lastPos = 0;
-            _bufferReady = true;
+            oscil->_lastPos = 0;
+            oscil->_bufferReady = true;
         }
         else
         {
-            _lastPos += 1;
+            oscil->_lastPos += 1;
         }
 
-        prevInerTime = micros();
+        oscil->prevInterTime = micros();
+
         return false;
     }
 
@@ -68,10 +95,27 @@ public:
         return _interruptTime;
     }
 
-    
+    int32_t* getBuffer(){
+        return _buffer;
+    }
 
     bool isBufferReady()
     {
         return _bufferReady;
+    }
+
+    void readNext(){
+        _bufferReady = false;
+    }
+
+    void init()
+    {
+        oscilTimer = HardTimer(timerInterrupt, TIMER_GROUP_0, TIMER_1, 4500, 2);
+        oscilTimer.setArgs(this);
+        oscilTimer.init();
+    }
+
+    HardTimer getTimer(){
+        return oscilTimer;
     }
 };

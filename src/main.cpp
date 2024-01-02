@@ -16,16 +16,21 @@
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
 #include "helpers.h"
-#include "buzzer.h"
-//#include "esp32-hal-ledc.h" библиотека ledc
+
 
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
 #endif
 #include <U8g2lib.h>
 
-#include "encoder.h"
+#ifdef BUZZER
+#include "buzzer.h"
+#endif
+
+
+#ifdef KEYPAD
 #include "keypad.h"
+#endif
 
 #include <driver/adc.h>
 
@@ -51,25 +56,26 @@
 
 // Переменная дисплея
 U8G2_PCD8544_84X48_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/CLK, /* data=*/DIN, /* cs=*/CE, /* dc=*/DC, /* reset=*/RST);
+
 // Сохраняем параметры дисплея
 const int displayHeight = u8g2.getDisplayHeight();
 const int displayWidth = u8g2.getDisplayWidth();
 
-esp_adc_cal_characteristics_t *adc_chars;
+//Хранение характеристик ADC
+esp_adc_cal_characteristics_t *adc_chars; 
 
+uint32_t readAnalogVal() {
+  return adc1_get_raw(ADC1_CHANNEL_0);
+}
+Oscilloscope oscil = Oscilloscope(&readAnalogVal, 450);
 
-bool IRAM_ATTR oscillTimerInterrupt(void *args);
-
-
-
-hard_timer oscilTimer = hard_timer(oscillTimerInterrupt, TIMER_GROUP_0, TIMER_1, 4500, 2);
-
+//bool IRAM_ATTR oscillTimerInterrupt(void *args);
 
 // Буфер измерений
-int32_t buffer[BUFFER_LENGTH];
+//int32_t buffer[BUFFER_LENGTH];
 
 int bufferOffset = 0;     // Смещение дисплея в буфере
-volatile int lastPos = 0; // Последня позиция в буфере
+//volatile int lastPos = 0; // Последня позиция в буфере
 int settingsVal = 0;      // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима
 
 int sectionsCountH = 3;
@@ -78,7 +84,11 @@ const float maxMeasureValue = 3.2;
 ulong framesForMenuTitleTimer = 0;
 
 // Частота генерации
-int pwmF = 100000;
+int pwmF = 1000;
+
+#ifdef ENCODER
+#include "encoder.h"
+#endif
 
 // Точка на дисплее
 struct point
@@ -101,8 +111,64 @@ static point getDisplayCener(String title)
   };
 }
 
-ulong oscillInterruptTime = 0;
-float mV = 0.0;
+#ifndef EXCLUDE_GIVER_
+void encEvent()
+{
+  // EB_PRESS - нажатие на кнопку
+  // EB_HOLD - кнопка удержана
+  // EB_STEP - импульсное удержание
+  // EB_RELEASE - кнопка отпущена
+  // EB_CLICK - одиночный клик
+  // EB_CLICKS - сигнал о нескольких кликах
+  // EB_TURN - поворот энкодера
+  // EB_REL_HOLD - кнопка отпущена после удержания
+  // EB_REL_HOLD_C - кнопка отпущена после удержания с предв. кликами
+  // EB_REL_STEP - кнопка отпущена после степа
+  // EB_REL_STEP_C - кнопка отпущена после степа с предв. кликами
+  Serial.println("Enc action: " + String(enc.action()));
+  switch (enc.action())
+  {
+  case EB_HOLD:
+    settingsVal = range(settingsVal + enc.dir(), 0, 2, true);
+    framesForMenuTitleTimer = millis();
+    break;
+
+  case EB_CLICK:
+    Serial.println(oscil.getTimer().playPause() ? "Pause - Oscil" : "Play - Oscil");
+    break;
+
+  case EB_TURN:
+    if (settingsVal == 0)
+    {
+      const int steep = 1;
+      // uint64_t val = timerAlarmReadMicros(measureTimer) + steep * enc.dir();
+      // timerAlarmWrite(measureTimer, val, true);
+      // timer_pause(TIMER_GROUP_0, TIMER_1);
+      // uint64_t alarm_value;
+      // timer_get_alarm_value(TIMER_GROUP_0, TIMER_1, &alarm_value);
+      // timer_set_alarm_value(TIMER_GROUP_0, TIMER_1, alarm_value + steep * enc.dir());
+      // timer_start(TIMER_GROUP_0, TIMER_1);
+      auto alarm_value = oscil.getTimer().getTickTime() + (enc.dir() * steep);
+      oscil.getTimer().setNewTickTime(alarm_value);
+      Serial.println("Frq accur: " + String(alarm_value));
+    }
+    else if (settingsVal == 1)
+    {
+      const int steep = 100;
+      auto alarm_value = oscil.getTimer().getTickTime() + (enc.dir() * steep);
+      oscil.getTimer().setNewTickTime(alarm_value);
+      Serial.println("Frq fast: " + String(alarm_value));
+    }
+    else if (settingsVal == 2)
+    {
+      pwmF = range(pwmF + enc.dir() * 100, 0, 200000);
+      ledcSetup(3, pwmF, 8);
+      Serial.println("PWM: " + String(pwmF));
+    }
+    break;
+  }
+}
+#endif
 
 /// @brief Отрисовать ориентиры и надписи
 void drawBack()
@@ -209,14 +275,14 @@ void drawValues(int32_t buf[])
 
   u8g2.setCursor(0, 12);
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.print(oscillInterruptTime / 1000.0);
+  u8g2.print(oscil.getInterruptTime() / 1000.0);
 }
 
-volatile bool oscillPause = false;
-volatile int maxMeasure = BUFFER_LENGTH;
+//volatile bool oscillPause = false;
+//volatile int maxMeasure = BUFFER_LENGTH;
 
 bool interfaceDrawInProcess = false; // Флаг начала прорисовки интерфейса
-bool bufferReady = false;            // Флаг окончания заполнения буфера значениями
+//bool bufferReady = false;            // Флаг окончания заполнения буфера значениями
 // Отрисовка в режиме осцилографа
 void drawOscilograf(int32_t buf[])
 {
@@ -226,66 +292,19 @@ void drawOscilograf(int32_t buf[])
   u8g2.nextPage();
 }
 
-int missTick = 0;            // Подсчитываем пропущеные тики
-int synchTick = 0;           // Пропускаем для синхронизауии записи в буффер
-
-// прерывание для измерений
-bool IRAM_ATTR oscillTimerInterrupt(void *args)
-{
-  static ulong prevInterTime = 0;      // Предыдущее время тика
-
-  // Если буфер готов то пропускаем заполнение
-  if (bufferReady)
-  {
-    missTick += 1;
-    return false;
-  }
-
-  // Си
-  if(missTick > 0){
-    synchTick = missTick%BUFFER_LENGTH;
-    missTick = 0;
-  }
-
-  if(synchTick > 0){
-    synchTick -= 1;
-    return false;
-  }
-
-  oscillInterruptTime = micros() - prevInterTime;
-
-  // Измерение
-  uint32_t reading = adc1_get_raw(ADC1_CHANNEL_2);
-  buffer[lastPos] = reading;
-
-  if (lastPos == BUFFER_LENGTH)
-  {
-    lastPos = 0;
-    bufferReady = true;
-  }
-  else
-  {
-    lastPos += 1;
-  }
-
-  prevInterTime = micros();
-  return false;
-}
-
-
 //int dropFps = 0;
 
 bool IRAM_ATTR drawInterrupt(void *args)
 {
   // Если интерфейс всё еще в прорисовке то пропускаем тик и засчитываем пропущенный кадр
 
-  if (bufferReady)
+  if (oscil.isBufferReady())
   {
     // Если буфер готов то начинаем прорисовку
     interfaceDrawInProcess = true;
-    drawOscilograf(buffer);
+    drawOscilograf(oscil.getBuffer());
     interfaceDrawInProcess = false;
-    bufferReady = false;
+    oscil.readNext();
   }
 
   return false;
@@ -293,6 +312,8 @@ bool IRAM_ATTR drawInterrupt(void *args)
 
 void setup()
 {
+  const float vRef = 1.1;
+
   u8g2.begin(); // Инициализируем дисплей
   u8g2.enableUTF8Print();
   u8g2.setFont(u8g2_font_10x20_t_cyrillic); // Выставляем шрифт (шрифты жрут прорву памяти так что аккуратнее если меняете)
@@ -304,6 +325,8 @@ void setup()
 
   u8g2.sendBuffer();
 
+//Конфигурация и настройка АЦП(ADC)
+  //Указываем разрядность, канал и аттенюацию (ADC_ATTEN_DB_11 должен уменьшать макс напряжение до 2.5v)
   #ifdef S2MINI
   adc1_config_width(ADC_WIDTH_BIT_13);
   adc1_config_channel_atten(ADC1_CHANNEL_8, ADC_ATTEN_DB_11);
@@ -311,52 +334,67 @@ void setup()
 
   #ifdef WROOM32
   adc1_config_width(ADC_WIDTH_12Bit);
-  adc1_config_channel_atten(ADC1_CHANNEL_2, ADC_ATTEN_DB_11);
+  adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_11);
   #endif
 
+  //Сохраняем характеристики АЦП для последующих преобразований
   adc_chars = (esp_adc_cal_characteristics_t *)calloc(1, sizeof(esp_adc_cal_characteristics_t));
 
   #ifdef S2MINI
-  esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_11db, ADC_WIDTH_BIT_13, 1.1, adc_chars);
+  esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_11db, ADC_WIDTH_BIT_13, vRef, adc_chars);
   #endif
 
   #ifdef WROOM32
-  esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_11db, ADC_WIDTH_12Bit, 1.1, adc_chars);
+  esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_11db, ADC_WIDTH_12Bit, vRef, adc_chars);
   #endif
-
+//Конец настройки АЦП
   delay(300);
 
   // Подсветка дисплея
   ledcAttachPin(DISPLAY_LED_PIN, 2);
   ledcSetup(2, 100, 8);
-  ledcWrite(2, 10);
+  ledcWrite(2, 150);
 
+  #ifdef ENCODER
   setup_encoder();
-  setup_keypad();
-  setup_buzzer();
+  #endif
 
-  // Настройка шим
-  ledcAttachPin(GPIO_NUM_35, 3);
-  ledcSetup(3, pwmF, 8);
-  ledcWrite(3, 254 / 2);
+  #ifdef KEYPAD
+  setup_keypad();
+  #endif
+
+  #ifdef BUZZ
+  setup_buzzer();
+  #endif
+
+  // Настройка шим - временный костыль для проверки АЦП, позже вынесем в отдельный класс генератора
+  ledcAttachPin(GPIO_NUM_4, 2);
+  ledcSetup(2, pwmF, 8);
+  ledcWrite(2, 254 / 2);
 
   Serial.begin(9600);
   delay(1000);
 
-  oscilTimer.init();
+  oscil.init();
+  #ifdef ENCODER
   encoderTimer.init();
+  #endif
 }
 
 void loop()
 {
-  
+  #ifdef ENCODER
   loop_encoder();
+  #endif
+
+  #ifdef KEYPAD
   loop_keypad();
+  #endif
 
   // Если буфер готов то начинаем прорисовку
-  if (bufferReady)
+  if (oscil.isBufferReady())
   {
-    drawOscilograf(buffer);
-    bufferReady = false;
+    drawOscilograf(oscil.getBuffer());
+    oscil.readNext();
   }
 }

@@ -14,16 +14,21 @@ struct hard_timer_info
     timer_idx_t num;
 };
 
-class hard_timer
+typedef struct {
+    void* args;
+} timer_args;
+
+class HardTimer
 {
 private:
     hard_timer_info _timer_info;
     int _tickTime;
     uint32_t _divider;
     timer_isr_t _handlerFunc;
+    void* _args;
 
     static hard_timer_info initTimer(timer_group_t group, timer_idx_t num,
-                              int tickTime, uint32_t divider, timer_isr_t isr_handler)
+                              int tickTime, uint32_t divider, timer_isr_t isr_handler, void* args)
     {
         const timer_config_t config = {
             .alarm_en = TIMER_ALARM_EN,
@@ -37,7 +42,7 @@ private:
         timer_init(group, num, &config);
         timer_set_counter_value(group, num, 0);
         timer_set_alarm_value(group, num, tickTime);
-        timer_isr_callback_add(group, num, isr_handler, NULL, 0);
+        timer_isr_callback_add(group, num, isr_handler, args, 0);
         timer_enable_intr(group, num);
         timer_start(group, num);
 
@@ -50,7 +55,11 @@ private:
     bool _isOnPause;
 
 public:
-    hard_timer(timer_isr_t handlerFunc, timer_group_t group,
+    HardTimer(){
+
+    }
+     
+    HardTimer(bool(handlerFunc)(void* args) , timer_group_t group,
                timer_idx_t num, int tickTime, uint32_t divider)
     {
         _isOnPause = true;
@@ -58,17 +67,31 @@ public:
         _tickTime = tickTime;
         _divider = divider;
         _handlerFunc = handlerFunc;
-        
     }
 
-    ~hard_timer() {
+    // HardTimer(timer_isr_t handlerFunc, timer_group_t group,
+    //            timer_idx_t num, int tickTime, uint32_t divider)
+    // {
+    //     _isOnPause = true;
+    //     _timer_info = {.group = group, .num = num};
+    //     _tickTime = tickTime;
+    //     _divider = divider;
+    //     _handlerFunc = handlerFunc;
+        
+    // }
+
+    ~HardTimer() {
 
     }
 
     hard_timer_info init(){
-        _timer_info = initTimer(_timer_info.group, _timer_info.num, _tickTime, _divider, _handlerFunc);
+        _timer_info = initTimer(_timer_info.group, _timer_info.num, _tickTime, _divider, _handlerFunc, _args);
         _isOnPause = false;
         return _timer_info;
+    }
+
+    void setArgs(void* args) {
+        _args = args;
     }
 
     bool playPause()

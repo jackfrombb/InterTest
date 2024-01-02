@@ -16,7 +16,7 @@ Communication with encoder. Depended with the library from Alex Giver.
 #endif
 #include "hard_timer.h"
 
-extern hard_timer encoderTimer;
+extern HardTimer encoderTimer;
 
 extern float vRef;
 

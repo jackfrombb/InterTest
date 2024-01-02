@@ -12,7 +12,7 @@ Communication with encoder. Depended with the library from Alex Giver.
 
 #include "common.h"
 #include "keypad.h"
-
+#ifdef KEYPAD
 keypad_t Keypad;
 
 void setup_keypad(){
@@ -45,3 +45,4 @@ void loop_keypad(){
     }
 
 }
+#endif
