@@ -14,7 +14,7 @@ In cooperatiion with svdpfaf (svddevelop@gmail.com)
 #ifndef EXCLUDE_GIVER_
   #include <EncButton.h>
 #endif
-#include "display.h"
+#include "display/display.h"
 #include "helpers.h"
 #include "oscil.h"
 

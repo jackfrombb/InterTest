@@ -14,11 +14,8 @@ In cooperatiion with svdpfaf (svddevelop@gmail.com)
 #include "oscil.h"
 #include "common.h"
 
-#ifdef DISPU8X8_
-    extern U8G2 u8g2;
-#else
-    extern U8G2 u8g2;
-#endif
+
+extern U8G2 u8g2;
 
 extern int settingsVal;
 extern ulong framesForMenuTitleTimer;

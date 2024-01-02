@@ -236,6 +236,17 @@ void setup_display(){
 
 
   u8g2.begin(); // Инициализируем дисплей
+  #if defined( DISPU8X8_ )
+    #define SSD1306_SETPRECHARGE 0xD9
+    #define SSD1306_SETCONTRAST 0x81
+
+    //u8g2.sendF("caaaaaaaaaaaaaaaa", 0xb8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 180);
+    //half u8g2.sendF("caaaaaaaaaaaaaaaa", 0xb8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 90);
+    //u8g2.sendF("caaaaaaaaaaaaaaaa", 0xb8, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 45);
+    u8g2.setContrast(255);
+    u8g2.setPowerSave(0);
+
+  #endif
   u8g2.enableUTF8Print();
   u8g2.setFont(u8g2_font_10x20_t_cyrillic); // Выставляем шрифт (шрифты жрут прорву памяти так что аккуратнее если меняете)
 

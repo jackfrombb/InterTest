@@ -16,7 +16,7 @@
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
 #include "helpers.h"
-#include "display.h"
+#include "display/display.h"
 
 
 #ifdef BUZZER_
