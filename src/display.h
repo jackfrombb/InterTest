@@ -12,8 +12,13 @@ In cooperatiion with svdpfaf (svddevelop@gmail.com)
 #include <Arduino.h>
 #include <U8g2lib.h>
 #include "oscil.h"
+#include "common.h"
 
-extern U8G2 u8g2;
+#ifdef DISPU8X8_
+    extern U8G2 u8g2;
+#else
+    extern U8G2 u8g2;
+#endif
 
 extern int settingsVal;
 extern ulong framesForMenuTitleTimer;

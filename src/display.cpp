@@ -14,6 +14,9 @@ In cooperatiion with svdpfaf (svddevelop@gmail.com)
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
 #endif
+#ifdef U8X8_HAVE_HW_I2C
+#include <Wire.h>
+#endif
 #include <U8g2lib.h>
 #include "oscil.h"
 #include <esp_adc_cal.h>
@@ -21,7 +24,12 @@ In cooperatiion with svdpfaf (svddevelop@gmail.com)
 #include "encoder.h"
 
 // Переменная дисплея
-U8G2 u8g2;
+#ifdef DISPU8X8_
+    U8G2 u8g2;
+#else
+    U8G2 u8g2;
+#endif
+
 
 // Сохраняем параметры дисплея
 const int displayHeight = u8g2.getDisplayHeight();
@@ -216,11 +224,14 @@ void setup_display(){
     
 
     #if DISPLAYTYPE_ == OLED128x32
-        U8G2_SH1106_128X32_VISIONOX_F_HW_I2C loc_dsp(U8G2_R0, U8X8_PIN_NONE, DSP_SCK_, DSP_SDA_);
+        //pinMode( DSP_SCK_, OUTPUT );
+        //pinMode( DSP_SDA_, OUTPUT );
+        //U8G2_SH1106_128X32_VISIONOX_F_HW_I2C loc_dsp(U8G2_R0, U8X8_PIN_NONE, DSP_SCK_, DSP_SDA_);
+        U8G2_SSD1306_128X64_NONAME_F_SW_I2C loc_dsp(U8G2_R0, DSP_SCK_, DSP_SDA_, U8X8_PIN_NONE );
         u8g2 = loc_dsp;
     #else
         U8G2_PCD8544_84X48_F_4W_SW_SPI loc_dsp(U8G2_R0, /* clock=*/CLK, /* data=*/DIN, /* cs=*/CE, /* dc=*/DC, /* reset=*/RST);
-        u8g2 = new loc_dsp;
+        u8g2 = loc_dsp;
     #endif
 
 

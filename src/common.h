@@ -36,13 +36,18 @@ In cooperatiion with svdpfaf (svddevelop@gmail.com)
 #endif
 
 //дисплей 0.96 OLED I2C
-#define DSP_SDA_                 34
-#define DSP_SCK_                 35
+#define DSP_SDA_                 26
+#define DSP_SCK_                 27
 
 //дисплей по умолчанию используется NOKIA5510
 //девыйны для других моделей пердставлены ниже и используются при инициализации в соотвествующих файлах
-//#define DISPLAYTYPE_ OLED12X64   
-#define DISPLAYTYPE_ OLED128x32
+//#define DISPLAYTYPE_          OLED12X64   
+#define DISPLAYTYPE_            OLED128x32
+
+
+#if DISPLAYTYPE_ == OLED128x32
+    #define DISPU8X8_
+#endif
 
 #ifdef WROOM32
     // Nokia PCD8544 display
