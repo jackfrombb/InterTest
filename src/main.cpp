@@ -34,26 +34,6 @@
 
 #include <driver/adc.h>
 
-//#define S2MINI
-#define WROOM32
-
-//// Nokia PCD8544 display
-//#define RST 2                       // Pin1 (RST)  GPIO2
-//#define CE 15                       // Pin2 (CE)  GPIO15
-//#define DC 4                        // Pin3 (DC)  GPIO4
-//#define DIN 17                      // Pin4 (Din)  GPIO17
-//#define CLK 18                      // Pin5 (Clk)  GPIO18
-//                                    // Pin6 (Vcc)  3.3V
-//#define DISPLAY_LED_PIN GPIO_NUM_10 // Pin7 (BL)
-                                    // Pin8 (GND)  GND
-
-//// Энкодер
-//#define ENC_VCC GPIO_NUM_38
-//#define ENC_CLCK GPIO_NUM_37
-//#define ENC_DT GPIO_NUM_39
-////#define ENC_SW GPIO_NUM_40 // Кнопка
-////#define BUFFER_LENGTH 84
-
 // Переменная дисплея
 U8G2_PCD8544_84X48_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/CLK, /* data=*/DIN, /* cs=*/CE, /* dc=*/DC, /* reset=*/RST);
 
@@ -69,13 +49,6 @@ uint32_t readAnalogVal() {
 }
 Oscilloscope oscil = Oscilloscope(&readAnalogVal, 450);
 
-//bool IRAM_ATTR oscillTimerInterrupt(void *args);
-
-// Буфер измерений
-//int32_t buffer[BUFFER_LENGTH];
-
-int bufferOffset = 0;     // Смещение дисплея в буфере
-//volatile int lastPos = 0; // Последня позиция в буфере
 int settingsVal = 0;      // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима
 
 int sectionsCountH = 3;
@@ -112,6 +85,7 @@ static point getDisplayCener(String title)
 }
 
 #ifndef EXCLUDE_GIVER_
+//Пока пришлось вернуть, чуть позже переделаю
 void encEvent()
 {
   // EB_PRESS - нажатие на кнопку
@@ -278,11 +252,8 @@ void drawValues(int32_t buf[])
   u8g2.print(oscil.getInterruptTime() / 1000.0);
 }
 
-//volatile bool oscillPause = false;
-//volatile int maxMeasure = BUFFER_LENGTH;
-
 bool interfaceDrawInProcess = false; // Флаг начала прорисовки интерфейса
-//bool bufferReady = false;            // Флаг окончания заполнения буфера значениями
+
 // Отрисовка в режиме осцилографа
 void drawOscilograf(int32_t buf[])
 {
