@@ -25,13 +25,13 @@
 
 
 #ifdef KEYPAD_
-#include "keypad.h"
+  #include "keypad.h"
 #endif
 
 #include <driver/adc.h>
 
 #ifdef ENCODER_
-#include "encoder.h"
+  #include "encoder.h"
 #endif
 
 void setup()
@@ -42,15 +42,15 @@ void setup()
 
 
   #ifdef ENCODER_
-  setup_encoder();
+    setup_encoder();
   #endif
 
   #ifdef KEYPAD_
-  setup_keypad();
+    setup_keypad();
   #endif
 
   #ifdef BUZZ_
-  setup_buzzer();
+    setup_buzzer();
   #endif
 
    // Настройка шим - временный костыль для проверки АЦП, позже вынесем в отдельный класс генератора

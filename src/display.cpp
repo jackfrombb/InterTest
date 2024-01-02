@@ -21,7 +21,7 @@ In cooperatiion with svdpfaf (svddevelop@gmail.com)
 #include "encoder.h"
 
 // Переменная дисплея
-U8G2_PCD8544_84X48_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/CLK, /* data=*/DIN, /* cs=*/CE, /* dc=*/DC, /* reset=*/RST);
+U8G2 u8g2;
 
 // Сохраняем параметры дисплея
 const int displayHeight = u8g2.getDisplayHeight();
@@ -41,9 +41,6 @@ const float maxMeasureValue = 3.2;
 ulong framesForMenuTitleTimer = 0;
 int settingsVal = 0;      // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима
 
-
-
-
 // Точка на дисплее
 typedef struct 
 {
@@ -55,9 +52,6 @@ typedef struct
 uint32_t readAnalogVal() {
   return adc1_get_raw(ADC1_CHANNEL_0);
 }
-
-
-
 
 /// @brief Координаты для отображения надписи по центру дисплея
 /// @param title Надпись
@@ -218,6 +212,16 @@ bool IRAM_ATTR drawInterrupt(void *args)
 void setup_display(){
 
     const float vRef = 1.1;
+
+    
+
+    #if DISPLAYTYPE_ == OLED128x32
+        U8G2_SH1106_128X32_VISIONOX_F_HW_I2C loc_dsp(U8G2_R0, U8X8_PIN_NONE, DSP_SCK_, DSP_SDA_);
+        u8g2 = loc_dsp;
+    #else
+        U8G2_PCD8544_84X48_F_4W_SW_SPI loc_dsp(U8G2_R0, /* clock=*/CLK, /* data=*/DIN, /* cs=*/CE, /* dc=*/DC, /* reset=*/RST);
+        u8g2 = new loc_dsp;
+    #endif
 
 
   u8g2.begin(); // Инициализируем дисплей
