@@ -17,6 +17,7 @@
 // Логика осцилографа
 #include "oscil.h"
 #endif
+#include "voltmeter.h"
 #ifndef EXCLUDE_HARDTIMER_
 // Логика тамера прерываний
 #include "hard_timer.h"
@@ -45,7 +46,7 @@
 #ifdef NOKIA5110_
 #include "display_nokia_5110.h"
 // дисплей 0.96 OLED I2C
-#elif OLED128x32_
+#elif defined (OLED128x32_)
 #include "display_128x32.h"
 #endif
 
@@ -58,6 +59,7 @@ bool interfaceDrawInProcess = false; // Флаг начала прорисовк
 esp_adc_cal_characteristics_t *adc_chars;
 
 Oscilloscope oscil = Oscilloscope(&board_readAnalogVal, 450); // board_readAnalogVal - определяется в файле board_***.h
+Voltmetr voltmetr = Voltmetr();
 
 int settingsVal = 0;               // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима
 const float maxMeasureValue = 3.2; // Потолок по напряжению, если ниже 3.0 то ломается. Больше можно
@@ -78,7 +80,7 @@ int pwmF = 1000;
 #ifdef NOKIA5110_
 #include "interface_wide.h"
 // дисплей 0.96 OLED I2C
-#elif OLED128x32_
+#elif defined (OLED128x32_)
 #include "interface_wide.h"
 #endif
 
@@ -120,6 +122,7 @@ void setup()
   delay(1000);
 
   oscil.init();
+  voltmetr.setAdcChars(adc_chars);
 }
 
 void loop()

@@ -4,8 +4,9 @@
 extern const int displayHeight;
 extern const int displayWidth;
 extern int settingsVal; // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима
+int showVal = 0; //0 - средний вольтаж, 1 - пик ту пик, 
 extern const float maxMeasureValue;
-extern ulong framesForMenuTitleTimer;
+extern ulong framesForMenuTitleTimer; //Кол-во кадров с надписью, которое осталось показать
 
 int sectionsCountH = 3;
 int sectionHeight = displayHeight / sectionsCountH;
@@ -115,7 +116,8 @@ void drawValues(int32_t buf[])
 
   u8g2.setCursor(0, 12);
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.print(oscil.getInterruptTime() / 1000.0);
+  //u8g2.print(oscil.getInterruptTime() / 1000.0);
+  u8g2.print(voltmetr.measureMax(buf));
 }
 
 // Отрисовка в режиме осцилографа
