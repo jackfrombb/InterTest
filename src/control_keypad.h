@@ -1,6 +1,6 @@
 #pragma once
+#include <Arduino.h>
 #include "configuration.h"
-#include "keypad.h"
 
 #define KEY_DELAY_PERIOD           400 // Supress of key jitter with ms_delay
 

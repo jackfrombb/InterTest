@@ -70,7 +70,7 @@ int pwmF = 1000;
 
 #ifdef ENCODER
 #include "control_encoder.h"
-#elif KEYPAD
+#elif defined (KEYPAD)
 #include "control_keypad.h"
 #endif
 
