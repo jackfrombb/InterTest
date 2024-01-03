@@ -45,13 +45,13 @@
 #ifdef NOKIA5110_
 #include "display_nokia_5110.h"
 // дисплей 0.96 OLED I2C
-#elif OLED128x32_
+#elif defined(OLED128x32_)
 #include "display_128x32.h"
 #endif
 
 // Сохраняем параметры дисплея
-const int displayHeight = u8g2.getHeight();
-const int displayWidth = u8g2.getWidth();
+int displayHeight = 0;
+int displayWidth = 0;
 bool interfaceDrawInProcess = false; // Флаг начала прорисовки интерфейса
 
 // Хранение характеристик ADC
@@ -78,12 +78,13 @@ int pwmF = 1000;
 #ifdef NOKIA5110_
 #include "interface_wide.h"
 // дисплей 0.96 OLED I2C
-#elif OLED128x32_
+#elif defined(OLED128x32_)
 #include "interface_wide.h"
 #endif
 
 void setup()
 {
+
   delay(100);
   const float vRef = 1.1; // Опрное напряжение. Для esp32 всегда 1.1. Вынес для удобства
 
@@ -91,13 +92,15 @@ void setup()
   delay(1000);
 
   display_init();
+  displayHeight = u8g2->getHeight();
+  displayWidth = u8g2->getWidth();
 
-  u8g2.setFont(u8g2_font_10x20_t_cyrillic); // Выставляем шрифт (шрифты жрут прорву памяти так что аккуратнее если меняете)
+  u8g2->setFont(u8g2_font_10x20_t_cyrillic); // Выставляем шрифт (шрифты жрут прорву памяти так что аккуратнее если меняете)
   String hello = "Привет";
-  point_t pHello = getDisplayCener(hello, u8g2.getMaxCharWidth(), u8g2.getBufferTileHeight());
-  u8g2.setCursor(pHello.x, pHello.y);
-  u8g2.print(hello);
-  u8g2.sendBuffer();
+  point_t pHello = getDisplayCener(hello, u8g2->getMaxCharWidth(), u8g2->getBufferTileHeight());
+  u8g2->setCursor(pHello.x, pHello.y);
+  u8g2->print(hello);
+  u8g2->sendBuffer();
 
   // Сохраняем характеристики АЦП для последующих преобразований
   adc_chars = (esp_adc_cal_characteristics_t *)calloc(1, sizeof(esp_adc_cal_characteristics_t));

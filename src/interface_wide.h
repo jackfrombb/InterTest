@@ -1,8 +1,9 @@
 #include <Arduino.h>
 #include <U8g2lib.h>
 
-extern const int displayHeight;
-extern const int displayWidth;
+extern U8G2 *u8g2;
+extern int displayHeight;
+extern int displayWidth;
 extern int settingsVal; // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима
 extern const float maxMeasureValue;
 extern ulong framesForMenuTitleTimer;
@@ -36,28 +37,28 @@ void drawBack()
       break;
     }
 
-    u8g2.setFont(u8g2_font_8x13_t_cyrillic);
-    point_t pos = getDisplayCener(title, u8g2.getMaxCharWidth(), u8g2.getMaxCharHeight());
-    u8g2.setCursor(pos.x, pos.y); // На середину
-    u8g2.print(title);
+    u8g2->setFont(u8g2_font_8x13_t_cyrillic);
+    point_t pos = getDisplayCener(title, u8g2->getMaxCharWidth(), u8g2->getMaxCharHeight());
+    u8g2->setCursor(pos.x, pos.y); // На середину
+    u8g2->print(title);
   }
 
   // Отображение значения регулируемого энкодером
-  u8g2.setCursor(20, displayHeight);
-  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2->setCursor(20, displayHeight);
+  u8g2->setFont(u8g2_font_ncenB08_tr);
   switch (settingsVal)
   {
   case 0:
     uint64_t val;
     timer_get_alarm_value(TIMER_GROUP_0, TIMER_1, &val);
-    u8g2.print(String(val));
+    u8g2->print(String(val));
     break;
 
   case 1:
     break;
 
   case 2:
-    u8g2.print(String(pwmF));
+    u8g2->print(String(pwmF));
     break;
 
   default:
@@ -65,7 +66,7 @@ void drawBack()
   }
 
   // Отрисовка точек деления шкалы
-  u8g2.setFont(u8g2_font_4x6_tr);
+  u8g2->setFont(u8g2_font_4x6_tr);
   for (int8_t v = 1; v <= sectionsCountH; ++v)
   {
     int tickY = displayHeight - ((displayHeight * v) / sectionsCountH);
@@ -76,11 +77,11 @@ void drawBack()
 
       if (x >= titlePos)
       {
-        u8g2.setCursor(titlePos, tickY + 10);
-        u8g2.print(v);
+        u8g2->setCursor(titlePos, tickY + 10);
+        u8g2->print(v);
       }
 
-      u8g2.drawPixel(x, tickY);
+      u8g2->drawPixel(x, tickY);
     }
   }
 }
@@ -104,25 +105,25 @@ void drawValues(int32_t buf[])
 
     if (x == displayWidth - 1)
     {
-      u8g2.drawPixel(x, val);
+      u8g2->drawPixel(x, val);
     }
     else
     {
       byte val2 = map(esp_adc_cal_raw_to_voltage(next, adc_chars), 0, maxMeasureValNormalized , displayHeight - 1, 0);
-      u8g2.drawLine(x, val, x + 1, val2);
+      u8g2->drawLine(x, val, x + 1, val2);
     }
   }
 
-  u8g2.setCursor(0, 12);
-  u8g2.setFont(u8g2_font_ncenB08_tr);
-  u8g2.print(oscil.getInterruptTime() / 1000.0);
+  u8g2->setCursor(0, 12);
+  u8g2->setFont(u8g2_font_ncenB08_tr);
+  u8g2->print(oscil.getInterruptTime() / 1000.0);
 }
 
 // Отрисовка в режиме осцилографа
 void drawOscilograf(int32_t buf[])
 {
-  u8g2.firstPage();
+  u8g2->firstPage();
   drawBack();
   drawValues(buf);
-  u8g2.nextPage();
+  u8g2->nextPage();
 }
