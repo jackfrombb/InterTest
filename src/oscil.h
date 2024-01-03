@@ -69,8 +69,7 @@ public:
             return false;
         }
 
-        ulong nit = (micros() - oscil->prevInterTime);
-        oscil->_interruptTime = nit;
+        oscil->_interruptTime = micros() - oscil->prevInterTime;
 
         // Измерение
         uint32_t reading = oscil->_readValue(); // adc1_get_raw(ADC1_CHANNEL_2);

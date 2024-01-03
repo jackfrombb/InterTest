@@ -11,9 +11,9 @@ Communication with encoder. Depended with the library from Alex Giver.
 
 #include <Arduino.h>
 #include "buzzer.h"
-#include "common.h"
+#include "configuration.h"
 
-#ifdef BUZZER_
+#ifdef BUZZER
 void setup_buzzer(){
     pinMode(PIN_MK_BUZZ, OUTPUT);
 }

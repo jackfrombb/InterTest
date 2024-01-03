@@ -1,80 +1,134 @@
-//ver: 0_0_j (номер релиза_любой номер комита_автор)
+// ver: 0_0_j (номер релиза_любой номер комита_автор)
 
 #include <Arduino.h>
-//  USE_SSD1306 // Use I2C OLED screen on SSD1306 chipset
 
-#include "common.h"
+// Все настройки железа здесь
+#include "configuration.h"
+
+// Основной буфер.
 #define BUFFER_LENGTH 168
 
-#ifndef  EXCLUDE_OSCIL_
-   #include "oscil.h"
+// Вспомогательные методы
+#include "helpers.h"
+// Вспомогательные структуры дисплея
+#include "display_structs.h"
+
+#ifndef EXCLUDE_OSCIL_
+// Логика осцилографа
+#include "oscil.h"
 #endif
-#ifndef  EXCLUDE_HARDTIMER_
-   #include "hard_timer.h"
+#ifndef EXCLUDE_HARDTIMER_
+// Логика тамера прерываний
+#include "hard_timer.h"
 #endif
 
+// esp32 библиотеки для работы ADC
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
-#include "helpers.h"
-#include "display/display.h"
 
-
-#ifdef BUZZER_
+// Пищалка
+#ifdef BUZZ
 #include "buzzer.h"
 #endif
 
-
-#ifdef KEYPAD_
-  #include "keypad.h"
+// Определение контроллера
+#ifdef S2MINI
+#include "board_s2mini.h"
 #endif
 
-#include <driver/adc.h>
+#ifdef WROOM32
+#include "board_wrom32.h"
+#endif
 
-#ifdef ENCODER_
-  #include "encoder.h"
+// Определение дисплея
+// Nokia PCD8544 display
+#ifdef NOKIA5110_
+#include "display_nokia_5110.h"
+// дисплей 0.96 OLED I2C
+#elif OLED128x32_
+#include "display_128x32.h"
+#endif
+
+// Сохраняем параметры дисплея
+const int displayHeight = u8g2.getHeight();
+const int displayWidth = u8g2.getWidth();
+bool interfaceDrawInProcess = false; // Флаг начала прорисовки интерфейса
+
+// Хранение характеристик ADC
+esp_adc_cal_characteristics_t *adc_chars;
+
+Oscilloscope oscil = Oscilloscope(&board_readAnalogVal, 450); // board_readAnalogVal - определяется в файле board_***.h
+
+int settingsVal = 0;               // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима
+const float maxMeasureValue = 3.2; // Потолок по напряжению, если ниже 3.0 то ломается. Больше можно
+ulong framesForMenuTitleTimer = 0; // Счетчик кадров для отображения названия меню, его увеличивает control, а отслеживает interface
+
+// Частота генерации
+int pwmF = 1000;
+
+#ifdef ENCODER
+#include "control_encoder.h"
+#elif KEYPAD
+#include "control_keypad.h"
+#endif
+
+#include "display_helper.h"
+
+// Nokia PCD8544 display
+#ifdef NOKIA5110_
+#include "interface_wide.h"
+// дисплей 0.96 OLED I2C
+#elif OLED128x32_
+#include "interface_wide.h"
 #endif
 
 void setup()
 {
-
-  setup_display();
-
-
-
-  #ifdef ENCODER_
-    setup_encoder();
-  #endif
-
-  #ifdef KEYPAD_
-    setup_keypad();
-  #endif
-
-  #ifdef BUZZ_
-    setup_buzzer();
-  #endif
-
-   // Настройка шим - временный костыль для проверки АЦП, позже вынесем в отдельный класс генератора
-  ledcAttachPin(GPIO_NUM_4, 2);
-  ledcSetup(2, pwmF, 8);
-  ledcWrite(2, 254 / 2);
-
+  delay(100);
+  const float vRef = 1.1; // Опрное напряжение. Для esp32 всегда 1.1. Вынес для удобства
 
   Serial.begin(9600);
   delay(1000);
 
- 
+  display_init();
+
+  u8g2.setFont(u8g2_font_10x20_t_cyrillic); // Выставляем шрифт (шрифты жрут прорву памяти так что аккуратнее если меняете)
+  String hello = "Привет";
+  point_t pHello = getDisplayCener(hello, u8g2.getMaxCharWidth(), u8g2.getBufferTileHeight());
+  u8g2.setCursor(pHello.x, pHello.y);
+  u8g2.print(hello);
+  u8g2.sendBuffer();
+
+  // Сохраняем характеристики АЦП для последующих преобразований
+  adc_chars = (esp_adc_cal_characteristics_t *)calloc(1, sizeof(esp_adc_cal_characteristics_t));
+  board_init(adc_chars);
+
+  // Конец настройки АЦП
+  delay(300);
+
+  control_init();
+
+#ifdef BUZZ
+  setup_buzzer();
+#endif
+
+  // Настройка шим - временный костыль для проверки АЦП, позже вынесем в отдельный класс генератора
+  ledcSetup(2, pwmF, 8);
+  ledcAttachPin(GPIO_NUM_4, 2);
+  ledcWrite(2, 254 / 2);
+
+  delay(1000);
+
+  oscil.init();
 }
 
 void loop()
 {
-  #ifdef ENCODER_
-  loop_encoder();
-  #endif
-
-  #ifdef KEYPAD_
-  loop_keypad();
-  #endif
-
-  lopp_display();
-
+  control_loop();
+  // Если буфер готов то начинаем прорисовку
+  if (oscil.isBufferReady())
+  {
+    drawOscilograf(oscil.getBuffer());
+    oscil.readNext();
+  }
 }

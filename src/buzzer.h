@@ -9,7 +9,6 @@ Communication with encoder. Depended with the library from Alex Giver.
 
 ************************************************ */
 #pragma once
-
 #include <Arduino.h>
 
 extern void setup_buzzer();
