@@ -27,7 +27,8 @@
 #define DIN GPIO_NUM_18 // Pin4 (Din)  GPIO17
 #define CLK GPIO_NUM_19 // Pin5 (Clk)  GPIO18
 // #define DISPLAY_VCC GPIO_NUM_21                         // Pin6 (Vcc)  3.3V
-#define DISPLAY_LED_PIN GPIO_NUM_21 // Pin7 (BL)
+#define DISPLAY_LED_PIN GPIO_NUM_21 
+// Pin7 (BL)
                                     // Pin8 (GND)  GND
 #endif
 

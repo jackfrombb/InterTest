@@ -18,16 +18,18 @@ defines для изменения конфигурации железа
 //#define S2MINI
 
 //Выбор способа упрвления
-#define ENCODER
-//#define KEYPAD
+//#define ENCODER
+#ifndef ENCODER
+   #define KEYPAD
+#endif
 
 //Доп функции
-//#define BUZZ_
+#define BUZZ_
 
 // Nokia PCD8544 display
-#define NOKIA5110_
+//#define NOKIA5110_
 //дисплей 0.96 OLED I2C
-//#define OLED128x32_
+#define OLED128x32_
 
 #ifdef BUZZ
 #define PIN_MK_BUZZ                 21

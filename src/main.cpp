@@ -68,7 +68,7 @@ int pwmF = 1000;
 
 #ifdef ENCODER
 #include "control_encoder.h"
-#elif KEYPAD
+#elif defined( KEYPAD )
 #include "control_keypad.h"
 #endif
 
@@ -108,8 +108,10 @@ void setup()
 
   // Конец настройки АЦП
   delay(300);
-
-  control_init();
+  
+  #if defined( KEYPAD )
+    control_init();
+  #endif
 
 #ifdef BUZZ
   setup_buzzer();
@@ -127,7 +129,10 @@ void setup()
 
 void loop()
 {
-  control_loop();
+   #if defined( KEYPAD )
+     control_loop();
+  #endif
+  
   // Если буфер готов то начинаем прорисовку
   if (oscil.isBufferReady())
   {
