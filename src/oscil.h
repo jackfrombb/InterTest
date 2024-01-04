@@ -45,14 +45,14 @@ public:
     ulong prevInterTime = 0; // Предыдущее время тика
     int missTick = 0;        // Подсчитываем пропущеные тики
     int synchTick = 0;       // Пропускаем для синхронизауии записи в буффер
-
     bool triggerSynk = true;
     int triggerSynchTrys = BUFFER_LENGTH / 2;
+
     static bool IRAM_ATTR timerInterrupt(void *args)
     {
         Oscilloscope *oscil = (Oscilloscope *)args;
 
-        // Если буфер готов то пропускаем заполнение
+        //Если буфер готов то пропускаем заполнение
         // if (oscil->_bufferReady)
         // {
         //     oscil->missTick += 1;

@@ -3,10 +3,10 @@
 
 extern const int displayHeight;
 extern const int displayWidth;
-extern int settingsVal; // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима
-int showVal = 0; //0 - средний вольтаж, 1 - пик ту пик, 
+extern int settingsVal; // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима, 3 - пауза в прерываниях
+extern int showVal;        // 0 - Pick вольтаж, 1 - midle волтаж, 2 - время прерываний, 3 - пауза в прерываниях
 extern const float maxMeasureValue;
-extern ulong framesForMenuTitleTimer; //Кол-во кадров с надписью, которое осталось показать
+extern ulong framesForMenuTitleTimer; // Кол-во кадров с надписью, которое осталось показать
 
 int sectionsCountH = 3;
 int sectionHeight = displayHeight / sectionsCountH;
@@ -32,6 +32,10 @@ void drawBack()
       title = "ШИМ";
       break;
 
+      case 3:
+      title = "Задержка";
+      break;
+
     default:
       title = "ERR";
       break;
@@ -49,14 +53,20 @@ void drawBack()
   switch (settingsVal)
   {
   case 0:
+  {
     uint64_t val;
     timer_get_alarm_value(TIMER_GROUP_0, TIMER_1, &val);
     u8g2.print(String(val));
     break;
+  }
 
   case 1:
+  {
+    uint64_t val;
+    timer_get_alarm_value(TIMER_GROUP_0, TIMER_1, &val);
+    u8g2.print(String(val));
     break;
-
+  }
   case 2:
     u8g2.print(String(pwmF));
     break;
@@ -109,15 +119,26 @@ void drawValues(int32_t buf[])
     }
     else
     {
-      byte val2 = map(esp_adc_cal_raw_to_voltage(next, adc_chars), 0, maxMeasureValNormalized , displayHeight - 1, 0);
+      byte val2 = map(esp_adc_cal_raw_to_voltage(next, adc_chars), 0, maxMeasureValNormalized, displayHeight - 1, 0);
       u8g2.drawLine(x, val, x + 1, val2);
     }
   }
 
   u8g2.setCursor(0, 12);
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  //u8g2.print(oscil.getInterruptTime() / 1000.0);
-  u8g2.print(voltmetr.measureMax(buf));
+
+  switch (showVal)
+  {
+  case 0:
+    u8g2.print(String(voltmetr.measurePickVolt(buf, BUFFER_LENGTH))+"v");
+    break;
+  case 1:
+    u8g2.print(String(voltmetr.measureMidVolt(buf, BUFFER_LENGTH))+"v");
+    break;
+  case 2:
+    u8g2.print(String(oscil.getInterruptTime())+"ms");
+    break;
+  }
 }
 
 // Отрисовка в режиме осцилографа

@@ -16,13 +16,21 @@ class Voltmetr {
     ~Voltmetr(){
     }
 
+    /// @brief Установить характеристики ADC. Вызывать обязательно, но после заполнения этих характеристик
+    /// [esp_adc_cal_characteristics_t * adc_chars = (esp_adc_cal_characteristics_t *)calloc(1, sizeof(esp_adc_cal_characteristics_t));]
+    /// Необходимы для преобразования из ADC попугаев в mV
+    /// @param adc_chars Ссылка на заполненные характеристики
     void setAdcChars(esp_adc_cal_characteristics_t*  adc_chars){
         _adc_chars = adc_chars;
     }
 
-    float measureMax(int32_t* buffer){
+    /// @brief Измерить пиковые значения
+    /// @param buffer буфер с непреобразованными значениями
+    /// @param bufferLenght длинна буфера
+    /// @return напряжение в вольтах
+    float measurePickVolt(int32_t* buffer, int bufferLenght){
         int32_t returnVal;
-        for(int i=0 ; i<BUFFER_LENGTH; i++){
+        for(int i=0 ; i<bufferLenght; i++){
             int32_t rawV = esp_adc_cal_raw_to_voltage(buffer[i], _adc_chars);
             returnVal = returnVal > rawV ? returnVal : rawV;
         }
@@ -30,14 +38,13 @@ class Voltmetr {
         return returnVal/1000.0;
     }
 
-    float measureMidVolt(int32_t* buffer){
-        int size = sizeof(buffer);
+    float measureMidVolt(int32_t* buffer, int bufferLenght){
         int32_t returnVal;
-        for(int i; i<size; i++){
-            float rawV = esp_adc_cal_raw_to_voltage(buffer[i], _adc_chars);
-            returnVal = midArifm2(buffer[i], size);
+        for(int i; i<bufferLenght; i++){
+            int32_t rawV = esp_adc_cal_raw_to_voltage(buffer[i], _adc_chars);
+            returnVal = midArifm2(buffer[i], bufferLenght);
         }
-        return returnVal;
+        return returnVal/1000;
     }
 
 };

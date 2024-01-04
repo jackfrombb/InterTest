@@ -61,7 +61,8 @@ esp_adc_cal_characteristics_t *adc_chars;
 Oscilloscope oscil = Oscilloscope(&board_readAnalogVal, 450); // board_readAnalogVal - определяется в файле board_***.h
 Voltmetr voltmetr = Voltmetr();
 
-int settingsVal = 0;               // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима
+int showVal = 0;        // Верхний лвый угол 0 - Pick вольтаж, 1 - midle волтаж, 2 - время прерываний, 3 - пауза в прерываниях
+int settingsVal = 0;               // нижний левый угол. Управляется control 0 - Частота опроса, 1 - частота кадров, 2 - частота шима, 3 - пауза в прерываниях
 const float maxMeasureValue = 3.2; // Потолок по напряжению, если ниже 3.0 то ломается. Больше можно
 ulong framesForMenuTitleTimer = 0; // Счетчик кадров для отображения названия меню, его увеличивает control, а отслеживает interface
 

@@ -19,6 +19,8 @@
 #define ENC_SW GPIO_NUM_14 // Кнопка
 #endif
 
+extern int showVal;
+
 EncButton enc(ENC_DT, ENC_CLCK, ENC_SW);
 
 void encEvent();
@@ -27,16 +29,48 @@ HardTimer encoderTimer = HardTimer(encTick, TIMER_GROUP_1, TIMER_0, 600, 80);
 
 void control_init()
 {
-    pinMode(ENC_VCC, OUTPUT);
-    digitalWrite(ENC_VCC, 1);
-    enc.attach(encEvent);
-    
-    encoderTimer.init();
+  pinMode(ENC_VCC, OUTPUT);
+  digitalWrite(ENC_VCC, 1);
+  enc.attach(encEvent);
+
+  encoderTimer.init();
 }
 
 void control_loop()
 {
-    enc.tick();
+  enc.tick();
+}
+
+void changeSettingsVal()
+{
+  switch (settingsVal)
+  {
+  case 0:
+  {
+    const int steep = 1;
+    auto alarm_value = oscil.getTimer().getTickTime() + (enc.dir() * steep);
+    oscil.getTimer().setNewTickTime(alarm_value);
+    Serial.println("Frq accur: " + String(alarm_value));
+    break;
+  }
+  case 1:
+  {
+    int steep = 100;
+    auto alarm_value = oscil.getTimer().getTickTime() + (enc.dir() * steep);
+    oscil.getTimer().setNewTickTime(alarm_value);
+    Serial.println("Frq fast: " + String(alarm_value));
+
+    break;
+  }
+
+  case 2:
+  {
+    pwmF = range(pwmF + enc.dir() * 100, 0, 200000);
+    ledcSetup(3, pwmF, 8);
+    Serial.println("PWM: " + String(pwmF));
+    break;
+  }
+  }
 }
 
 // Пока пришлось вернуть, чуть позже переделаю
@@ -66,32 +100,13 @@ void encEvent()
     break;
 
   case EB_TURN:
-    if (settingsVal == 0)
+    if (enc.holding())
     {
-      const int steep = 1;
-      // uint64_t val = timerAlarmReadMicros(measureTimer) + steep * enc.dir();
-      // timerAlarmWrite(measureTimer, val, true);
-      // timer_pause(TIMER_GROUP_0, TIMER_1);
-      // uint64_t alarm_value;
-      // timer_get_alarm_value(TIMER_GROUP_0, TIMER_1, &alarm_value);
-      // timer_set_alarm_value(TIMER_GROUP_0, TIMER_1, alarm_value + steep * enc.dir());
-      // timer_start(TIMER_GROUP_0, TIMER_1);
-      auto alarm_value = oscil.getTimer().getTickTime() + (enc.dir() * steep);
-      oscil.getTimer().setNewTickTime(alarm_value);
-      Serial.println("Frq accur: " + String(alarm_value));
+      showVal = range(showVal + (1 * enc.dir()), 0, 2);
     }
-    else if (settingsVal == 1)
+    else
     {
-      const int steep = 100;
-      auto alarm_value = oscil.getTimer().getTickTime() + (enc.dir() * steep);
-      oscil.getTimer().setNewTickTime(alarm_value);
-      Serial.println("Frq fast: " + String(alarm_value));
-    }
-    else if (settingsVal == 2)
-    {
-      pwmF = range(pwmF + enc.dir() * 100, 0, 200000);
-      ledcSetup(3, pwmF, 8);
-      Serial.println("PWM: " + String(pwmF));
+      changeSettingsVal();
     }
     break;
   }
@@ -103,7 +118,7 @@ void encEvent()
 bool IRAM_ATTR encTick(void *args)
 {
 #ifndef EXCLUDE_GIVER_
-    enc.tickISR();
+  enc.tickISR();
 #endif
-    return false;
+  return false;
 }
