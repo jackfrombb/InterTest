@@ -28,7 +28,9 @@ defines для изменения конфигурации железа
 
 // Nokia PCD8544 display
 //#define NOKIA5110_
+//#define NOKIA5110_
 //дисплей 0.96 OLED I2C
+#define OLED128x32_
 #define OLED128x32_
 
 #ifdef BUZZ

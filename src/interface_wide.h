@@ -5,8 +5,9 @@ extern U8G2 *u8g2;
 extern int displayHeight;
 extern int displayWidth;
 extern int settingsVal; // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима
+int showVal = 0; //0 - средний вольтаж, 1 - пик ту пик, 
 extern const float maxMeasureValue;
-extern ulong framesForMenuTitleTimer;
+extern ulong framesForMenuTitleTimer; //Кол-во кадров с надписью, которое осталось показать
 
 int sectionsCountH = 3;
 int sectionHeight = displayHeight / sectionsCountH;

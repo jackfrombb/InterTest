@@ -25,9 +25,10 @@ public:
     int32_t _buffer[BUFFER_LENGTH];
     int _measureTime;
     int _lastPos = 0;
+    int32_t _lastValue = -1;
     value_read_func _readValue;
     ulong _interruptTime = 0;
-    HardTimer oscilTimer; // = HardTimer(oscil_TimerInterrupt, TIMER_GROUP_0, TIMER_1, 4500, 2);
+    HardTimer oscilTimer;
 
     // bool IRAM_ATTR oscillTimerInterrupt(void *args);
     Oscilloscope() {} // Для неинициализированных объектов
@@ -45,37 +46,39 @@ public:
     int missTick = 0;        // Подсчитываем пропущеные тики
     int synchTick = 0;       // Пропускаем для синхронизауии записи в буффер
 
+    bool triggerSynk = true;
+    int triggerSynchTrys = BUFFER_LENGTH / 2;
     static bool IRAM_ATTR timerInterrupt(void *args)
     {
         Oscilloscope *oscil = (Oscilloscope *)args;
 
-
         // Если буфер готов то пропускаем заполнение
-        if (oscil->_bufferReady)
-        {
-            oscil->missTick += 1;
-            return false;
-        }
+        // if (oscil->_bufferReady)
+        // {
+        //     oscil->missTick += 1;
+        //     return false;
+        // }
 
-        if (oscil->missTick > 0)
-        {
-            oscil->synchTick = oscil->missTick % oscil->bufferLength;
-            oscil->missTick = 0;
-        }
+        // if (oscil->missTick > 0)
+        // {
+        //     oscil->synchTick = oscil->missTick % oscil->bufferLength;
+        //     oscil->missTick = 0;
+        // }
 
-        if (oscil->synchTick > 0)
-        {
-            oscil->synchTick -= 1;
-            return false;
-        }
+        // if (oscil->synchTick > 0)
+        // {
+        //     oscil->synchTick -= 1;
+        //     return false;
+        // }
 
         oscil->_interruptTime = micros() - oscil->prevInterTime;
 
         // Измерение
         uint32_t reading = oscil->_readValue(); // adc1_get_raw(ADC1_CHANNEL_2);
+
         oscil->_buffer[oscil->_lastPos] = reading;
 
-        if (oscil->_lastPos == BUFFER_LENGTH)
+        if (oscil->_lastPos == BUFFER_LENGTH - 1)
         {
             oscil->_lastPos = 0;
             oscil->_bufferReady = true;
@@ -95,7 +98,8 @@ public:
         return _interruptTime;
     }
 
-    int32_t* getBuffer(){
+    int32_t *getBuffer()
+    {
         return _buffer;
     }
 
@@ -104,7 +108,8 @@ public:
         return _bufferReady;
     }
 
-    void readNext(){
+    void readNext()
+    {
         _bufferReady = false;
     }
 
@@ -115,7 +120,8 @@ public:
         oscilTimer.init();
     }
 
-    HardTimer getTimer(){
+    HardTimer getTimer()
+    {
         return oscilTimer;
     }
 };

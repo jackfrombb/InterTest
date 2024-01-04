@@ -17,6 +17,7 @@
 // Логика осцилографа
 #include "oscil.h"
 #endif
+#include "voltmeter.h"
 #ifndef EXCLUDE_HARDTIMER_
 // Логика тамера прерываний
 #include "hard_timer.h"
@@ -58,6 +59,7 @@ bool interfaceDrawInProcess = false; // Флаг начала прорисовк
 esp_adc_cal_characteristics_t *adc_chars;
 
 Oscilloscope oscil = Oscilloscope(&board_readAnalogVal, 450); // board_readAnalogVal - определяется в файле board_***.h
+Voltmetr voltmetr = Voltmetr();
 
 int settingsVal = 0;               // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима
 const float maxMeasureValue = 3.2; // Потолок по напряжению, если ниже 3.0 то ломается. Больше можно
@@ -125,6 +127,7 @@ void setup()
   delay(1000);
 
   oscil.init();
+  voltmetr.setAdcChars(adc_chars);
 }
 
 void loop()
