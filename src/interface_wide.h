@@ -1,10 +1,11 @@
 #include <Arduino.h>
 #include <U8g2lib.h>
+#include "menu.h"
 
 extern const int displayHeight;
 extern const int displayWidth;
-extern int settingsVal; // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима, 3 - пауза в прерываниях
-extern int showVal;        // 0 - Pick вольтаж, 1 - midle волтаж, 2 - время прерываний, 3 - пауза в прерываниях
+extern int settingsVal; // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима
+int showVal = 0; //0 - средний вольтаж, 1 - пик ту пик, 
 extern const float maxMeasureValue;
 extern ulong framesForMenuTitleTimer; // Кол-во кадров с надписью, которое осталось показать
 
@@ -17,19 +18,19 @@ void drawBack()
   // Смена управления вращение инкодера
   if (millis() - framesForMenuTitleTimer < 1000)
   {
-    String title = "ERR";
+    String title = String(c_menu_err);
     switch (settingsVal)
     {
     case 0:
-      title = "Опрос";
+      title = String(c_menu_interview);
       break;
 
     case 1:
-      title = "Зум";
+      title = String( c_menu_summ );
       break;
 
     case 2:
-      title = "ШИМ";
+      title = String( c_menu_pwm );
       break;
 
       case 3:
@@ -37,26 +38,28 @@ void drawBack()
       break;
 
     default:
-      title = "ERR";
+      title = String(c_menu_err);
       break;
     }
 
-    u8g2.setFont(u8g2_font_8x13_t_cyrillic);
-    point_t pos = getDisplayCener(title, u8g2.getMaxCharWidth(), u8g2.getMaxCharHeight());
-    u8g2.setCursor(pos.x, pos.y); // На середину
-    u8g2.print(title);
+    u8g2->setFont(u8g2_font_8x13_t_cyrillic);
+    point_t pos = getDisplayCener(title, u8g2->getMaxCharWidth(), u8g2->getMaxCharHeight());
+    u8g2->setCursor(pos.x, pos.y); // На середину
+    u8g2->print(title);
   }
 
   // Отображение значения регулируемого энкодером
-  u8g2.setCursor(20, displayHeight);
-  u8g2.setFont(u8g2_font_ncenB08_tr);
-  switch (settingsVal)
+  u8g2->setCursor(20, displayHeight);
+  u8g2->setFont(u8g2_font_ncenB08_tr);
+
+  
+  switch ( settingsVal )
   {
   case 0:
   {
     uint64_t val;
     timer_get_alarm_value(TIMER_GROUP_0, TIMER_1, &val);
-    u8g2.print(String(val));
+    u8g2->print(String(val));
     break;
   }
 
@@ -68,7 +71,7 @@ void drawBack()
     break;
   }
   case 2:
-    u8g2.print(String(pwmF));
+    u8g2->print(String(pwmF));
     break;
 
   default:
@@ -76,7 +79,7 @@ void drawBack()
   }
 
   // Отрисовка точек деления шкалы
-  u8g2.setFont(u8g2_font_4x6_tr);
+  u8g2->setFont(u8g2_font_4x6_tr);
   for (int8_t v = 1; v <= sectionsCountH; ++v)
   {
     int tickY = displayHeight - ((displayHeight * v) / sectionsCountH);
@@ -87,11 +90,11 @@ void drawBack()
 
       if (x >= titlePos)
       {
-        u8g2.setCursor(titlePos, tickY + 10);
-        u8g2.print(v);
+        u8g2->setCursor(titlePos, tickY + 10);
+        u8g2->print(v);
       }
 
-      u8g2.drawPixel(x, tickY);
+      u8g2->drawPixel(x, tickY);
     }
   }
 }
@@ -115,37 +118,26 @@ void drawValues(int32_t buf[])
 
     if (x == displayWidth - 1)
     {
-      u8g2.drawPixel(x, val);
+      u8g2->drawPixel(x, val);
     }
     else
     {
-      byte val2 = map(esp_adc_cal_raw_to_voltage(next, adc_chars), 0, maxMeasureValNormalized, displayHeight - 1, 0);
+      byte val2 = map(esp_adc_cal_raw_to_voltage(next, adc_chars), 0, maxMeasureValNormalized , displayHeight - 1, 0);
       u8g2.drawLine(x, val, x + 1, val2);
     }
   }
 
   u8g2.setCursor(0, 12);
   u8g2.setFont(u8g2_font_ncenB08_tr);
-
-  switch (showVal)
-  {
-  case 0:
-    u8g2.print(String(voltmetr.measurePickVolt(buf, BUFFER_LENGTH))+"v");
-    break;
-  case 1:
-    u8g2.print(String(voltmetr.measureMidVolt(buf, BUFFER_LENGTH))+"v");
-    break;
-  case 2:
-    u8g2.print(String(oscil.getInterruptTime())+"ms");
-    break;
-  }
+  //u8g2.print(oscil.getInterruptTime() / 1000.0);
+  u8g2.print(voltmetr.measureMax(buf));
 }
 
 // Отрисовка в режиме осцилографа
 void drawOscilograf(int32_t buf[])
 {
-  u8g2.firstPage();
+  u8g2->firstPage();
   drawBack();
   drawValues(buf);
-  u8g2.nextPage();
+  u8g2->nextPage();
 }

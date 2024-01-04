@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include "configuration.h"
+#include <Arduino.h>
 
 #define KEY_DELAY_PERIOD           400 // Supress of key jitter with ms_delay
 
@@ -25,30 +26,8 @@ typedef union {
     keys_t as_keys;
 } keypad_t;
 
-keypad_t Keypad;
+static keypad_t Keypad, LastestKeypad;
 
-void control_init(){
-    Keypad.as_int = 0;
+extern void control_init();
 
-    pinMode(PIN_KEYPAD_KEY1, INPUT_PULLUP);
-    pinMode(PIN_KEYPAD_KEY2, INPUT_PULLUP);
-    pinMode(PIN_KEYPAD_KEY3, INPUT_PULLUP);
-    pinMode(PIN_KEYPAD_KEYSHUNT, INPUT_PULLUP);
-}
-
-void control_loop(){
-    keypad_t tmp;
-    tmp.as_int = 0;
-    tmp.as_keys.key1 = digitalRead( PIN_KEYPAD_KEY1 );
-    tmp.as_keys.key2 = digitalRead( PIN_KEYPAD_KEY2 );
-    tmp.as_keys.key3 = digitalRead( PIN_KEYPAD_KEY3 );
-    tmp.as_keys.keyshunt = digitalRead( PIN_KEYPAD_KEYSHUNT );
-
-    if ( tmp.as_int != Keypad.as_int ){
-
-        Serial.printf_P(PSTR("Keypad:%d>:"), Keypad.as_int );
-        Serial.println( tmp.as_int );
-        Keypad.as_int = tmp.as_int;
-        delay( KEY_DELAY_PERIOD );
-    }
-}
+extern void control_loop();
