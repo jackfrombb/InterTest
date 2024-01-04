@@ -27,28 +27,24 @@
 #define DIN GPIO_NUM_18 // Pin4 (Din)  GPIO17
 #define CLK GPIO_NUM_19 // Pin5 (Clk)  GPIO18
 // #define DISPLAY_VCC GPIO_NUM_21                         // Pin6 (Vcc)  3.3V
-#define DISPLAY_LED_PIN GPIO_NUM_21 
-// Pin7 (BL)
+#define DISPLAY_LED_PIN GPIO_NUM_21 // Pin7 (BL)
                                     // Pin8 (GND)  GND
 #endif
 
-//U8G2_PCD8544_84X48_F_4W_SW_SPI u8g2 = U8G2_PCD8544_84X48_F_4W_SW_SPI(U8G2_R0, /* clock=*/GPIO_NUM_19, /* data=*/GPIO_NUM_18,
-//                                    /* cs=*/GPIO_NUM_17, /* dc=*/GPIO_NUM_5, /* reset=*/GPIO_NUM_16);
-U8G2 *u8g2;
+U8G2_PCD8544_84X48_F_4W_SW_SPI u8g2 = U8G2_PCD8544_84X48_F_4W_SW_SPI(U8G2_R0, /* clock=*/GPIO_NUM_19, /* data=*/GPIO_NUM_18,
+                                    /* cs=*/GPIO_NUM_17, /* dc=*/GPIO_NUM_5, /* reset=*/GPIO_NUM_16);
 
 void display_init()
 {
-    u8g2 = new  U8G2_PCD8544_84X48_F_4W_SW_SPI(U8G2_R0, /* clock=*/GPIO_NUM_19, /* data=*/GPIO_NUM_18,
-                                    /* cs=*/GPIO_NUM_17, /* dc=*/GPIO_NUM_5, /* reset=*/GPIO_NUM_16);
     Serial.println("1");
 
-    Serial.println("Width2: " + String(u8g2->getWidth()));
+    Serial.println("Width2: " + String(u8g2.getWidth()));
 
     //  Подсветка дисплея
     ledcSetup(3, 100, 8);
     ledcAttachPin(DISPLAY_LED_PIN, 3);
     ledcWrite(3, 150);
 
-    u8g2->begin();
-    u8g2->enableUTF8Print();
+    u8g2.begin();
+    u8g2.enableUTF8Print();
 }

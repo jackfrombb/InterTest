@@ -3,8 +3,8 @@
 #include "display_structs.h"
 #include <U8g2lib.h>
 
-extern int displayHeight;
-extern int displayWidth;
+extern const int displayHeight;
+extern const int displayWidth;
 
 /// @brief Координаты для отображения надписи по центру дисплея
 /// @param title Надпись

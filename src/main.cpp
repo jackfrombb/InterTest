@@ -46,13 +46,13 @@
 #ifdef NOKIA5110_
 #include "display_nokia_5110.h"
 // дисплей 0.96 OLED I2C
-#elif defined(OLED128x32_)
+#elif defined (OLED128x32_)
 #include "display_128x32.h"
 #endif
 
 // Сохраняем параметры дисплея
-int displayHeight = 0;
-int displayWidth = 0;
+const int displayHeight = u8g2.getHeight();
+const int displayWidth = u8g2.getWidth();
 bool interfaceDrawInProcess = false; // Флаг начала прорисовки интерфейса
 
 // Хранение характеристик ADC
@@ -61,8 +61,7 @@ esp_adc_cal_characteristics_t *adc_chars;
 Oscilloscope oscil = Oscilloscope(&board_readAnalogVal, 450); // board_readAnalogVal - определяется в файле board_***.h
 Voltmetr voltmetr = Voltmetr();
 
-int showVal = 0;        // Верхний лвый угол 0 - Pick вольтаж, 1 - midle волтаж, 2 - время прерываний, 3 - пауза в прерываниях
-int settingsVal = 0;               // нижний левый угол. Управляется control 0 - Частота опроса, 1 - частота кадров, 2 - частота шима, 3 - пауза в прерываниях
+int settingsVal = 0;               // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима
 const float maxMeasureValue = 3.2; // Потолок по напряжению, если ниже 3.0 то ломается. Больше можно
 ulong framesForMenuTitleTimer = 0; // Счетчик кадров для отображения названия меню, его увеличивает control, а отслеживает interface
 
@@ -71,7 +70,7 @@ int pwmF = 1000;
 
 #ifdef ENCODER
 #include "control_encoder.h"
-#elif defined( KEYPAD )
+#elif defined (KEYPAD)
 #include "control_keypad.h"
 #endif
 
@@ -81,13 +80,12 @@ int pwmF = 1000;
 #ifdef NOKIA5110_
 #include "interface_wide.h"
 // дисплей 0.96 OLED I2C
-#elif defined(OLED128x32_)
+#elif defined (OLED128x32_)
 #include "interface_wide.h"
 #endif
 
 void setup()
 {
-
   delay(100);
   const float vRef = 1.1; // Опрное напряжение. Для esp32 всегда 1.1. Вынес для удобства
 
@@ -95,15 +93,13 @@ void setup()
   delay(1000);
 
   display_init();
-  displayHeight = u8g2->getHeight();
-  displayWidth = u8g2->getWidth();
 
-  u8g2->setFont(u8g2_font_10x20_t_cyrillic); // Выставляем шрифт (шрифты жрут прорву памяти так что аккуратнее если меняете)
+  u8g2.setFont(u8g2_font_10x20_t_cyrillic); // Выставляем шрифт (шрифты жрут прорву памяти так что аккуратнее если меняете)
   String hello = "Привет";
-  point_t pHello = getDisplayCener(hello, u8g2->getMaxCharWidth(), u8g2->getBufferTileHeight());
-  u8g2->setCursor(pHello.x, pHello.y);
-  u8g2->print(hello);
-  u8g2->sendBuffer();
+  point_t pHello = getDisplayCener(hello, u8g2.getMaxCharWidth(), u8g2.getBufferTileHeight());
+  u8g2.setCursor(pHello.x, pHello.y);
+  u8g2.print(hello);
+  u8g2.sendBuffer();
 
   // Сохраняем характеристики АЦП для последующих преобразований
   adc_chars = (esp_adc_cal_characteristics_t *)calloc(1, sizeof(esp_adc_cal_characteristics_t));
@@ -111,10 +107,8 @@ void setup()
 
   // Конец настройки АЦП
   delay(300);
-  
-  #if defined( KEYPAD )
-    control_init();
-  #endif
+
+  control_init();
 
 #ifdef BUZZ
   setup_buzzer();
@@ -133,10 +127,7 @@ void setup()
 
 void loop()
 {
-   #if defined( KEYPAD )
-     control_loop();
-  #endif
-  
+  control_loop();
   // Если буфер готов то начинаем прорисовку
   if (oscil.isBufferReady())
   {
