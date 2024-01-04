@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <U8g2lib.h>
+#include "menu.h"
 
 extern U8G2 *u8g2;
 extern int displayHeight;
@@ -18,23 +19,23 @@ void drawBack()
   // Смена управления вращение инкодера
   if (millis() - framesForMenuTitleTimer < 1000)
   {
-    String title = "ERR";
+    String title = String(c_menu_err);
     switch (settingsVal)
     {
     case 0:
-      title = "Опрос";
+      title = String(c_menu_interview);
       break;
 
     case 1:
-      title = "Зум";
+      title = String( c_menu_summ );
       break;
 
     case 2:
-      title = "ШИМ";
+      title = String( c_menu_pwm );
       break;
 
     default:
-      title = "ERR";
+      title = String(c_menu_err);
       break;
     }
 
@@ -47,7 +48,9 @@ void drawBack()
   // Отображение значения регулируемого энкодером
   u8g2->setCursor(20, displayHeight);
   u8g2->setFont(u8g2_font_ncenB08_tr);
-  switch (settingsVal)
+
+  
+  switch ( settingsVal )
   {
   case 0:
     uint64_t val;
