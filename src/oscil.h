@@ -11,94 +11,69 @@ The library for ESP32 under Arduino Environment
 
 #include <Arduino.h>
 #include "hard_timer.h"
+#include "board_virtual.h"
 
-/// @brief Делегирование функции считывания, для облегчения совместимости между платами
-typedef uint32_t (*value_read_func)();
-
-class Oscilloscope
+class OscilAdc
 {
 private:
-public:
-    bool _bufferReady = false;
-    // static bool IRAM_ATTR timerInterrupt(void *args);
-    const int bufferLength = BUFFER_LENGTH;
-    int32_t _buffer[BUFFER_LENGTH];
-    int _measureTime;
-    int _lastPos = 0;
-    int32_t _lastValue = -1;
-    value_read_func _readValue;
-    ulong _interruptTime = 0;
-    HardTimer oscilTimer;
+    bool _bufferReady = false; // Флаг заполненности  буфера
+    uint8_t _buffer[BUFFER_LENGTH]; //Буфер
+    int _measureTime; //Время между измерениями
+    int _lastPos = 0; //Последняя позиция записи в буфер
+    int32_t _lastValue = -1; //Последнее значение записанное в буфер
+    ulong _interruptTime = 0; // Фермя затраченное на одно считывание
+    ulong _prevInterTime = 0; // Предыдущее время тика
+    MainBoard* _board; // Информация о главной плате
 
-    // bool IRAM_ATTR oscillTimerInterrupt(void *args);
-    Oscilloscope() {} // Для неинициализированных объектов
-    Oscilloscope(value_read_func readValue, int measureTime)
+public:
+    HardTimer oscilTimer;
+    
+    OscilAdc() {} // Для неинициализированных объектов
+    OscilAdc(MainBoard* mainBoard, int measureTime)
     {
-        _readValue = readValue;
+        _board = mainBoard;
         _measureTime = measureTime;
     }
-    // oscil(int32_t &buffer, int bufferLength, uint32_t (readValue)(void), int *measureTime);
-    ~Oscilloscope()
+
+    ~OscilAdc()
     {
     }
 
-    ulong prevInterTime = 0; // Предыдущее время тика
-    int missTick = 0;        // Подсчитываем пропущеные тики
-    int synchTick = 0;       // Пропускаем для синхронизауии записи в буффер
+    void writeToBuffer(){
 
-    bool triggerSynk = true;
-    int triggerSynchTrys = BUFFER_LENGTH / 2;
-    static bool IRAM_ATTR timerInterrupt(void *args)
-    {
-        Oscilloscope *oscil = (Oscilloscope *)args;
-
-        // Если буфер готов то пропускаем заполнение
-        // if (oscil->_bufferReady)
-        // {
-        //     oscil->missTick += 1;
-        //     return false;
-        // }
-
-        // if (oscil->missTick > 0)
-        // {
-        //     oscil->synchTick = oscil->missTick % oscil->bufferLength;
-        //     oscil->missTick = 0;
-        // }
-
-        // if (oscil->synchTick > 0)
-        // {
-        //     oscil->synchTick -= 1;
-        //     return false;
-        // }
-
-        oscil->_interruptTime = micros() - oscil->prevInterTime;
+        _interruptTime = micros() - _prevInterTime;
 
         // Измерение
-        uint32_t reading = oscil->_readValue(); // adc1_get_raw(ADC1_CHANNEL_2);
+        uint32_t reading = adc1_get_raw(_board->getAdcInfo()->chanelAdc1); // adc1_get_raw(ADC1_CHANNEL_2);
 
-        oscil->_buffer[oscil->_lastPos] = reading;
+        _buffer[_lastPos] = reading;
 
-        if (oscil->_lastPos == BUFFER_LENGTH - 1)
+        if (_lastPos == BUFFER_LENGTH - 1)
         {
-            oscil->_lastPos = 0;
-            oscil->_bufferReady = true;
+            _lastPos = 0;
+            _bufferReady = true;
         }
         else
         {
-            oscil->_lastPos += 1;
+            _lastPos += 1;
         }
 
-        oscil->prevInterTime = micros();
+        _prevInterTime = micros();
+    }
 
+    static bool IRAM_ATTR timerInterrupt(void *args)
+    {
+        OscilAdc *oscil = (OscilAdc *)args;
+        oscil->writeToBuffer();
         return false;
     }
 
-    ulong getInterruptTime()
+    ulong getSampleTime()
     {
         return _interruptTime;
     }
 
-    int32_t *getBuffer()
+    uint8_t *getBuffer()
     {
         return _buffer;
     }
@@ -113,11 +88,19 @@ public:
         _bufferReady = false;
     }
 
-    void init()
+    esp_err_t init()
     {
-        oscilTimer = HardTimer(timerInterrupt, TIMER_GROUP_0, TIMER_1, 4500, 2);
+        _board->adc1Init();
+
+        oscilTimer = HardTimer(timerInterrupt, TIMER_GROUP_0, TIMER_1, _measureTime, 2);
         oscilTimer.setArgs(this);
         oscilTimer.init();
+
+        return ESP_OK;
+    }
+
+    void deinit(){
+        oscilTimer.deinit();
     }
 
     HardTimer getTimer()

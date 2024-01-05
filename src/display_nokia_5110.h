@@ -48,3 +48,4 @@ void display_init()
     u8g2.begin();
     u8g2.enableUTF8Print();
 }
+

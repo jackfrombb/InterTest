@@ -88,7 +88,7 @@ void drawBack()
 
 /// @brief Отрисовать график
 /// @param duration время старта
-void drawValues(int32_t buf[])
+void drawValues(uint8_t buf[])
 {
   // Преобразованный предел
   static const int maxMeasureValNormalized = maxMeasureValue * 1000;
@@ -116,12 +116,12 @@ void drawValues(int32_t buf[])
 
   u8g2.setCursor(0, 12);
   u8g2.setFont(u8g2_font_ncenB08_tr);
-  //u8g2.print(oscil.getInterruptTime() / 1000.0);
+  //u8g2.print(oscil.getSampleTime() / 1000.0);
   u8g2.print(voltmetr.measureMax(buf));
 }
 
 // Отрисовка в режиме осцилографа
-void drawOscilograf(int32_t buf[])
+void drawOscilograf(uint8_t buf[])
 {
   u8g2.firstPage();
   drawBack();

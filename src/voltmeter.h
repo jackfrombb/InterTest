@@ -20,7 +20,7 @@ class Voltmetr {
         _adc_chars = adc_chars;
     }
 
-    float measureMax(int32_t* buffer){
+    float measureMax(uint8_t* buffer){
         int32_t returnVal;
         for(int i=0 ; i<BUFFER_LENGTH; i++){
             int32_t rawV = esp_adc_cal_raw_to_voltage(buffer[i], _adc_chars);

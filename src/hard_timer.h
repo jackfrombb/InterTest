@@ -69,19 +69,8 @@ public:
         _handlerFunc = handlerFunc;
     }
 
-    // HardTimer(timer_isr_t handlerFunc, timer_group_t group,
-    //            timer_idx_t num, int tickTime, uint32_t divider)
-    // {
-    //     _isOnPause = true;
-    //     _timer_info = {.group = group, .num = num};
-    //     _tickTime = tickTime;
-    //     _divider = divider;
-    //     _handlerFunc = handlerFunc;
-        
-    // }
-
     ~HardTimer() {
-
+        deinit();
     }
 
     hard_timer_info init(){
@@ -113,6 +102,10 @@ public:
 
     void pause(){
         timer_pause(_timer_info.group, _timer_info.num);
+    }
+
+    void deinit(){
+        timer_deinit(_timer_info.group, _timer_info.num);
     }
 
     /// @brief Получить время срабатывания
