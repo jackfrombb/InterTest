@@ -24,6 +24,18 @@ float expRunningAverage(float newVal)
   return filVal;
 }
 
+void invertBytes(uint16_t* buf, int length){
+  for (int i = 0; i < length; i++)
+    {
+      buf[i] = buf[i] & 0x0FFF;
+      i++;
+    }
+}
+
+int16_t invertBytes(uint16_t val){
+  return val & 0x0FFF;
+}
+
 // Обычное среднее
 float midArifm2(float newVal, float measureSize)
 {

@@ -17,3 +17,11 @@ typedef struct
   int x;
   int y;
 } point_t;
+
+/// @brief Зона дисплея
+typedef struct
+{
+  point_t leftUp; //Левая верхняя точка
+  point_t rightDown; //Правая нижняя точка
+} display_area;
+

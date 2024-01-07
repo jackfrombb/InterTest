@@ -12,12 +12,13 @@ The library for ESP32 under Arduino Environment
 #include <Arduino.h>
 #include "hard_timer.h"
 #include "board_virtual.h"
+#include "oscil_virtual.h"
 
-class OscilAdc
+class OscilAdc : public OscilVirtual
 {
 private:
     bool _bufferReady = false; // Флаг заполненности  буфера
-    uint8_t _buffer[BUFFER_LENGTH]; //Буфер
+    uint16_t _buffer[BUFFER_LENGTH]; //Буфер
     int _measureTime; //Время между измерениями
     int _lastPos = 0; //Последняя позиция записи в буфер
     int32_t _lastValue = -1; //Последнее значение записанное в буфер
@@ -68,12 +69,20 @@ public:
         return false;
     }
 
-    ulong getSampleTime()
+    ulong getRealSampleTime()
     {
         return _interruptTime;
     }
 
-    uint8_t *getBuffer()
+    uint32_t getMeasuresInSecond(){
+        return getTimer().getTickTime();
+    }
+
+    void setMeasuresInSecond(uint32_t tickTime){
+        getTimer().setNewTickTime(tickTime);
+    }
+
+    uint16_t *getBuffer()
     {
         return _buffer;
     }
@@ -101,6 +110,10 @@ public:
 
     void deinit(){
         oscilTimer.deinit();
+    }
+
+    bool playPause(){
+        return getTimer().playPause();
     }
 
     HardTimer getTimer()

@@ -1,12 +1,17 @@
+#pragma once
+
 #include <Arduino.h>
 #include <U8g2lib.h>
+#include "helpers.h"
 
 extern const int displayHeight;
 extern const int displayWidth;
+
 extern int settingsVal; // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима
-int showVal = 0; //0 - средний вольтаж, 1 - пик ту пик, 
+
+int showVal = 0;        // 0 - средний вольтаж, 1 - пик ту пик,
 extern const float maxMeasureValue;
-extern ulong framesForMenuTitleTimer; //Кол-во кадров с надписью, которое осталось показать
+extern ulong framesForMenuTitleTimer; // Кол-во кадров с надписью, которое осталось показать
 
 int sectionsCountH = 3;
 int sectionHeight = displayHeight / sectionsCountH;
@@ -37,36 +42,41 @@ void drawBack()
       break;
     }
 
-    u8g2.setFont(u8g2_font_8x13_t_cyrillic);
-    point_t pos = getDisplayCener(title, u8g2.getMaxCharWidth(), u8g2.getMaxCharHeight());
-    u8g2.setCursor(pos.x, pos.y); // На середину
-    u8g2.print(title);
+    u8g2->setFont(u8g2_font_8x13_t_cyrillic);
+    point_t pos = getDisplayCener(title, u8g2->getMaxCharWidth(), u8g2->getMaxCharHeight());
+    u8g2->setCursor(pos.x, pos.y); // На середину
+    u8g2->print(title);
   }
 
   // Отображение значения регулируемого энкодером
-  u8g2.setCursor(20, displayHeight);
-  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2->setCursor(20, displayHeight);
+  u8g2->setFont(u8g2_font_ncenB08_tr);
   switch (settingsVal)
   {
   case 0:
-    uint64_t val;
-    timer_get_alarm_value(TIMER_GROUP_0, TIMER_1, &val);
-    u8g2.print(String(val));
+  {
+    uint32_t val = oscil->getMeasuresInSecond();
+    u8g2->print(String(val));
     break;
+  }
 
   case 1:
+  {
     break;
+  }
 
   case 2:
-    u8g2.print(String(pwmF));
+  {
+    u8g2->print(String(pwmF));
     break;
+  }
 
   default:
     break;
   }
 
   // Отрисовка точек деления шкалы
-  u8g2.setFont(u8g2_font_4x6_tr);
+  u8g2->setFont(u8g2_font_4x6_tr);
   for (int8_t v = 1; v <= sectionsCountH; ++v)
   {
     int tickY = displayHeight - ((displayHeight * v) / sectionsCountH);
@@ -77,26 +87,36 @@ void drawBack()
 
       if (x >= titlePos)
       {
-        u8g2.setCursor(titlePos, tickY + 10);
-        u8g2.print(v);
+       u8g2->setCursor(titlePos, tickY + 10);
+        u8g2->print(v);
       }
 
-      u8g2.drawPixel(x, tickY);
+      u8g2->drawPixel(x, tickY);
     }
   }
 }
 
 /// @brief Отрисовать график
 /// @param duration время старта
-void drawValues(uint8_t buf[])
+void drawValues(uint16_t buf[])
 {
   // Преобразованный предел
   static const int maxMeasureValNormalized = maxMeasureValue * 1000;
+  int bias = 0;
+  auto mid = voltmetr.measureMax(buf);
+  for (int i = 0; i < OSCIL_I2S_BUFFER_LENGTH/2; i++)
+  {
+    if (buf[i+1]==mid){
+      bias = i;
+      break;
+    }
+  }
 
   // Оцилограмма
-  for (uint8_t x = 0; x <= displayWidth; x++)
+  for (uint8_t x = bias; x <= (displayWidth + bias); x++)
   {
-    int realVolt = esp_adc_cal_raw_to_voltage(buf[x], adc_chars);
+
+    int realVolt = esp_adc_cal_raw_to_voltage(buf[x], mainBoard.getAdcChars());
     int next = x == displayWidth ? 0 : buf[x + 1];
 
     // // Высчитывание среднего значения
@@ -105,26 +125,26 @@ void drawValues(uint8_t buf[])
 
     if (x == displayWidth - 1)
     {
-      u8g2.drawPixel(x, val);
+      u8g2->drawPixel(x, val);
     }
     else
     {
-      byte val2 = map(esp_adc_cal_raw_to_voltage(next, adc_chars), 0, maxMeasureValNormalized , displayHeight - 1, 0);
-      u8g2.drawLine(x, val, x + 1, val2);
+      byte val2 = map(esp_adc_cal_raw_to_voltage(next, mainBoard.getAdcChars()), 0, maxMeasureValNormalized, displayHeight - 1, 0);
+      u8g2->drawLine(x, val, x + 1, val2);
     }
   }
 
-  u8g2.setCursor(0, 12);
-  u8g2.setFont(u8g2_font_ncenB08_tr);
-  //u8g2.print(oscil.getSampleTime() / 1000.0);
-  u8g2.print(voltmetr.measureMax(buf));
+  u8g2->setCursor(0, 12);
+  u8g2->setFont(u8g2_font_ncenB08_tr);
+  // u8g2.print(oscil.getRealSampleTime() / 1000.0);
+  u8g2->print(voltmetr.measureMax(buf));
 }
 
 // Отрисовка в режиме осцилографа
-void drawOscilograf(uint8_t buf[])
+void drawOscilograf(uint16_t buf[])
 {
-  u8g2.firstPage();
+  u8g2->firstPage();
   drawBack();
   drawValues(buf);
-  u8g2.nextPage();
+  u8g2->nextPage();
 }

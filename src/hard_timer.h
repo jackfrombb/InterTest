@@ -70,7 +70,6 @@ public:
     }
 
     ~HardTimer() {
-        deinit();
     }
 
     hard_timer_info init(){
@@ -81,6 +80,10 @@ public:
 
     void setArgs(void* args) {
         _args = args;
+    }
+
+    bool isOnPause(){
+        return _isOnPause;
     }
 
     bool playPause()
@@ -116,7 +119,7 @@ public:
          return rValue;
     }
 
-    void setNewTickTime(u_int64_t t_time)
+    void setNewTickTime(uint32_t t_time)
     {
         timer_pause(_timer_info.group, _timer_info.num);
         timer_set_alarm_value(_timer_info.group, _timer_info.num, t_time);

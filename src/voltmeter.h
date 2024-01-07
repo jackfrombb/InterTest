@@ -8,33 +8,30 @@
 
 class Voltmetr {
     private:
-    esp_adc_cal_characteristics_t* _adc_chars;
+    MainBoard* _mainBoard;
 
     public:
-    Voltmetr(){
+    Voltmetr(MainBoard* mainBoard){
+        _mainBoard = mainBoard;
     }
     ~Voltmetr(){
     }
 
-    void setAdcChars(esp_adc_cal_characteristics_t*  adc_chars){
-        _adc_chars = adc_chars;
-    }
-
-    float measureMax(uint8_t* buffer){
+    float measureMax(uint16_t* buffer){
         int32_t returnVal;
         for(int i=0 ; i<BUFFER_LENGTH; i++){
-            int32_t rawV = esp_adc_cal_raw_to_voltage(buffer[i], _adc_chars);
+            int32_t rawV = esp_adc_cal_raw_to_voltage(buffer[i], _mainBoard->getAdcChars());
             returnVal = returnVal > rawV ? returnVal : rawV;
         }
 
         return returnVal/1000.0;
     }
 
-    float measureMidVolt(int32_t* buffer){
+    float measureMidVolt(uint16_t* buffer){
         int size = sizeof(buffer);
         int32_t returnVal;
         for(int i; i<size; i++){
-            float rawV = esp_adc_cal_raw_to_voltage(buffer[i], _adc_chars);
+            float rawV = esp_adc_cal_raw_to_voltage(buffer[i], _mainBoard->getAdcChars());
             returnVal = midArifm2(buffer[i], size);
         }
         return returnVal;

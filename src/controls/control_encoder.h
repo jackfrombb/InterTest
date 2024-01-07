@@ -1,4 +1,5 @@
 #pragma once
+
 #include "configuration.h"
 #include "esp32-hal-gpio.h"
 #include "hard_timer.h"
@@ -62,7 +63,8 @@ void encEvent()
     break;
 
   case EB_CLICK:
-    Serial.println(oscil.getTimer().playPause() ? "Pause - Oscil" : "Play - Oscil");
+
+    Serial.println(oscil->playPause() ? "Pause - Oscil" : "Play - Oscil");
     break;
 
   case EB_TURN:
@@ -76,15 +78,15 @@ void encEvent()
       // timer_get_alarm_value(TIMER_GROUP_0, TIMER_1, &alarm_value);
       // timer_set_alarm_value(TIMER_GROUP_0, TIMER_1, alarm_value + steep * enc.dir());
       // timer_start(TIMER_GROUP_0, TIMER_1);
-      auto alarm_value = oscil.getTimer().getTickTime() + (enc.dir() * steep);
-      oscil.getTimer().setNewTickTime(alarm_value);
+      auto alarm_value = oscil->getMeasuresInSecond() + (enc.dir() * steep);
+      oscil->setMeasuresInSecond(alarm_value);
       Serial.println("Frq accur: " + String(alarm_value));
     }
     else if (settingsVal == 1)
     {
       const int steep = 100;
-      auto alarm_value = oscil.getTimer().getTickTime() + (enc.dir() * steep);
-      oscil.getTimer().setNewTickTime(alarm_value);
+      auto alarm_value = oscil->getMeasuresInSecond() + (enc.dir() * steep);
+      oscil->setMeasuresInSecond(alarm_value);
       Serial.println("Frq fast: " + String(alarm_value));
     }
     else if (settingsVal == 2)

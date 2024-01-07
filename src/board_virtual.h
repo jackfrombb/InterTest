@@ -4,6 +4,7 @@
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
 #include "driver/i2s.h"
+#include "module_virtual.h"
 
 /// @brief Информация о конфигурации АЦП
 typedef struct 
@@ -23,7 +24,7 @@ enum adc_calibration_type
 };
 
 /// @brief Основная плата устройства
-class MainBoard
+class MainBoard : public ModuleVirtual
 {
 protected:
     // Хранение характеристик ADC
@@ -34,9 +35,11 @@ protected:
 
 private:
 public:
-    MainBoard(init_adc_info adcInfo)
+    MainBoard(init_adc_info* adcInfo)
     {
-        _adcInfo = &adcInfo;
+        _adcInfo = adcInfo;
+        String unitType = adcInfo->unit == ADC_UNIT_1 ? " UNIT 1" : "NOT UNIT 1";
+        Serial.println (" ADC UNIT " + unitType);
     }
 
     virtual void adc1Init(){
@@ -47,7 +50,8 @@ public:
         // Указываем разрядность, канал и аттенюацию (ADC_ATTEN_DB_11 должен уменьшать макс напряжение до 2.5v)
         adc1_config_width(_adcInfo->width);
         adc1_config_channel_atten(_adcInfo->chanelAdc1, _adcInfo->atten);
-
+        String unitType = _adcInfo->unit == ADC_UNIT_1 ? " UNIT 1" : "NOT UNIT 1";
+        Serial.println (" ADC UNIT " + unitType);
         esp_adc_cal_value_t val_type = esp_adc_cal_characterize(_adcInfo->unit, _adcInfo->atten, _adcInfo->width,
                                                                 ESP_ADC_CAL_VAL_DEFAULT_VREF, _adc_chars);
 
