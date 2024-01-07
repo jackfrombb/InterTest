@@ -14,7 +14,7 @@ class EllementVirtual {
     protected:
     bool _visible;
     display_area _area;
-    point_t _areaPosition;
+    point_t _areaOuterPosition;
     el_size _elSize;
     private:
     public:
@@ -42,12 +42,12 @@ class EllementVirtual {
         return _area;
     }
 
-    virtual point_t getAareaPosition(){
-        return _areaPosition;
+    virtual point_t getAareaOuterPosition(){
+        return _areaOuterPosition;
     }
 
-    virtual void setAreaPosition(point_t areaPos){
-        _areaPosition = areaPos;
+    virtual void setAreaOuterPosition(point_t areaPos){
+        _areaOuterPosition = areaPos;
     }
 
     virtual el_type getEllementType(){

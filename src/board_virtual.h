@@ -5,9 +5,10 @@
 #include "esp_adc_cal.h"
 #include "driver/i2s.h"
 #include "module_virtual.h"
+#include "displays/display_virtual.h"
 
 /// @brief Информация о конфигурации АЦП
-typedef struct 
+typedef struct
 {
     adc_unit_t unit;
     adc1_channel_t chanelAdc1;
@@ -30,19 +31,20 @@ protected:
     // Хранение характеристик ADC
     esp_adc_cal_characteristics_t *_adc_chars;
     init_adc_info *_adcInfo;
+    DisplayVirtual *_display;
     adc_calibration_type _calibrationType;
     uint32_t (*_value_read_func)();
 
 private:
 public:
-    MainBoard(init_adc_info* adcInfo)
+    MainBoard(init_adc_info *adcInfo, DisplayVirtual *display)
     {
+        _display = display;
         _adcInfo = adcInfo;
-        String unitType = adcInfo->unit == ADC_UNIT_1 ? " UNIT 1" : "NOT UNIT 1";
-        Serial.println (" ADC UNIT " + unitType);
     }
 
-    virtual void adc1Init(){
+    virtual void adc1Init()
+    {
         // Подготавливаем переменную для характеристик АЦП для последующих преобразований
         _adc_chars = (esp_adc_cal_characteristics_t *)calloc(1, sizeof(esp_adc_cal_characteristics_t));
 
@@ -50,8 +52,7 @@ public:
         // Указываем разрядность, канал и аттенюацию (ADC_ATTEN_DB_11 должен уменьшать макс напряжение до 2.5v)
         adc1_config_width(_adcInfo->width);
         adc1_config_channel_atten(_adcInfo->chanelAdc1, _adcInfo->atten);
-        String unitType = _adcInfo->unit == ADC_UNIT_1 ? " UNIT 1" : "NOT UNIT 1";
-        Serial.println (" ADC UNIT " + unitType);
+
         esp_adc_cal_value_t val_type = esp_adc_cal_characterize(_adcInfo->unit, _adcInfo->atten, _adcInfo->width,
                                                                 ESP_ADC_CAL_VAL_DEFAULT_VREF, _adc_chars);
 
@@ -71,6 +72,8 @@ public:
 
     virtual void init()
     {
+        Serial.println("Display init");
+        _display->init();
     }
 
     esp_adc_cal_characteristics_t *getAdcChars()
@@ -81,5 +84,13 @@ public:
     init_adc_info *getAdcInfo()
     {
         return _adcInfo;
+    }
+
+    DisplayVirtual* getDisplay(){
+        return _display;
+    }
+
+    float getMaxAdcMeasureValue() {
+        return 3.2;
     }
 };

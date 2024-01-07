@@ -9,7 +9,9 @@ class ElWaveform : public EllementVirtual
 {
 private:
     T *_points;
-    int32_t _pointsLength;
+    uint32_t _pointsLength;
+    uint8_t _sectionCountW;
+    uint8_t _sectionCountH;
 
 public:
     ElWaveform()
@@ -24,7 +26,7 @@ public:
     {
     }
 
-    void setPoints(T *points, int32_t pointsLength)
+    void setPoints(T *points, uint32_t pointsLength)
     {
         _points = points;
         _pointsLength = pointsLength;
@@ -34,8 +36,24 @@ public:
         return _points;
     }
 
-    int32_t getPointsLength(){
+    uint32_t getPointsLength(){
         return _pointsLength;
+    }
+
+    void setWidthSectionsCount(uint8_t count){
+        _sectionCountW = count;
+    } 
+    
+    void setHeightSectionsCount(uint8_t count){
+        _sectionCountH = count;
+    }
+
+    uint8_t getWidthSectionsCount(){
+        return _sectionCountW;
+    }
+
+    uint8_t getHeightSectionsCount(){
+        return _sectionCountH;
     }
 
     virtual el_type getEllementType()

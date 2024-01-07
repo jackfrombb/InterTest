@@ -18,10 +18,23 @@ typedef struct
   int y;
 } point_t;
 
-/// @brief Зона дисплея
+/// @brief Участок дисплея
 typedef struct
 {
   point_t leftUp; //Левая верхняя точка
   point_t rightDown; //Правая нижняя точка
+
+  /// @brief Ширина участка на дисплее
+  /// @return ширина в пикселях
+  int getWidth(){
+    return rightDown.x - leftUp.x;
+  }
+
+  /// @brief Высота участка на дисплее
+  /// @return высота в пикселях
+  int getHeight(){
+    return rightDown.y - leftUp.y;
+  }
+  
 } display_area;
 

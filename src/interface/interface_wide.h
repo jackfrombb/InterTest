@@ -101,16 +101,17 @@ void drawBack()
 void drawValues(uint16_t buf[])
 {
   // Преобразованный предел
-  static const int maxMeasureValNormalized = maxMeasureValue * 1000;
+  const int maxMeasureValNormalized = maxMeasureValue * 1000;
   int bias = 0;
-  auto mid = voltmetr.measureMax(buf);
-  for (int i = 0; i < OSCIL_I2S_BUFFER_LENGTH/2; i++)
-  {
-    if (buf[i+1]==mid){
-      bias = i;
-      break;
-    }
-  }
+
+  // auto mid = voltmetr.measureMax(buf);
+  // for (int i = 0; i < OSCIL_I2S_BUFFER_LENGTH/2; i++)
+  // {
+  //   if (buf[i+1]==mid){
+  //     bias = i;
+  //     break;
+  //   }
+  // }
 
   // Оцилограмма
   for (uint8_t x = bias; x <= (displayWidth + bias); x++)

@@ -2,7 +2,7 @@
 #include <Arduino.h>
 #include "ellement_virtual.h"
 
-class ElButton : public EllementVirtual
+class ElTextButton : public EllementVirtual
 {
 private:
     String _title;
@@ -10,15 +10,15 @@ private:
     bool _selected;
 
 public:
-    ElButton()
+    ElTextButton()
     {
     }
-    ElButton(String title, display_area area, el_size size) : EllementVirtual(size)
+    ElTextButton(String title, display_area area, el_size size) : EllementVirtual(size)
     {
         _title = title;
         _area = area;
     }
-    ~ElButton()
+    ~ElTextButton()
     {
     }
 
