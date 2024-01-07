@@ -51,7 +51,8 @@ public:
 
     ~Display128x64_U8g2()
     {
-        delete _u8g2;
+        if (_u8g2 != nullptr)
+            delete _u8g2;
     }
 
     void init()
