@@ -9,7 +9,7 @@ class InterfaceEngine_U8g2 : public InterfaceEngineVirtual
 private:
     U8G2 *_u8g2;
     DisplayVirtual *_display;
-    MainBoard *_mainBoard;
+    MainBoard* _mainBoard;
 
     /// @brief Отрисовать ориентиры и надписи
     void _drawDotBack(ElWaveform<uint16_t> *waveform)
@@ -72,11 +72,11 @@ private:
     }
 
 public:
-    InterfaceEngine_U8g2(MainBoard *mainBoard)
+    InterfaceEngine_U8g2(MainBoard* mainBoard)
     {
         _mainBoard = mainBoard;
-        _display = _mainBoard->getDisplay();
-        _u8g2 = (U8G2 *) _display->getLibrary();
+        _display = mainBoard->getDisplay();
+        _u8g2 = (U8G2 *) _display->getLibrarry();
     }
 
     virtual void drawButton(ElTextButton *button)
@@ -118,12 +118,12 @@ public:
         int y = text->getY();
 
         if(x == ELLEMENT_POSITION_CENTER) {
-            x = getTextCenterX(text->getText()->length(), 0, display->getResolution().width, _u8g2->getMaxCharWidth());
+            x = getTextCenterX(text->getText()->length(), 0, _display->getResoluton().width, _u8g2->getMaxCharWidth());
 
         }
 
         if(y == ELLEMENT_POSITION_CENTER) {
-            y = (_display->getResolution().height * 0.5) - (_u8g2->getMaxCharHeight() * 0.5);
+            y = (_display->getResoluton().height * 0.5) - (_u8g2->getMaxCharHeight() * 0.5);
         }
 
         // Отрисовать текст

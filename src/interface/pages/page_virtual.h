@@ -1,18 +1,11 @@
 #pragma once
-
 #include <Arduino.h>
-#include <vector>
-#include "displays/display_nokia_5110.h"
 #include "interface/ellements/ellement_virtual.h"
-#include "displays/display_virtual.h"
 
 class InterfacePageVirtual
 {
 protected:
-    std::vector<EllementVirtual *> _ellements;
-    int8_t _count;
-    DisplayVirtual _display;
-
+    uint8_t _elCount;
 private:
 public:
     InterfacePageVirtual()
@@ -21,16 +14,11 @@ public:
 
     virtual int8_t getSize()
     {
-        return _count;
+        return _elCount;
     }
 
     virtual EllementVirtual *getEllement(uint8_t num)
     {
-        return _ellements[num];
-    }
-
-    virtual void addEllement(EllementVirtual *ellement)
-    {
-        _ellements.push_back(ellement);
+        return nullptr;
     }
 };

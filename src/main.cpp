@@ -10,7 +10,6 @@
 
 // Вспомогательные методы общие
 #include "helpers.h"
-#include "displays/display_virtual.h"
 // Вспомогательные структуры дисплея
 #include "displays/display_structs.h"
 
@@ -69,10 +68,6 @@ MainBoard mainBoard(&adcInfo, display);
 #include "interface/engines/interface_engine_u8g2.h"
 InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(&mainBoard);
 
-// Сохраняем параметры дисплея
-// const int displayWidth = display->getResolution().width;
-// const int displayHeight = display->getResolution().height;
-
 bool interfaceDrawInProcess = false; // Флаг начала прорисовки интерфейса
 
 // new OscilAdc(&mainBoard, 8402);
@@ -95,16 +90,6 @@ int pwmF = 100000;
 
 #include "displays/display_helper.h"
 
-// U8G2* u8g2 = (U8G2*) display->getLibrary();
-
-// Nokia PCD8544 display
-// #ifdef NOKIA5110_
-// #include "interface/interface_wide.h"
-// // дисплей 0.96 OLED I2C
-// #elif defined(OLED128x32_)
-// #include "interface/interface_wide.h"
-// #endif
-
 TickType_t xLastWakeTime;
 const TickType_t xFrequency = 50;
 void drawInterfaceThread(void *pvParameters)
@@ -118,8 +103,8 @@ void drawInterfaceThread(void *pvParameters)
                                        .y = 0,
                                    },
                                    .rightDown = point_t{
-                                    .x = mainBoard.getDisplay()->getResolution().width,
-                                    .y = mainBoard.getDisplay()->getResolution().height}
+                                    .x = mainBoard.getDisplay()->getResoluton().width, 
+                                    .y = mainBoard.getDisplay()->getResoluton().height}
                                     });
     interfaceEngine->drawWaveform(waveform);
     delete waveform;
@@ -136,14 +121,6 @@ void setup()
   Serial.println("Start to config:");
   Serial.println("MainBoard");
   mainBoard.init();
-
-  // Serial.println("Say hello");
-  // u8g2->setFont(u8g2_font_10x20_t_cyrillic); // Выставляем шрифт (шрифты жрут прорву памяти так что аккуратнее если меняете)
-  // String hello = "Привет";
-  // point_t pHello = getDisplayCener(hello, u8g2->getMaxCharWidth(), u8g2->getBufferTileHeight());
-  // u8g2->setCursor(pHello.x, pHello.y);
-  // u8g2->print(hello);
-  // u8g2->sendBuffer();
 
   delay(300);
 
@@ -182,10 +159,4 @@ void setup()
 void loop()
 {
   control_loop();
-
-  // if (oscil->isBufferReady())
-  //{
-  // drawOscilograf(oscil->getBuffer());
-  // oscil->readNext();
-  //}
 }

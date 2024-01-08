@@ -2,6 +2,7 @@
 
 #include "interface/pages/page_virtual.h"
 #include "displays/display_virtual.h"
+#include "interface/engines/interface_engine.h"
 
 class InterfaceController
 {
