@@ -52,11 +52,9 @@ private:
 
         for (uint8_t x = 0; x <= width; x++)
         {
-            int realVolt = esp_adc_cal_raw_to_voltage(*buf, _mainBoard->getAdcChars());
+            int realVolt = _mainBoard->rawToVoltage(buf[x]);
             int next = x == width ? 0 : buf[x + 1];
-
-            // // Высчитывание среднего значения
-            // mV = midArifm2(realVolt / 1000, displayWidth); // expRunningAverage(realVolt / 1000);
+            
             byte val = map(realVolt, 0, maxMeasureValNormalized, height - 1, 0);
 
             if (x == width - 1)
@@ -65,7 +63,7 @@ private:
             }
             else
             {
-                byte val2 = map(esp_adc_cal_raw_to_voltage(next, _mainBoard->getAdcChars()), 0, maxMeasureValNormalized, height - 1, 0);
+                byte val2 = map(_mainBoard->rawToVoltage(next), 0, maxMeasureValNormalized, height - 1, 0);
                 _u8g2->drawLine(x, val, x + 1, val2);
             }
         }
@@ -109,7 +107,7 @@ public:
     {
         //_drawDotBack(waveform);
         _drawWaveform(waveform);
-        _u8g2->nextPage();
+        //_u8g2->nextPage();
     }
 
     virtual void drawText(ElText *text)

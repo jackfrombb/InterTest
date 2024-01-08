@@ -29,6 +29,10 @@ defines для изменения конфигурации железа
 //дисплей 0.96 OLED I2C
 //#define OLED128x32_
 
+// Библиотека подключения дисплея
+#define U8G2_ENGINE
+//#define ADAFRUIT_ENGINE
+
 #ifdef BUZZ
 #define PIN_MK_BUZZ                 21
 #define MK_BUZZ_ACTIVE              LOW

@@ -7,13 +7,14 @@
 class InterfaceController
 {
 private:
-    InterfacePageVirtual *_currentPage;
+    InterfacePageVirtual *_currentPage = nullptr;
     InterfaceEngineVirtual *_interfaceEngine;
+    bool _drawInProcess = false;
 
 public:
-    InterfaceController(DisplayVirtual *display)
+    InterfaceController(InterfaceEngineVirtual* interfaceEngine)
     {
-        
+        _interfaceEngine = interfaceEngine;
     }
     
     ~InterfaceController()

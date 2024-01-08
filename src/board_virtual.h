@@ -86,11 +86,18 @@ public:
         return _adcInfo;
     }
 
-    DisplayVirtual* getDisplay(){
+    DisplayVirtual *getDisplay()
+    {
         return _display;
     }
 
-    float getMaxAdcMeasureValue() {
+    float getMaxAdcMeasureValue()
+    {
         return 3.2;
+    }
+
+    uint32_t rawToVoltage(uint32_t reading)
+    {
+        return esp_adc_cal_raw_to_voltage(reading, getAdcChars());
     }
 };

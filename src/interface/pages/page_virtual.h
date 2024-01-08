@@ -8,9 +8,9 @@
 class InterfacePageVirtual
 {
 protected:
-    DisplayVirtual *_display;
+    DisplayVirtual *_display = nullptr;
     std::vector<EllementVirtual *> _ellements;
-    int8_t _count;
+    int8_t _count = 0;
 
 private:
 public:

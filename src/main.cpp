@@ -2,11 +2,8 @@
 
 #include <Arduino.h>
 
-// Все настройки железа здесь
+// Переключение железа здесь
 #include "configuration.h"
-
-// Основной буфер.
-#define BUFFER_LENGTH 168
 
 // Вспомогательные методы общие
 #include "helpers.h"
@@ -29,6 +26,7 @@
 
 #include "interface/ellements/ellements_list.h"
 #include "interface/engines/interface_engine.h"
+#include "interface/interface_controller.h"
 
 // Пищалка
 #ifdef BUZZ
@@ -65,10 +63,15 @@ DisplayVirtual *display = new Display128x64_U8g2();
 
 MainBoard mainBoard(&adcInfo, display);
 
+#ifdef U8G2_ENGINE
 #include "interface/engines/interface_engine_u8g2.h"
 InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(&mainBoard);
+#elif defined(ADAFRUIT_ENGINE)
+//In process
+#endif
 
-bool interfaceDrawInProcess = false; // Флаг начала прорисовки интерфейса
+InterfaceController interfaceController(interfaceEngine);
+
 
 // new OscilAdc(&mainBoard, 8402);
 // OscilI2s(&mainBoard, (uint32_t) 10000);
