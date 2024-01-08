@@ -1,6 +1,7 @@
 #pragma once
+
 #include <Arduino.h>
-#include "module_virtual.h"
+#include "interface/engines/interface_engine.h"
 
 /// @brief Тип подключения дисплея
 typedef enum
@@ -32,18 +33,15 @@ typedef struct
     uint16_t height;
 } display_resolution;
 
-/// @brief Виртуальный класс, основа для подключения разных дисплеев
-class DisplayVirtual : public ModuleVirtual
+class DisplayVirtual
 {
 protected:
 private:
 public:
-    DisplayVirtual(/* args */)
-    {
-    }
+    DisplayVirtual()
+    = default;
     ~DisplayVirtual()
-    {
-    }
+    = default;
 
     /// @brief Получить тип подключения дисплея
     /// @return DISPLAY_TYPE_UNKNOWN, DIPLAY_TYPE_SPI, DISPLAY_TYPE_I2C
@@ -66,5 +64,13 @@ public:
 
     /// @brief Получить библиотеку дисплея
     /// @return Основной класс библиотеки, в зависимости от типа
-    virtual void* getLibrarry() {return NULL;}
+    virtual void* getLibrarry() {return nullptr;}
+
+    virtual InterfaceEngineVirtual* getInterfaceEngine() {
+        return nullptr;
+    }
+
+    virtual void init(){
+
+    }
 };
