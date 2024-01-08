@@ -33,23 +33,8 @@ public:
         }
     }
 
-    virtual void drawProgressBar(ElProgressBar *progressBar)
-    {
-        Serial.println("ERROR: WRONG USE OF VIRTUAL CLASS INTERFACE ENGINE");
-    }
-
-    virtual void drawButton(ElTextButton *button)
-    {
-        Serial.println("ERROR: WRONG USE OF VIRTUAL CLASS INTERFACE ENGINE");
-    }
-
-    virtual void drawWaveform(ElWaveform<uint16_t> *waveform)
-    {
-        Serial.println("ERROR: WRONG USE OF VIRTUAL CLASS INTERFACE ENGINE");
-    }
-
-    virtual void drawText(ElText *text)
-    {
-        Serial.println("ERROR: WRONG USE OF VIRTUAL CLASS INTERFACE ENGINE");
-    }
+    virtual void drawProgressBar(ElProgressBar *progressBar) = 0;
+    virtual void drawButton(ElTextButton *button) = 0;
+    virtual void drawWaveform(ElWaveform<uint16_t> *waveform) = 0;
+    virtual void drawText(ElText *text) = 0;
 };
