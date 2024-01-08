@@ -4,7 +4,6 @@
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
 #include "driver/i2s.h"
-#include "module_virtual.h"
 #include "displays/display_virtual.h"
 
 /// @brief Информация о конфигурации АЦП
@@ -25,7 +24,7 @@ enum adc_calibration_type
 };
 
 /// @brief Основная плата устройства
-class MainBoard : public ModuleVirtual
+class MainBoard
 {
 protected:
     // Хранение характеристик ADC

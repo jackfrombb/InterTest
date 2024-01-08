@@ -1,22 +1,22 @@
 #pragma once
 #include <Arduino.h>
+#include "display_virtual.h"
 #include "display_structs.h"
 #include <U8g2lib.h>
 
-extern const int displayHeight;
-extern const int displayWidth;
 
-/// @brief Координаты для отображения надписи по центру дисплея
-/// @param title Надпись
-/// @return point с координатами
-static point_t getDisplayCener(String title, int8_t maxCharWidth, int8_t maxCharHeight)
+static int getTextCenterX(int textLength, int elementPositionX, int maxWidth, int8_t maxCharWidth)
 {
-  int x = displayWidth / 2 - ((title.length() * maxCharWidth) / 4);
-  int y = displayHeight / 2 + maxCharHeight / 4;
-
-  return point_t{
-      .x = x,
-      .y = y,
-  };
+  return elementPositionX + ((maxWidth * 0.5) - ((maxCharWidth * textLength) * 0.5));
 }
 
+static point_t getTextCenter(int textLength, display_area area, int8_t maxCharWidth, int8_t maxCharHeight)
+{
+  int cX = area.getX() + (area.getWidth() / 2) - ((textLength * maxCharWidth) / 2);
+  int cY = area.getY() + maxCharHeight + 2;
+
+  return point_t{
+      .x = cX,
+      .y = cY,
+  };
+}

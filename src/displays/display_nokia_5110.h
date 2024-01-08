@@ -1,7 +1,6 @@
 #pragma once
 #include <Arduino.h>
 #include "display_helper.h"
-#include "display_virtual.h"
 
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
@@ -48,6 +47,11 @@
 //     u8g2.enableUTF8Print();
 // }
 
+
+#include "displays/display_virtual.h"
+#include "display_virtual.h"
+#include "DisplayVirtual.h"
+
 /// @brief Старый дисплей от Nokia
 class Nokia5110_U8g2 : public DisplayVirtual
 {
@@ -86,7 +90,7 @@ public:
 
     /// @brief Получить разрешение дисплея
     /// @return Структура с width и height
-    virtual display_resolution getResoluton() { return display_resolution{
+    virtual display_resolution getResolution() { return display_resolution{
         .width = _u8g2->getWidth(),
         .height = _u8g2->getHeight(),
     }; }
@@ -101,5 +105,5 @@ public:
 
     /// @brief Получить библиотеку дисплея
     /// @return Основной класс библиотеки, в зависимости от типа
-    virtual void *getLibrarry() { return _u8g2; }
+    virtual void *getLibrary() { return _u8g2; }
 };

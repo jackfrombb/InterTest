@@ -73,7 +73,7 @@ public:
 
     /// @brief Получить разрешение дисплея
     /// @return Структура с width и height
-    virtual display_resolution getResoluton() { return display_resolution{
+    virtual display_resolution getResolution() { return display_resolution{
         .width = _u8g2->getWidth(),
         .height = _u8g2->getHeight(),
     }; }

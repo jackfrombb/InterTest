@@ -10,6 +10,7 @@
 
 // Вспомогательные методы общие
 #include "helpers.h"
+#include "displays/display_virtual.h"
 // Вспомогательные структуры дисплея
 #include "displays/display_structs.h"
 
@@ -69,8 +70,8 @@ MainBoard mainBoard(&adcInfo, display);
 InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(&mainBoard);
 
 // Сохраняем параметры дисплея
-// const int displayWidth = display->getResoluton().width;
-// const int displayHeight = display->getResoluton().height;
+// const int displayWidth = display->getResolution().width;
+// const int displayHeight = display->getResolution().height;
 
 bool interfaceDrawInProcess = false; // Флаг начала прорисовки интерфейса
 
@@ -94,7 +95,7 @@ int pwmF = 100000;
 
 #include "displays/display_helper.h"
 
-// U8G2* u8g2 = (U8G2*) display->getLibrarry();
+// U8G2* u8g2 = (U8G2*) display->getLibrary();
 
 // Nokia PCD8544 display
 // #ifdef NOKIA5110_
@@ -117,8 +118,8 @@ void drawInterfaceThread(void *pvParameters)
                                        .y = 0,
                                    },
                                    .rightDown = point_t{
-                                    .x = mainBoard.getDisplay()->getResoluton().width, 
-                                    .y = mainBoard.getDisplay()->getResoluton().height}
+                                    .x = mainBoard.getDisplay()->getResolution().width,
+                                    .y = mainBoard.getDisplay()->getResolution().height}
                                     });
     interfaceEngine->drawWaveform(waveform);
     delete waveform;

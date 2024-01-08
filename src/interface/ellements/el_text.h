@@ -1,7 +1,7 @@
 #pragma once
 #include "ellement_virtual.h"
 
-class ElText : EllementVirtual
+class ElText : public EllementVirtual
 {
 private:
     String *_text;
@@ -34,8 +34,8 @@ public:
         _text = new String(text);
     }
 
-    String getText()
+    String* getText()
     {
-        return *_text;
+        return _text;
     }
 };
