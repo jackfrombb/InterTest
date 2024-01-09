@@ -27,6 +27,7 @@
 #include "interface/ellements/ellements_list.h"
 #include "interface/engines/interface_engine.h"
 #include "interface/interface_controller.h"
+#include "displays/display_helper.h"
 
 // Пищалка
 #ifdef BUZZ
@@ -72,26 +73,9 @@ InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(&mainBoard);
 
 InterfaceController interfaceController(&mainBoard, interfaceEngine);
 
-
-// new OscilAdc(&mainBoard, 8402);
-// OscilI2s(&mainBoard, (uint32_t) 10000);
-OscilVirtual *oscil = new OscilI2s(&mainBoard, (uint32_t)50000); // board_readAnalogVal - определяется в файле board_***.h
-Voltmetr voltmetr = Voltmetr(&mainBoard);
-
-int settingsVal = 0;               // 0 - Частота опроса, 1 - частота кадров, 2 - частота шима
-const float maxMeasureValue = 3.2; // Потолок по напряжению, если ниже 3.0 то ломается. Больше можно
-ulong framesForMenuTitleTimer = 0; // Счетчик кадров для отображения названия меню, его увеличивает control, а отслеживает interface
-
 // Частота генерации
 int pwmF = 100000;
 
-#ifdef ENCODER
-#include "controls/control_encoder.h"
-#elif defined(KEYPAD)
-#include "controls/control_keypad.h"
-#endif
-
-#include "displays/display_helper.h"
 
 void setup()
 {
@@ -101,17 +85,12 @@ void setup()
   Serial.println("Start to config:");
   Serial.println("Main board");
   mainBoard.init();
+
   Serial.println("Interface controller");
   interfaceController.init();
-
   float* progress = interfaceController.showHelloPage();
-
-  delay(300);
-
-  Serial.println("Control");
-  control_init();
-  
   *progress = 0.3;
+  delay(500);
 
 #ifdef BUZZ
   Serial.println("Buzzer");
@@ -128,12 +107,10 @@ void setup()
 
   *progress = 0.8;
 
-  delay(300);
-
   interfaceController.showStartPage();
 }
 
 void loop()
 {
-  control_loop();
+
 }

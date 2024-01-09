@@ -27,14 +27,18 @@ private:
         InterfaceController *controller = (InterfaceController *)pvParameters;
 
         xLastWakeTime = xTaskGetTickCount();
+        
         while (1)
         {
+                controller->_drawInProcess = true;
             if (controller->_currentPage != nullptr)
             {
-                controller->_drawInProcess = true;
                 controller->_interfaceEngine->drawPage(*controller->_currentPage);
-                controller->_drawInProcess = false;
             }
+            else{
+                Serial.println("Nothing to show");
+            }
+            controller->_drawInProcess = false;
             xTaskDelayUntil(&xLastWakeTime, xFrequency);
         }
     }

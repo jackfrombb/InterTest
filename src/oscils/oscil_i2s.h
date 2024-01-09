@@ -79,11 +79,12 @@ public:
         i2s_set_adc_mode(_mainBoard->getAdcInfo()->unit, _mainBoard->getAdcInfo()->chanelAdc1);
 
         _mainBoard->adc1Init();
+        
         Serial.println("I2s init ok");
 
         // SYSCON.saradc_ctrl2.sar1_inv = 1;     // SAR ADC samples are inverted by default
         // SYSCON.saradc_ctrl.sar1_patt_len = 0; // Use only the first entry of the pattern table
-        delay(1000); // required for stability of ADC
+        delay(300); // required for stability of ADC
 
         auto i2c_adc_err = i2s_adc_enable(OSCIL_I2S_NUM);
 
