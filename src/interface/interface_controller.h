@@ -14,6 +14,7 @@ private:
     InterfaceEngineVirtual *_interfaceEngine;
 
     InterfacePageVirtual *_currentPage = nullptr;
+    InterfacePageVirtual *_preparePage = nullptr; //Для ожидания инициализации основной страницы
 
     bool _drawInProcess = false;
 
@@ -27,7 +28,7 @@ private:
         InterfaceController *controller = (InterfaceController *)pvParameters;
 
         xLastWakeTime = xTaskGetTickCount();
-        
+
         while (1)
         {
                 controller->_drawInProcess = true;
@@ -65,8 +66,11 @@ public:
     }
 
     void showStartPage(){
-        clear();
-        _currentPage = new OscilPage(_mainBoard);
+        _preparePage = new OscilPage(_mainBoard);
+        delete _currentPage;
+
+        _currentPage = _preparePage;
+        delete _preparePage;
     }
 
     void clear()

@@ -75,11 +75,11 @@ public:
             .fixed_mclk = 0};
 
         i2s_driver_install(OSCIL_I2S_NUM, &i2s_config, 0, NULL);
-        delay(1000);
+        delay(500);
         i2s_set_adc_mode(_mainBoard->getAdcInfo()->unit, _mainBoard->getAdcInfo()->chanelAdc1);
 
         _mainBoard->adc1Init();
-        
+
         Serial.println("I2s init ok");
 
         // SYSCON.saradc_ctrl2.sar1_inv = 1;     // SAR ADC samples are inverted by default
