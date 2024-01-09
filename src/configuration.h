@@ -10,6 +10,8 @@ defines для изменения конфигурации железа
 ************************************************ */
 #pragma once
 
+#define APP_VERSION 0.01
+
 //#define EXCLUDE_OSCIL_ 1 
 //#define EXCLUDE_HARDTIMER_ 1
 

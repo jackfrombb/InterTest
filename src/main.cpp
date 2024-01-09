@@ -70,7 +70,7 @@ InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(&mainBoard);
 //In process
 #endif
 
-InterfaceController interfaceController(display, interfaceEngine);
+InterfaceController interfaceController(&mainBoard, interfaceEngine);
 
 
 // new OscilAdc(&mainBoard, 8402);
@@ -103,22 +103,22 @@ void setup()
   mainBoard.init();
   Serial.println("Interface controller");
   interfaceController.init();
-  
-  float progress = 0.10;
-  interfaceController.showHelloPage(&progress);
+
+  float* progress = interfaceController.showHelloPage();
 
   delay(300);
 
   Serial.println("Control");
   control_init();
   
-  progress = 0.3;
+  *progress = 0.3;
 
 #ifdef BUZZ
   Serial.println("Buzzer");
   setup_buzzer();
 #endif
-  progress = 0.6;
+
+  *progress = 0.6;
 
   Serial.println("PWM");
   // Настройка шим - временный костыль для проверки АЦП, позже вынесем в отдельный класс генератора
@@ -126,13 +126,11 @@ void setup()
   ledcAttachPin(GPIO_NUM_4, 2);
   ledcWrite(2, 254 / 2);
 
-  progress = 0.8;
+  *progress = 0.8;
 
-  Serial.println("Oscil");
-  oscil->init();
-  Serial.println("Voltmetr (not need it)");
+  delay(300);
 
-  progress = 1.0;
+  interfaceController.showStartPage();
 }
 
 void loop()

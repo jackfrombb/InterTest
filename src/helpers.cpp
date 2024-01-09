@@ -1,5 +1,5 @@
 /* **********************************************
-Author: JackFromBB - jack@boringbar.ru / 
+Author: JackFromBB - jack@boringbar.ru /
 Placement from: https://github.com/jackfrombb/
 The library for ESP32 under Arduino Environment
 ************************************************ */
@@ -12,10 +12,18 @@ static void copy(int *src, int *dst, int len)
   memcpy(dst, src, sizeof(src[0]) * len);
 }
 
+/// @brief Ограничивает значение
+/// @param input входное
+/// @param min минимальное
+/// @param max максимальное
+/// @param infin если true, то при переполнении возвращает минимальное, а при "пробитии дна" максимальное 
+///             (используется для бесконечной прокрутки меню)
+/// @return ограниченное значение
 int range(int input, int min, int max, bool infin = false)
 {
   return input < min ? (infin ? max : min) : (input > max ? (infin ? min : max) : input);
 }
+
 
 float expRunningAverage(float newVal)
 {
@@ -24,15 +32,17 @@ float expRunningAverage(float newVal)
   return filVal;
 }
 
-void invertBytes(uint16_t* buf, int length){
+void invertBytes(uint16_t *buf, int length)
+{
   for (int i = 0; i < length; i++)
-    {
-      buf[i] = buf[i] & 0x0FFF;
-      i++;
-    }
+  {
+    buf[i] = buf[i] & 0x0FFF;
+    i++;
+  }
 }
 
-int16_t invertBytes(uint16_t val){
+int16_t invertBytes(uint16_t val)
+{
   return val & 0x0FFF;
 }
 

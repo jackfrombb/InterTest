@@ -5,9 +5,9 @@
 #include <U8g2lib.h>
 
 
-static int getTextCenterX(int textLength, int elementPositionX, int maxWidth, int8_t maxCharWidth)
+static int getTextCenterX(int textLength, int elementPositionX, int maxWidth, int8_t maxCharWidth, bool cyrylic=true)
 {
-  return elementPositionX + ((maxWidth * 0.5) - ((maxCharWidth * textLength) * 0.5));
+  return elementPositionX + ((maxWidth * 0.5) - (((maxCharWidth * textLength) * 0.5)*(cyrylic ? 0.5 : 1)));
 }
 
 static point_t getTextCenter(int textLength, display_area area, int8_t maxCharWidth, int8_t maxCharHeight)

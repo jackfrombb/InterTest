@@ -1,5 +1,6 @@
 #pragma once
 #include "ellement_virtual.h"
+#include "helpers.h"
 
 class ElProgressBar : public EllementVirtual
 {
@@ -29,7 +30,7 @@ public:
     float getProgress()
     {
         if (_progress != nullptr)
-            return min<float>(*_progress, 1.0);
+            return rangeV2<float>(*_progress, 0.0, 1.0);
         else
             return 1.0; // Если ссылка вникуда, то, вероятнее всего, загрузка завершилась и переенная стерта из кучи
     }

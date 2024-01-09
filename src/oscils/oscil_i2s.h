@@ -116,6 +116,10 @@ public:
         vTaskDelete(_workingThread);
     }
 
+    virtual uint16_t getBufferLength() {
+        return OSCIL_I2S_BUFFER_LENGTH;
+    }
+
     ulong getRealSmapleRate()
     {
         return i2s_get_clk(OSCIL_I2S_NUM);

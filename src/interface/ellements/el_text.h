@@ -29,14 +29,19 @@ public:
     {
         _text = text;
     }
+    
     void setText(String text)
     {
         _text = new String(text);
     }
 
-    String* getText()
+    String getText()
     {
-        return _text;
+        return *_text;
+    }
+    
+    virtual void setPosition(int x, int y){
+        setArea(display_area{.leftUp {.x = x, .y = y, }});
     }
 
     virtual el_type getEllementType() {

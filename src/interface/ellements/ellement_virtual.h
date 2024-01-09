@@ -5,7 +5,7 @@
 
 typedef enum{
     EL_SIZE_SUPER_LARGE, EL_SIZE_LARGE, EL_SIZE_MIDDLE, EL_SIZE_SMALL, EL_SIZE_SUPER_SMALL
-} el_size;
+} el_text_size;
 
 typedef enum {
     EL_TYPE_UNKNOWN, EL_TYPE_BUTTON, EL_TYPE_TEXT, 
@@ -17,14 +17,14 @@ class EllementVirtual {
     protected:
     bool _visible;
     display_area _area;
-    el_size _elSize;
+    el_text_size _elSize;
     private:
     public:
     EllementVirtual(){
 
     }
 
-    EllementVirtual(el_size elSize){
+    EllementVirtual(el_text_size elSize){
         _elSize = elSize;
     }
 
@@ -63,11 +63,11 @@ class EllementVirtual {
 
     virtual el_type getEllementType() = 0;
 
-    virtual void setEllementsSize(el_size size){
+    virtual void setTextSize(el_text_size size){
         _elSize = size;
     }
 
-    virtual el_size getEllementSize(){
+    virtual el_text_size getEllementSize(){
         return _elSize;
     }
 

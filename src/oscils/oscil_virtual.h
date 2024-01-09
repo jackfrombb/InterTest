@@ -26,4 +26,5 @@ public:
     virtual bool playPause() {return false;}
     virtual uint32_t getMeasuresInSecond() {return 0;}
     virtual void setMeasuresInSecond(uint32_t tickTime) {}
+    virtual uint16_t getBufferLength() = 0;
 };

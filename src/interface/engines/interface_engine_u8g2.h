@@ -70,24 +70,31 @@ private:
         }
     }
 
-    void _choiseTextSize(el_size size){
+    void _setTextSize(el_text_size size)
+    {
         switch (size)
         {
         case EL_SIZE_SUPER_LARGE:
+            _u8g2->setFont(u8g2_font_10x20_t_cyrillic);
             break;
         case EL_SIZE_LARGE:
+            _u8g2->setFont(u8g2_font_8x13_t_cyrillic);
             break;
         case EL_SIZE_MIDDLE:
+            _u8g2->setFont(u8g2_font_6x12_t_cyrillic);
             break;
         case EL_SIZE_SMALL:
+            _u8g2->setFont(u8g2_font_5x7_t_cyrillic);
             break;
         case EL_SIZE_SUPER_SMALL:
+            _u8g2->setFont(u8g2_font_4x6_t_cyrillic);
             break;
-        
+
         default:
             break;
         }
     }
+
 protected:
     void _onStartDraw()
     {
@@ -140,12 +147,17 @@ public:
 
     virtual void drawText(ElText *text)
     {
+        _setTextSize(text->getEllementSize()); //Размер и шрифт. Обязательно вызывать перед расчетом положения
+
         int x = text->getX();
-        int y = text->getY();
+        int y = text->getY() + _u8g2->getMaxCharHeight();
 
         if (x == ELLEMENT_POSITION_CENTER)
         {
-            x = getTextCenterX(text->getText()->length(), 0, _display->getResoluton().width, _u8g2->getMaxCharWidth());
+            uint8_t textLength = text->getText().length();
+            int displayWidth =  _display->getResoluton().width;
+            uint8_t maxCharWidth = _u8g2->getMaxCharWidth();
+            x = (((float)displayWidth * 0.5) - ((float)(textLength *0.5) * (maxCharWidth)));
         }
 
         if (y == ELLEMENT_POSITION_CENTER)
@@ -153,16 +165,22 @@ public:
             y = (_display->getResoluton().height * 0.5) - (_u8g2->getMaxCharHeight() * 0.5);
         }
 
-        _u8g2->setFont(u8g2_font_8x13_t_cyrillic);
         // Отрисовать текст
-        _u8g2->drawStr(0, 0, "Test");
+        // _u8g2->setCursor(x, y);
+        // _u8g2->print(text->getText());
+        _u8g2->drawStr(x, y, text->getText().c_str());
     }
 
     virtual void drawProgressBar(ElProgressBar *progressBar)
     {
-        _u8g2->drawFrame(progressBar->getX(), progressBar->getY(), progressBar->getWidth(), progressBar->getHeight());
+        // Serial.println("Progress: " + String(progressBar->getProgress()));
 
-        _u8g2->drawBox(progressBar->getX() + 2, progressBar->getY() + 2,
-                       (progressBar->getWidth() * progressBar->getProgress()) - 4, (progressBar->getHeight() - 4));
+        _u8g2->drawRFrame(progressBar->getX(), progressBar->getY(), progressBar->getWidth(), progressBar->getHeight(), 2);
+
+        int progressLineWidth = ((progressBar->getWidth() - 4) * progressBar->getProgress());
+
+        progressLineWidth = max(progressLineWidth, 0);
+        progressLineWidth = min(progressLineWidth, progressBar->getWidth() - 4);
+        _u8g2->drawBox(progressBar->getX() + 2, progressBar->getY() + 2, progressLineWidth, (progressBar->getHeight() - 4));
     }
 };

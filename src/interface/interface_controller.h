@@ -8,10 +8,15 @@
 class InterfaceController
 {
 private:
+    MainBoard* _mainBoard;
     DisplayVirtual *_display;
-    InterfacePageVirtual *_currentPage = nullptr;
+
     InterfaceEngineVirtual *_interfaceEngine;
+
+    InterfacePageVirtual *_currentPage = nullptr;
+
     bool _drawInProcess = false;
+
     TaskHandle_t _interfaceTaskHandler;
 
     static void _drawInterfaceThread(void *pvParameters)
@@ -35,21 +40,29 @@ private:
     }
 
 public:
-    InterfaceController(DisplayVirtual *display, InterfaceEngineVirtual *interfaceEngine)
+    InterfaceController(MainBoard* mainBoard, InterfaceEngineVirtual *interfaceEngine)
     {
-        _display = display;
+        _mainBoard = mainBoard;
+        _display = mainBoard->getDisplay();
         _interfaceEngine = interfaceEngine;
     }
 
     ~InterfaceController()
     {
         clear();
+        vTaskDelete(_interfaceTaskHandler);
     }
 
-    void showHelloPage(float *progress)
+    float* showHelloPage()
     {
         clear();
-        _currentPage = new HelloPage(_display, progress);
+        _currentPage = new HelloPage(_display);
+        return ((HelloPage*)_currentPage)->getProgressPtr();
+    }
+
+    void showStartPage(){
+        clear();
+        _currentPage = new OscilPage(_mainBoard);
     }
 
     void clear()

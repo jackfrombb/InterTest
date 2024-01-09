@@ -9,6 +9,12 @@ The library for ESP32 under Arduino Environment
 
 extern int range(int input, int min, int max, bool infin = false);
 
+template <typename T>
+T rangeV2(T input, T min, T max)
+{
+  return input < min ? min : (input > max ? max : input);
+}
+
 extern void copy(int *src, int *dst, int len);
 
 extern float mK;// = 0.4; // коэффициент фильтрации, 0.0-1.0

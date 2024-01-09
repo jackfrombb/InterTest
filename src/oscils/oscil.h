@@ -86,6 +86,10 @@ public:
     {
         return _buffer;
     }
+    
+    virtual uint16_t getBufferLength() {
+        return BUFFER_LENGTH;
+    }
 
     bool isBufferReady()
     {

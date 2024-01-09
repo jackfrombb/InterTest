@@ -20,7 +20,7 @@ public:
     {
     }
 
-    ElTextButton(String title, display_area area, el_size size) : EllementVirtual(size)
+    ElTextButton(String title, display_area area, el_text_size size) : EllementVirtual(size)
     {
         _title = title;
         _area = area;
