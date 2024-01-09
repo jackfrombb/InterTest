@@ -16,7 +16,8 @@ public:
 
     void setProgress(float progress)
     {
-        if(progress>1.0) progress = 1.0;
+        if (progress > 1.0)
+            progress = 1.0;
         _progress = new float(progress);
     }
 
@@ -25,11 +26,16 @@ public:
         _progress = progress;
     }
 
-    int8_t getProgress()
+    float getProgress()
     {
         if (_progress != nullptr)
-            return *_progress;
+            return min<float>(*_progress, 1.0);
         else
-            return 0;
+            return 1.0; // Если ссылка вникуда, то, вероятнее всего, загрузка завершилась и переенная стерта из кучи
+    }
+
+    virtual el_type getEllementType()
+    {
+        return EL_TYPE_PROGRESS_BAR;
     }
 };

@@ -70,7 +70,7 @@ InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(&mainBoard);
 //In process
 #endif
 
-InterfaceController interfaceController(interfaceEngine);
+InterfaceController interfaceController(display, interfaceEngine);
 
 
 // new OscilAdc(&mainBoard, 8402);
@@ -93,47 +93,32 @@ int pwmF = 100000;
 
 #include "displays/display_helper.h"
 
-TickType_t xLastWakeTime;
-const TickType_t xFrequency = 50;
-void drawInterfaceThread(void *pvParameters)
-{
-  xLastWakeTime = xTaskGetTickCount();
-  while (1)
-  {
-    ElWaveform<uint16_t> *waveform = new ElWaveform<uint16_t>(oscil->getBuffer());
-    waveform->setArea(display_area{.leftUp = point_t{
-                                       .x = 0,
-                                       .y = 0,
-                                   },
-                                   .rightDown = point_t{
-                                    .x = mainBoard.getDisplay()->getResoluton().width, 
-                                    .y = mainBoard.getDisplay()->getResoluton().height}
-                                    });
-    interfaceEngine->drawWaveform(waveform);
-    delete waveform;
-    // drawOscilograf(oscil->getBuffer());
-    xTaskDelayUntil(&xLastWakeTime, xFrequency);
-  }
-}
-
 void setup()
 {
   Serial.begin(115200);
   delay(300);
 
   Serial.println("Start to config:");
-  Serial.println("MainBoard");
+  Serial.println("Main board");
   mainBoard.init();
+  Serial.println("Interface controller");
+  interfaceController.init();
+  
+  float progress = 0.10;
+  interfaceController.showHelloPage(&progress);
 
   delay(300);
 
   Serial.println("Control");
   control_init();
+  
+  progress = 0.3;
 
 #ifdef BUZZ
   Serial.println("Buzzer");
   setup_buzzer();
 #endif
+  progress = 0.6;
 
   Serial.println("PWM");
   // Настройка шим - временный костыль для проверки АЦП, позже вынесем в отдельный класс генератора
@@ -141,22 +126,13 @@ void setup()
   ledcAttachPin(GPIO_NUM_4, 2);
   ledcWrite(2, 254 / 2);
 
-  delay(300);
+  progress = 0.8;
 
   Serial.println("Oscil");
   oscil->init();
   Serial.println("Voltmetr (not need it)");
 
-  // Прикрепить процесс к ядру
-  xTaskCreatePinnedToCore(
-      drawInterfaceThread,   // Function to implement the task
-      "drawInterfaceThread", // Name of the task
-      2048,                  // Stack size in bytes
-      NULL,                  // Task input parameter
-      10,                    // Priority of the task
-      NULL,                  // Task handle.
-      tskNO_AFFINITY         // Core where the task should run
-  );
+  progress = 1.0;
 }
 
 void loop()

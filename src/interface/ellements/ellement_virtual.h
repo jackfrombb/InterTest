@@ -4,7 +4,7 @@
 #define ELLEMENT_POSITION_CENTER -1
 
 typedef enum{
-    EL_SIZE_FULLSCREEN, EL_SIZE_SUPER_LARGE, EL_SIZE_LARGE, EL_SIZE_MIDDLE, EL_SIZE_SMALL, EL_SIZE_SUPER_SMALL
+    EL_SIZE_SUPER_LARGE, EL_SIZE_LARGE, EL_SIZE_MIDDLE, EL_SIZE_SMALL, EL_SIZE_SUPER_SMALL
 } el_size;
 
 typedef enum {
@@ -61,9 +61,7 @@ class EllementVirtual {
     }
 
 
-    virtual el_type getEllementType(){
-        return EL_TYPE_UNKNOWN;
-    }
+    virtual el_type getEllementType() = 0;
 
     virtual void setEllementsSize(el_size size){
         _elSize = size;

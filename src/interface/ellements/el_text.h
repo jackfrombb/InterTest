@@ -38,4 +38,8 @@ public:
     {
         return _text;
     }
+
+    virtual el_type getEllementType() {
+        return EL_TYPE_TEXT;
+    }
 };

@@ -6,10 +6,11 @@
 
 class InterfaceEngine_U8g2 : public InterfaceEngineVirtual
 {
+
 private:
     U8G2 *_u8g2;
     DisplayVirtual *_display;
-    MainBoard* _mainBoard;
+    MainBoard *_mainBoard;
 
     /// @brief Отрисовать ориентиры и надписи
     void _drawDotBack(ElWaveform<uint16_t> *waveform)
@@ -54,7 +55,7 @@ private:
         {
             int realVolt = _mainBoard->rawToVoltage(buf[x]);
             int next = x == width ? 0 : buf[x + 1];
-            
+
             byte val = map(realVolt, 0, maxMeasureValNormalized, height - 1, 0);
 
             if (x == width - 1)
@@ -69,12 +70,41 @@ private:
         }
     }
 
+    void _choiseTextSize(el_size size){
+        switch (size)
+        {
+        case EL_SIZE_SUPER_LARGE:
+            break;
+        case EL_SIZE_LARGE:
+            break;
+        case EL_SIZE_MIDDLE:
+            break;
+        case EL_SIZE_SMALL:
+            break;
+        case EL_SIZE_SUPER_SMALL:
+            break;
+        
+        default:
+            break;
+        }
+    }
+protected:
+    void _onStartDraw()
+    {
+        _u8g2->firstPage();
+    }
+
+    void _onEndDraw()
+    {
+        _u8g2->nextPage();
+    }
+
 public:
-    InterfaceEngine_U8g2(MainBoard* mainBoard)
+    InterfaceEngine_U8g2(MainBoard *mainBoard)
     {
         _mainBoard = mainBoard;
         _display = mainBoard->getDisplay();
-        _u8g2 = (U8G2 *) _display->getLibrarry();
+        _u8g2 = (U8G2 *)_display->getLibrarry();
     }
 
     virtual void drawButton(ElTextButton *button)
@@ -98,16 +128,14 @@ public:
 
         // Надпись по центру кнопки
         point_t centered = getTextCenter(button->getTitle()->length(), button->getArea(),
-                                     _u8g2->getMaxCharWidth(), _u8g2->getMaxCharHeight());
+                                         _u8g2->getMaxCharWidth(), _u8g2->getMaxCharHeight());
         // Отрисовать текст
-        _u8g2->drawStr(centered.x, centered.y, (const char *)button->getTitle());
+        _u8g2->drawStr(centered.x, centered.y, button->getTitle()->c_str());
     }
 
     virtual void drawWaveform(ElWaveform<uint16_t> *waveform)
     {
-        //_drawDotBack(waveform);
         _drawWaveform(waveform);
-        //_u8g2->nextPage();
     }
 
     virtual void drawText(ElText *text)
@@ -115,23 +143,26 @@ public:
         int x = text->getX();
         int y = text->getY();
 
-        if(x == ELLEMENT_POSITION_CENTER) {
+        if (x == ELLEMENT_POSITION_CENTER)
+        {
             x = getTextCenterX(text->getText()->length(), 0, _display->getResoluton().width, _u8g2->getMaxCharWidth());
-
         }
 
-        if(y == ELLEMENT_POSITION_CENTER) {
+        if (y == ELLEMENT_POSITION_CENTER)
+        {
             y = (_display->getResoluton().height * 0.5) - (_u8g2->getMaxCharHeight() * 0.5);
         }
 
+        _u8g2->setFont(u8g2_font_8x13_t_cyrillic);
         // Отрисовать текст
-        _u8g2->drawStr(text->getX(), text->getY(), (const char *)text->getText());
+        _u8g2->drawStr(0, 0, "Test");
     }
 
     virtual void drawProgressBar(ElProgressBar *progressBar)
     {
         _u8g2->drawFrame(progressBar->getX(), progressBar->getY(), progressBar->getWidth(), progressBar->getHeight());
+
         _u8g2->drawBox(progressBar->getX() + 2, progressBar->getY() + 2,
-                       (progressBar->getWidth() - 4) * progressBar->getProgress(), (progressBar->getHeight() - 3));
+                       (progressBar->getWidth() * progressBar->getProgress()) - 4, (progressBar->getHeight() - 4));
     }
 };

@@ -10,7 +10,6 @@ class InterfacePageVirtual
 protected:
     DisplayVirtual *_display = nullptr;
     std::vector<EllementVirtual *> _ellements;
-    int8_t _count = 0;
 
 private:
 public:
@@ -20,7 +19,7 @@ public:
 
     virtual int8_t getSize()
     {
-        return _count;
+        return _ellements.size();
     }
 
     virtual EllementVirtual *getEllement(uint8_t num)

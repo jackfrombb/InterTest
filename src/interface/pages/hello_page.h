@@ -7,7 +7,7 @@
 class HelloPage : public InterfacePageVirtual
 {
 private:
-    float _progress;
+    float* _progress;
     ElProgressBar _progressBar;
     ElText _helloText;
 
@@ -15,23 +15,26 @@ private:
     {
         // Настройка размера ========================
         int width = resolution.width - 10;
-        int height = 15;
+        int height = 10;
 
         point_t leftUp{
             .x = 5,
-            .y = (resolution.height * 0.5) - (height * 0.5),
+            .y = (int) (((float)resolution.height * 0.5) - ((float)height * 0.5)),
         };
+        
         point_t rightDown{
-            .x = width - 5,
-            .y = (resolution.height * 0.5) + (height * 0.5),
+            .x = width,
+            .y = leftUp.y + height,
         };
+
         display_area progresBarPos{
             .leftUp = leftUp,
             .rightDown = rightDown,
         };
 
         // Присоединение переменных
-        _progressBar.setProgresPtr(&_progress);
+        _progressBar.setArea(progresBarPos);
+        _progressBar.setProgresPtr(_progress);
     }
 
     void _helloTextInit()
@@ -47,18 +50,20 @@ private:
     }
 
 public:
-    HelloPage(DisplayVirtual *display) : _progress(0.0)
+    HelloPage(DisplayVirtual *display, float* progress) : InterfacePageVirtual(display)
     {
+        _progress = progress;
+
         display_resolution resolution = display->getResoluton();
         _progressBarInit(resolution);
         _helloTextInit();
-        _count = 2;
 
         _ellements = {
             &_progressBar,
-            &_helloText,
+            //&_helloText,
         };
     }
+
     ~HelloPage()
     {
     }

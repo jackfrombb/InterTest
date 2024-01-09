@@ -4,12 +4,17 @@
 
 class InterfaceEngineVirtual
 {
+    protected:
+    virtual void _onStartDraw(){}
+    virtual void _onEndDraw(){}
 private:
 public:
     /// @brief Отобразить страницу на экране
     /// @param page
-    virtual void drawPage(InterfacePageVirtual page)
+    void drawPage(InterfacePageVirtual page)
     {
+        _onStartDraw();
+
         for (int i = 0; i < page.getSize(); i++)
         {
             switch (page.getEllement(i)->getEllementType())
@@ -31,6 +36,8 @@ public:
                 break;
             }
         }
+
+        _onEndDraw();
     }
 
     virtual void drawProgressBar(ElProgressBar *progressBar) = 0;
