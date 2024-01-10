@@ -18,10 +18,10 @@ class OscilAdc : public OscilVirtual
 {
 private:
     bool _bufferReady = false; // Флаг заполненности  буфера
-    uint16_t _buffer[BUFFER_LENGTH]; //Буфер
+    uint16_t _buffer[BUFFER_LENGTH] = {}; //Буфер
     int _measureTime; //Время между измерениями
     int _lastPos = 0; //Последняя позиция записи в буфер
-    int32_t _lastValue = -1; //Последнее значение записанное в буфер
+    int32_t _lastValue = 0; //Последнее значение записанное в буфер
     ulong _interruptTime = 0; // Фермя затраченное на одно считывание
     ulong _prevInterTime = 0; // Предыдущее время тика
     MainBoard* _board; // Информация о главной плате

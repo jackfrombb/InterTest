@@ -8,13 +8,14 @@
 class InterfaceController
 {
 private:
-    MainBoard* _mainBoard;
+    MainBoard *_mainBoard;
     DisplayVirtual *_display;
 
     InterfaceEngineVirtual *_interfaceEngine;
+    bool _startClear = false;
 
     InterfacePageVirtual *_currentPage = nullptr;
-    InterfacePageVirtual *_preparePage = nullptr; //Для ожидания инициализации основной страницы
+    InterfacePageVirtual *_preparePage = nullptr; // Для ожидания инициализации основной страницы
 
     bool _drawInProcess = false;
 
@@ -28,16 +29,12 @@ private:
         InterfaceController *controller = (InterfaceController *)pvParameters;
 
         xLastWakeTime = xTaskGetTickCount();
-
         while (1)
         {
-                controller->_drawInProcess = true;
-            if (controller->_currentPage != nullptr)
+            controller->_drawInProcess = true;
+            if (!controller->_startClear && controller->_currentPage != nullptr)
             {
-                controller->_interfaceEngine->drawPage(*controller->_currentPage);
-            }
-            else{
-                Serial.println("Nothing to show");
+                controller->_interfaceEngine->drawPage(controller->_currentPage->getPageView());
             }
             controller->_drawInProcess = false;
             xTaskDelayUntil(&xLastWakeTime, xFrequency);
@@ -45,7 +42,7 @@ private:
     }
 
 public:
-    InterfaceController(MainBoard* mainBoard, InterfaceEngineVirtual *interfaceEngine)
+    InterfaceController(MainBoard *mainBoard, InterfaceEngineVirtual *interfaceEngine)
     {
         _mainBoard = mainBoard;
         _display = mainBoard->getDisplay();
@@ -58,26 +55,31 @@ public:
         vTaskDelete(_interfaceTaskHandler);
     }
 
-    float* showHelloPage()
+    float *showHelloPage()
     {
         clear();
-        _currentPage = new HelloPage(_display);
-        return ((HelloPage*)_currentPage)->getProgressPtr();
+        setCurrentPage(new HelloPage(_display));
+        return ((HelloPage *)_currentPage)->getProgressPtr();
     }
 
-    void showStartPage(){
-        _preparePage = new OscilPage(_mainBoard);
-        delete _currentPage;
+    void start()
+    {
+        clear();
+        setCurrentPage(new OscilPage(_mainBoard));
+    }
 
-        _currentPage = _preparePage;
-        delete _preparePage;
+    void setCurrentPage(InterfacePageVirtual* page){
+        _currentPage = page;
+        _startClear = false;
     }
 
     void clear()
     {
+        _startClear = true;
         if (_currentPage != nullptr)
         {
             delete _currentPage;
+            _currentPage = nullptr;
         }
     }
 

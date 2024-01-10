@@ -1,37 +1,32 @@
 #pragma once
 #include "page_virtual.h"
-#include "oscils/oscil_virtual.h"
+#include "oscils/oscils_list.h"
 #include "interface/ellements/ellements_list.h"
 
 class OscilPage : public InterfacePageVirtual
 {
 private:
     OscilVirtual *_oscil;
-    ElWaveform<uint16_t> _waveform;
-
-    void _initWaveform(){
-        display_area size = {
-            .leftUp{.x =0, .y =0, },
-            .rightDown {.x = _display->getResoluton().width, .y = _display->getResoluton().height}
-        };
-        _waveform.setArea(size);
-    }
+    OscilPageView* _pageView;
 
 public:
     OscilPage(MainBoard* mainBoard) : InterfacePageVirtual(mainBoard->getDisplay())
     {
-        _oscil = new OscilI2s(mainBoard, 1000);
+        _pageView = new OscilPageView(mainBoard->getDisplay());
+        _oscil = new OscilI2s(mainBoard, 1000);//new OscilAdcDma(mainBoard, 20000);// new OscilAdc(mainBoard, 5500); //new OscilI2s(mainBoard, 1000);
+        
         initOscil();
-        _initWaveform();
+    }
 
-        _ellements = {
-            &_waveform,
-        };
+    ~OscilPage(){
+        delete _oscil;
+        delete _pageView;
     }
 
     void initOscil(){
         _oscil->init();
-        _waveform.setPoints(_oscil->getBuffer(), _oscil->getBufferLength());
+        _pageView->_waveform.setPoints(_oscil->getBuffer(), _oscil->getBufferLength());
+        //_pageView->_waitText.setVisibility(false);
     }
 
     void setOscil(OscilVirtual *oscil)
@@ -42,5 +37,9 @@ public:
         }
 
         _oscil = oscil;
+    }
+    
+    virtual PageView* getPageView(){
+        return _pageView;
     }
 };

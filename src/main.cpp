@@ -11,9 +11,7 @@
 #include "displays/display_structs.h"
 
 // Логика осцилографа
-#include "oscils/oscil.h"
-#include "oscils/oscil_i2s.h"
-#include "oscils/oscil_virtual.h"
+#include "oscils/oscils_list.h"
 // Логика вольтметра
 #include "voltmeter.h"
 // Логика тамера прерываний
@@ -23,6 +21,13 @@
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
 #include "driver/i2s.h"
+
+// Определяем UI
+#ifdef WIDE_UI
+#include "interface/pages/views/wide_screen/wide_views_list.h"
+#elif defined(SLIM_UI)
+#include "interface/pages/views/slim_screen/slim_views_list.h"
+#endif
 
 #include "interface/ellements/ellements_list.h"
 #include "interface/engines/interface_engine.h"
@@ -68,7 +73,7 @@ MainBoard mainBoard(&adcInfo, display);
 #include "interface/engines/interface_engine_u8g2.h"
 InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(&mainBoard);
 #elif defined(ADAFRUIT_ENGINE)
-//In process
+// In process
 #endif
 
 InterfaceController interfaceController(&mainBoard, interfaceEngine);
@@ -76,21 +81,22 @@ InterfaceController interfaceController(&mainBoard, interfaceEngine);
 // Частота генерации
 int pwmF = 100000;
 
-
 void setup()
 {
   Serial.begin(115200);
-  delay(300);
+  // delay(300);
 
-  Serial.println("Start to config:");
-  Serial.println("Main board");
+  // Serial.println("Start to config:");
+  // Serial.println("Main board");
   mainBoard.init();
 
-  Serial.println("Interface controller");
+  delay(100);
+  
+  // Serial.println("Interface controller");
   interfaceController.init();
-  float* progress = interfaceController.showHelloPage();
+  float *progress = interfaceController.showHelloPage();
   *progress = 0.3;
-  delay(500);
+  delay(100);
 
 #ifdef BUZZ
   Serial.println("Buzzer");
@@ -105,12 +111,19 @@ void setup()
   ledcAttachPin(GPIO_NUM_4, 2);
   ledcWrite(2, 254 / 2);
 
+  delay(100);
+
   *progress = 0.8;
 
-  interfaceController.showStartPage();
+  interfaceController.start();
 }
 
+bool startInterface = false;
 void loop()
 {
-
+  // if (!startInterface)
+  // {
+  //   interfaceController.showStartPage();
+  //   startInterface = true;
+  // }
 }

@@ -58,6 +58,7 @@ public:
 
         if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF)
         {
+            Serial.println("Config adc OK");
             _calibrationType = CALIBR_EFUSE_VREF;
         }
         else if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP)

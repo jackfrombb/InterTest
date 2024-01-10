@@ -106,6 +106,12 @@ protected:
         _u8g2->nextPage();
     }
 
+    int _getTextCenterX(String text, int fromX, int width)
+    {
+        int textWidth = _u8g2->getUTF8Width(text.c_str());
+        return fromX + ((float)width * 0.5) - ((float)textWidth * 0.5);
+    }
+
 public:
     InterfaceEngine_U8g2(MainBoard *mainBoard)
     {
@@ -147,17 +153,14 @@ public:
 
     virtual void drawText(ElText *text)
     {
-        _setTextSize(text->getEllementSize()); //Размер и шрифт. Обязательно вызывать перед расчетом положения
+        _setTextSize(text->getEllementSize()); // Размер и шрифт. Обязательно вызывать перед расчетом положения
 
         int x = text->getX();
-        int y = text->getY() + _u8g2->getMaxCharHeight();
+        int y = text->getY();
 
         if (x == ELLEMENT_POSITION_CENTER)
         {
-            uint8_t textLength = text->getText().length();
-            int displayWidth =  _display->getResoluton().width;
-            uint8_t maxCharWidth = _u8g2->getMaxCharWidth();
-            x = (((float)displayWidth * 0.5) - ((float)(textLength *0.5) * (maxCharWidth)));
+            x = _getTextCenterX(text->getText(), 0, _display->getResoluton().width);
         }
 
         if (y == ELLEMENT_POSITION_CENTER)
@@ -165,10 +168,8 @@ public:
             y = (_display->getResoluton().height * 0.5) - (_u8g2->getMaxCharHeight() * 0.5);
         }
 
-        // Отрисовать текст
-        // _u8g2->setCursor(x, y);
-        // _u8g2->print(text->getText());
-        _u8g2->drawStr(x, y, text->getText().c_str());
+        // Отрисовать текст (y эллемеента делаем по верхнему углу)
+        _u8g2->drawUTF8(x, y + _u8g2->getMaxCharHeight(), text->getText().c_str());
     }
 
     virtual void drawProgressBar(ElProgressBar *progressBar)

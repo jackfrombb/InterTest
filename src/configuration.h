@@ -31,9 +31,14 @@ defines для изменения конфигурации железа
 //дисплей 0.96 OLED I2C
 //#define OLED128x32_
 
+// Тип интерфейса
+#define WIDE_UI // Для экранов близких к квадрату
+//#define SLIM_UI // Для узких экранов
+
 // Библиотека подключения дисплея
 #define U8G2_ENGINE
 //#define ADAFRUIT_ENGINE
+
 
 #ifdef BUZZ
 #define PIN_MK_BUZZ                 21
