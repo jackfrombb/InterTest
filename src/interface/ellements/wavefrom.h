@@ -10,12 +10,14 @@ class ElWaveform : public EllementVirtual
 private:
     T *_points;
     uint32_t _pointsLength;
-    uint8_t _sectionCountW;
-    uint8_t _sectionCountH;
+    uint8_t _sectionCountW = 8;
+    uint8_t _sectionCountH = 4;
+    float _maxMeasureValue = 4.0;
 
 public:
     ElWaveform()
     {
+        
     } 
     
     ElWaveform(T* points)
@@ -46,6 +48,14 @@ public:
     
     void setHeightSectionsCount(uint8_t count){
         _sectionCountH = count;
+    }
+
+    void setMaxMeasureValue(float val){
+        _maxMeasureValue = val;
+    }
+
+    float getMaxMeasureValue(){
+        return _maxMeasureValue;
     }
 
     uint8_t getWidthSectionsCount(){

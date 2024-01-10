@@ -5,18 +5,27 @@ class ElText : public EllementVirtual
 {
 private:
     String *_text;
+    el_text_align _textAlignment;
+    int16_t _elGroup;
 
 public:
     ElText()
     {
+        _elGroup = -1;
+        _textAlignment = EL_TEXT_ALIGN_LEFT;
     }
+
     ElText(String *text)
     {
         _text = text;
+        _elGroup = -1;
+        _textAlignment = EL_TEXT_ALIGN_LEFT;
     }
+
     ElText(String text)
     {
         _text = new String(text);
+        _textAlignment = EL_TEXT_ALIGN_LEFT;
     }
 
     ~ElText()
@@ -29,7 +38,7 @@ public:
     {
         _text = text;
     }
-    
+
     void setText(String text)
     {
         _text = new String(text);
@@ -39,12 +48,27 @@ public:
     {
         return *_text;
     }
-    
-    virtual void setPosition(int x, int y){
-        setArea(display_area{.leftUp {.x = x, .y = y, }});
+
+    virtual void setPosition(int x, int y)
+    {
+        setArea(display_area{.leftUp{
+            .x = x,
+            .y = y,
+        }});
     }
 
-    virtual el_type getEllementType() {
+    virtual el_type getEllementType()
+    {
         return EL_TYPE_TEXT;
+    }
+
+    el_text_align getTextAlignment()
+    {
+        return _textAlignment;
+    }
+
+    void setTextAlignment(el_text_align align)
+    {
+        _textAlignment = align;
     }
 };

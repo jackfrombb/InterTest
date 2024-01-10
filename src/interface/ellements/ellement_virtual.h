@@ -1,17 +1,15 @@
 #pragma once
 
+#include "ellements_structs.h"
 #include "displays/display_structs.h"
-#define ELLEMENT_POSITION_CENTER -1
 
-typedef enum{
-    EL_SIZE_SUPER_LARGE, EL_SIZE_LARGE, EL_SIZE_MIDDLE, EL_SIZE_SMALL, EL_SIZE_SUPER_SMALL
-} el_text_size;
-
-typedef enum {
-    EL_TYPE_UNKNOWN, EL_TYPE_BUTTON, EL_TYPE_TEXT, 
-    EL_TYPE_IMAGE, EL_TYPE_WAVEFORM, EL_TYPE_LINE, EL_TYPE_POINT,
-    EL_TYPE_PROGRESS_BAR,
-} el_type;
+/// @brief Для относитильного позиционирования эллементов
+typedef struct {
+    EllementVirtual* leftTo;
+    EllementVirtual* rightTo;
+    EllementVirtual* topTo;
+    EllementVirtual* bottomTo;
+} relative_position;
 
 class EllementVirtual {
     protected:
@@ -19,6 +17,7 @@ class EllementVirtual {
     display_area _area;
     el_text_size _elSize;
     private:
+
     public:
     EllementVirtual(){
 

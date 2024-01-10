@@ -37,7 +37,7 @@ protected:
 
     virtual void _helloTextInit()
     {
-        _helloText.setTextSize(EL_SIZE_MIDDLE);
+        _helloText.setTextSize(EL_TEXT_SIZE_MIDDLE);
         _helloText.setText("InterTest");
         // По центру экрана
         int x = ELLEMENT_POSITION_CENTER;
@@ -50,7 +50,7 @@ protected:
     virtual void _versionTextInit()
     {
         _versionText.setText("ver: " + String(APP_VERSION));
-        _versionText.setTextSize(EL_SIZE_SUPER_SMALL);
+        _versionText.setTextSize(EL_TEXT_SIZE_SUPER_SMALL);
 
         int x = 0;
         int y = 0;

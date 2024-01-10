@@ -4,6 +4,11 @@
 #include "displays/display_virtual.h"
 #include "board_virtual.h"
 
+// #define LCDWidth                        u8g2.getDisplayWidth()
+// #define ALIGN_CENTER(t)                 ((LCDWidth - (u8g2.getUTF8Width(t))) / 2)
+// #define ALIGN_RIGHT(t)                  (LCDWidth -  u8g2.getUTF8Width(t))
+// #define ALIGN_LEFT                      0
+
 class InterfaceEngine_U8g2 : public InterfaceEngineVirtual
 {
 
@@ -23,16 +28,25 @@ private:
         uint8_t heightPixelInSection = height / waveform->getHeightSectionsCount();
         uint8_t widthPixelsCount = width / waveform->getWidthSectionsCount();
 
-        for (int8_t v = 1; v <= waveform->getHeightSectionsCount(); v += heightPixelInSection)
+        Serial.println("Draw init OK");
+        int voltSectionTitle = waveform->getMaxMeasureValue();
+
+        for (int8_t v = 0; v <= height; v += heightPixelInSection)
         {
-            for (uint8_t x = 0; x < width - 1; x += widthPixelsCount)
+            for (uint8_t x = 0; x <= width; x += widthPixelsCount)
             {
                 int titlePos = width - widthPixelsCount;
                 if (x >= titlePos)
                 {
-                    _u8g2->setCursor(titlePos, v + 10);
-                    _u8g2->print(v);
+                    String title = String(voltSectionTitle);
+                    int x = titlePos;
+                    int y = v + (_u8g2->getMaxCharHeight()*1.5);
+
+                    _u8g2->drawUTF8(x, y, title.c_str());
+
+                    voltSectionTitle -= 1;
                 }
+
                 _u8g2->drawPixel(x, v);
             }
         }
@@ -43,9 +57,9 @@ private:
     void _drawWaveform(ElWaveform<uint16_t> *waveform)
     {
         int bias = 0;
-
+        Serial.println("Max measure val: " + String(waveform->getMaxMeasureValue()));
         // Преобразованный предел
-        const int maxMeasureValNormalized = _mainBoard->getMaxAdcMeasureValue() * 1000;
+        const int maxMeasureValNormalized = (waveform->getMaxMeasureValue() * 1000);
 
         uint16_t width = waveform->getArea().getWidth();
         uint16_t height = waveform->getArea().getHeight();
@@ -74,19 +88,19 @@ private:
     {
         switch (size)
         {
-        case EL_SIZE_SUPER_LARGE:
+        case EL_TEXT_SIZE_SUPER_LARGE:
             _u8g2->setFont(u8g2_font_10x20_t_cyrillic);
             break;
-        case EL_SIZE_LARGE:
+        case EL_TEXT_SIZE_LARGE:
             _u8g2->setFont(u8g2_font_8x13_t_cyrillic);
             break;
-        case EL_SIZE_MIDDLE:
+        case EL_TEXT_SIZE_MIDDLE:
             _u8g2->setFont(u8g2_font_6x12_t_cyrillic);
             break;
-        case EL_SIZE_SMALL:
+        case EL_TEXT_SIZE_SMALL:
             _u8g2->setFont(u8g2_font_5x7_t_cyrillic);
             break;
-        case EL_SIZE_SUPER_SMALL:
+        case EL_TEXT_SIZE_SUPER_SMALL:
             _u8g2->setFont(u8g2_font_4x6_t_cyrillic);
             break;
 
@@ -148,6 +162,7 @@ public:
 
     virtual void drawWaveform(ElWaveform<uint16_t> *waveform)
     {
+        _drawDotBack(waveform);
         _drawWaveform(waveform);
     }
 

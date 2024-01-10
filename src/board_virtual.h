@@ -6,6 +6,7 @@
 #include "driver/i2s.h"
 #include "module_virtual.h"
 #include "displays/display_virtual.h"
+#include "controls/control_virtual.h"
 
 /// @brief Информация о конфигурации АЦП
 typedef struct
@@ -94,12 +95,8 @@ public:
         return _display;
     }
 
-    
-
-
-    float getMaxAdcMeasureValue()
-    {
-        return 3.2;
+    ControlVirtual *getControl(){
+        return _control;
     }
 
     uint32_t rawToVoltage(uint32_t reading)

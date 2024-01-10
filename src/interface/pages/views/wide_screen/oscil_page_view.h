@@ -30,7 +30,7 @@ public:
 
     void _initWaitText()
     {
-        _waitText.setTextSize(EL_SIZE_SMALL);
+        _waitText.setTextSize(EL_TEXT_SIZE_SMALL);
         _waitText.setText("Подождите");
         _waitText.setPosition(-1, -1);
     }
