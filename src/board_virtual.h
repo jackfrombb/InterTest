@@ -32,15 +32,17 @@ protected:
     esp_adc_cal_characteristics_t *_adc_chars;
     init_adc_info *_adcInfo;
     DisplayVirtual *_display;
+    ControlVirtual *_control;
     adc_calibration_type _calibrationType;
     uint32_t (*_value_read_func)();
 
 private:
 public:
-    MainBoard(init_adc_info *adcInfo, DisplayVirtual *display)
+    MainBoard(init_adc_info *adcInfo, DisplayVirtual *display, ControlVirtual* control)
     {
         _display = display;
         _adcInfo = adcInfo;
+        _control = control;
     }
 
     virtual void adc1Init()
@@ -91,6 +93,9 @@ public:
     {
         return _display;
     }
+
+    
+
 
     float getMaxAdcMeasureValue()
     {

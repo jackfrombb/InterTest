@@ -1,9 +1,8 @@
 #pragma once
-
 #include "configuration.h"
+#include "control_virtual.h"
 #include "esp32-hal-gpio.h"
-#include "hard_timer.h"
-#include <EncButton.h>
+#include "EncButton.h"
 
 #ifdef S2MINI
 // Энкодер
@@ -20,92 +19,75 @@
 #define ENC_SW GPIO_NUM_14 // Кнопка
 #endif
 
-EncButton enc(ENC_DT, ENC_CLCK, ENC_SW);
-
-void encEvent();
-bool IRAM_ATTR encTick(void *args);
-HardTimer encoderTimer = HardTimer(encTick, TIMER_GROUP_1, TIMER_0, 600, 80);
-
-void control_init()
+class ControlEncoder : public ControlVirtual
 {
-    pinMode(ENC_VCC, OUTPUT);
-    digitalWrite(ENC_VCC, 1);
-    enc.attach(encEvent);
-    
-    encoderTimer.init();
-}
+private:
+    EncButton *_enc;
 
-void control_loop()
-{
-    enc.tick();
-}
-
-// Пока пришлось вернуть, чуть позже переделаю
-void encEvent()
-{
-  // EB_PRESS - нажатие на кнопку
-  // EB_HOLD - кнопка удержана
-  // EB_STEP - импульсное удержание
-  // EB_RELEASE - кнопка отпущена
-  // EB_CLICK - одиночный клик
-  // EB_CLICKS - сигнал о нескольких кликах
-  // EB_TURN - поворот энкодера
-  // EB_REL_HOLD - кнопка отпущена после удержания
-  // EB_REL_HOLD_C - кнопка отпущена после удержания с предв. кликами
-  // EB_REL_STEP - кнопка отпущена после степа
-  // EB_REL_STEP_C - кнопка отпущена после степа с предв. кликами
-  Serial.println("Enc action: " + String(enc.action()));
-  switch (enc.action())
-  {
-  case EB_HOLD:
-    settingsVal = range(settingsVal + enc.dir(), 0, 2, true);
-    framesForMenuTitleTimer = millis();
-    break;
-
-  case EB_CLICK:
-
-    Serial.println(oscil->playPause() ? "Pause - Oscil" : "Play - Oscil");
-    break;
-
-  case EB_TURN:
-    if (settingsVal == 0)
+    /// @brief Прерывание для обработки пропущенных считываний энкодера
+    /// @param args = NULL
+    /// @return nothing
+    bool IRAM_ATTR encTick(void *args)
     {
-      const int steep = 1;
-      // uint64_t val = timerAlarmReadMicros(measureTimer) + steep * enc.dir();
-      // timerAlarmWrite(measureTimer, val, true);
-      // timer_pause(TIMER_GROUP_0, TIMER_1);
-      // uint64_t alarm_value;
-      // timer_get_alarm_value(TIMER_GROUP_0, TIMER_1, &alarm_value);
-      // timer_set_alarm_value(TIMER_GROUP_0, TIMER_1, alarm_value + steep * enc.dir());
-      // timer_start(TIMER_GROUP_0, TIMER_1);
-      auto alarm_value = oscil->getMeasuresInSecond() + (enc.dir() * steep);
-      oscil->setMeasuresInSecond(alarm_value);
-      Serial.println("Frq accur: " + String(alarm_value));
+        ControlEncoder *control = (ControlEncoder *)args;
+        control->_enc->tickISR();
+        return false;
     }
-    else if (settingsVal == 1)
-    {
-      const int steep = 100;
-      auto alarm_value = oscil->getMeasuresInSecond() + (enc.dir() * steep);
-      oscil->setMeasuresInSecond(alarm_value);
-      Serial.println("Frq fast: " + String(alarm_value));
-    }
-    else if (settingsVal == 2)
-    {
-      pwmF = range(pwmF + enc.dir() * 100, 0, 200000);
-      ledcSetup(3, pwmF, 8);
-      Serial.println("PWM: " + String(pwmF));
-    }
-    break;
-  }
-}
 
-/// @brief Прерывание для обработки пропущенных считываний энкодера
-/// @param args = NULL
-/// @return nothing
-bool IRAM_ATTR encTick(void *args)
-{
-#ifndef EXCLUDE_GIVER_
-    enc.tickISR();
-#endif
-    return false;
-}
+    void static _encEvent(VirtButton *but, void *args)
+    {
+        EncButton *enc = (EncButton *)but;
+
+        ControlEncoder *owner = (ControlEncoder *)args;
+        // EB_PRESS - нажатие на кнопку
+        // EB_HOLD - кнопка удержана
+        // EB_STEP - импульсное удержание
+        // EB_RELEASE - кнопка отпущена
+        // EB_CLICK - одиночный клик
+        // EB_CLICKS - сигнал о нескольких кликах
+        // EB_TURN - поворот энкодера
+        // EB_REL_HOLD - кнопка отпущена после удержания
+        // EB_REL_HOLD_C - кнопка отпущена после удержания с предв. кликами
+        // EB_REL_STEP - кнопка отпущена после степа
+        // EB_REL_STEP_C - кнопка отпущена после степа с предв. кликами
+        
+        if (owner->_controlEvent != nullptr)
+            switch (enc->action())
+            {
+            case EB_HOLD:
+                owner->_controlEvent->event(LONG_PRESS_OK, owner->_controlEvent->args);
+                break;
+
+            case EB_CLICK:
+                owner->_controlEvent->event(PRESS_OK, owner->_controlEvent->args);
+                break;
+
+            case EB_TURN:
+                owner->_controlEvent->event(enc->dir() > 0 ? PRESS_RIGHT : PRESS_LEFT, owner->_controlEvent->args);
+                break;
+            }
+    }
+
+public:
+    ControlEncoder()
+    {
+        _enc = new EncButton(ENC_DT, ENC_CLCK, ENC_SW);
+    }
+
+    ~ControlEncoder()
+    {
+        delete _enc;
+    }
+
+    virtual void init()
+    {
+        pinMode(ENC_VCC, OUTPUT);
+        digitalWrite(ENC_VCC, 1);
+        _enc->attach(_encEvent, this);
+    }
+
+    virtual void loop()
+    {
+        _enc->tick();
+    }
+};

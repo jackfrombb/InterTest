@@ -33,13 +33,20 @@
 #include "interface/engines/interface_engine.h"
 #include "interface/interface_controller.h"
 #include "displays/display_helper.h"
+#include "controls/control_virtual.h"
 
 // Пищалка
 #ifdef BUZZ
 #include "buzzer.h"
 #endif
 
-// Определение контроллера
+#ifdef ENCODER
+#include "controls/control_encoder.h"
+ControlVirtual* control = new ControlEncoder();
+#elif defined (KEYPAD)
+#endif
+
+// Определение АЦП в зависимости от платы
 #ifdef S2MINI
 init_adc_info adcInfo = {
     .unit = ADC_UNIT_1,
@@ -67,7 +74,7 @@ DisplayVirtual *display = new Nokia5110_U8g2();
 DisplayVirtual *display = new Display128x64_U8g2();
 #endif
 
-MainBoard mainBoard(&adcInfo, display);
+MainBoard mainBoard(&adcInfo, display, control);
 
 #ifdef U8G2_ENGINE
 #include "interface/engines/interface_engine_u8g2.h"
@@ -84,17 +91,14 @@ int pwmF = 100000;
 void setup()
 {
   Serial.begin(115200);
-  // delay(300);
+  delay(100);
 
-  // Serial.println("Start to config:");
-  // Serial.println("Main board");
   mainBoard.init();
-
   delay(100);
   
-  // Serial.println("Interface controller");
   interfaceController.init();
   float *progress = interfaceController.showHelloPage();
+
   *progress = 0.3;
   delay(100);
 
@@ -104,26 +108,26 @@ void setup()
 #endif
 
   *progress = 0.6;
+  delay(100);
 
-  Serial.println("PWM");
   // Настройка шим - временный костыль для проверки АЦП, позже вынесем в отдельный класс генератора
   ledcSetup(2, pwmF, 8);
   ledcAttachPin(GPIO_NUM_4, 2);
   ledcWrite(2, 254 / 2);
 
-  delay(100);
 
   *progress = 0.8;
+  delay(100);
+
+  control->init();
+
+  *progress = 0.9;
+  delay(100);
 
   interfaceController.start();
 }
 
-bool startInterface = false;
 void loop()
 {
-  // if (!startInterface)
-  // {
-  //   interfaceController.showStartPage();
-  //   startInterface = true;
-  // }
+  control->loop();
 }

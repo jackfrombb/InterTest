@@ -1,7 +1,7 @@
 /* **********************************************
 Author: JackFromBB - jack@boringbar.ru / 
 Placement from: https://github.com/jackfrombb/
-The library for ESP32 under Arduino Environment
+The library for ESP32 under Arduino framework
 
 In cooperatiion with svdpfaf (svddevelop@gmail.com)
 
@@ -17,11 +17,11 @@ defines для изменения конфигурации железа
 
 //Выбор платы
 #define WROOM32
-//#define S2MINI
+//#define S2MINI //НЕ ПРОВЕРЕНО
 
 //Выбор способа упрвления
 #define ENCODER
-//#define KEYPAD
+//#define KEYPAD // НЕ РЕАЛИЗОВАНО
 
 //Доп функции
 //#define BUZZ_
@@ -29,19 +29,12 @@ defines для изменения конфигурации железа
 // Nokia PCD8544 display
 #define NOKIA5110_
 //дисплей 0.96 OLED I2C
-//#define OLED128x32_
+//#define OLED128x32_ //НЕ ПРОВЕРЕНО
 
 // Тип интерфейса
 #define WIDE_UI // Для экранов близких к квадрату
-//#define SLIM_UI // Для узких экранов
+//#define SLIM_UI // Для продолговатых экранов (НЕ РЕАЛИЗОВАНО)
 
 // Библиотека подключения дисплея
 #define U8G2_ENGINE
-//#define ADAFRUIT_ENGINE
-
-
-#ifdef BUZZ
-#define PIN_MK_BUZZ                 21
-#define MK_BUZZ_ACTIVE              LOW
-#define MK_BUZZ_INACTIVE            HIGH
-#endif
+//#define ADAFRUIT_ENGINE //НЕ РЕАЛИЗОВАНО

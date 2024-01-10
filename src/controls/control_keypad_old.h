@@ -45,7 +45,6 @@ void control_loop(){
     tmp.as_keys.keyshunt = digitalRead( PIN_KEYPAD_KEYSHUNT );
 
     if ( tmp.as_int != Keypad.as_int ){
-
         Serial.printf_P(PSTR("Keypad:%d>:"), Keypad.as_int );
         Serial.println( tmp.as_int );
         Keypad.as_int = tmp.as_int;
