@@ -6,3 +6,4 @@
 #include "wavefrom.h"
 #include "progress_bar.h"
 #include "ellements_structs.h"
+#include "el_group.h"

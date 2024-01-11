@@ -3,19 +3,10 @@
 #include "ellements_structs.h"
 #include "displays/display_structs.h"
 
-/// @brief Для относитильного позиционирования эллементов
-typedef struct {
-    EllementVirtual* leftTo;
-    EllementVirtual* rightTo;
-    EllementVirtual* topTo;
-    EllementVirtual* bottomTo;
-} relative_position;
-
 class EllementVirtual {
     protected:
     bool _visible;
     display_area _area;
-    el_text_size _elSize;
     private:
 
     public:
@@ -23,8 +14,8 @@ class EllementVirtual {
 
     }
 
-    EllementVirtual(el_text_size elSize){
-        _elSize = elSize;
+    virtual bool isGroup(){
+        return false;
     }
 
     virtual void setVisibility(bool visible){
@@ -59,15 +50,6 @@ class EllementVirtual {
         return _area.getHeight();
     }
 
-
     virtual el_type getEllementType() = 0;
-
-    virtual void setTextSize(el_text_size size){
-        _elSize = size;
-    }
-
-    virtual el_text_size getEllementSize(){
-        return _elSize;
-    }
 
 };

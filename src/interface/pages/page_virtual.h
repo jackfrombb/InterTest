@@ -14,6 +14,7 @@ private:
 public:
     InterfacePageVirtual(DisplayVirtual *display) : _display(display)
     {
+
     }
 
     ~InterfacePageVirtual(){
@@ -21,4 +22,5 @@ public:
     }
 
     virtual PageView* getPageView() = 0;
+
 };

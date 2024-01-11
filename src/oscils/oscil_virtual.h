@@ -22,9 +22,9 @@ public:
         return _bufferReady;
     }
     virtual esp_err_t init()= 0;
-    virtual void deinit() =0;
+    virtual void deinit() = 0;
     virtual bool playPause() = 0;
-    virtual uint32_t getMeasuresInSecond() = 0;
+    virtual uint32_t getMeasuresInSecond() {return 0;};
     virtual void setMeasuresInSecond(uint32_t tickTime) {}
     virtual uint16_t getBufferLength() = 0;
 };

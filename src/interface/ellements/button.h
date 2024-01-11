@@ -14,13 +14,14 @@ private:
     bool _pushed;   // кнопка нажата
     bool _selected; // кнопка выбрана
     ui_event _event; // событие по нажатию кнопки
+    el_text_size _textSize;
 
 public:
     ElTextButton()
     {
     }
 
-    ElTextButton(String title, display_area area, el_text_size size) : EllementVirtual(size)
+    ElTextButton(String title, display_area area, el_text_size size) : EllementVirtual()
     {
         _title = title;
         _area = area;

@@ -7,10 +7,12 @@ class InterfaceEngineVirtual
 protected:
     virtual void _onStartDraw() {}
     virtual void _onEndDraw() {}
+
     virtual void drawProgressBar(ElProgressBar *progressBar) = 0;
     virtual void drawButton(ElTextButton *button) = 0;
     virtual void drawWaveform(ElWaveform<uint16_t> *waveform) = 0;
     virtual void drawText(ElText *text) = 0;
+    virtual void drawGroup(ElGroup *group) = 0;
 
 private:
 public:
@@ -20,7 +22,7 @@ public:
     {
         _onStartDraw();
 
-        for (int i = 0; i < page->getEllementsSize(); i++)
+        for (int i = 0; i < page->getEllementsCount(); i++)
         {
             if (!page->getEllement(i)->isVisible())
                 continue;

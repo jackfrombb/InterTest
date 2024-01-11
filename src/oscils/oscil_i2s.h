@@ -45,7 +45,7 @@ public:
         uint32_t read_counter = 0;
         uint64_t read_sum = 0;
 
-        uint16_t offset = (int)oscil->_mainBoard->getAdcInfo()->unit * 0x1000 + 0xFFF;
+        uint16_t offset = (int)oscil->_mainBoard->getAdcInfo().unit * 0x1000 + 0xFFF;
         //(I2S port, destination adress, data size in bytes, bytes read counter, RTOS ticks to wait)
         while (1)
         {
@@ -76,7 +76,7 @@ public:
 
         i2s_driver_install(OSCIL_I2S_NUM, &i2s_config, 0, NULL);
         delay(500);
-        i2s_set_adc_mode(_mainBoard->getAdcInfo()->unit, _mainBoard->getAdcInfo()->chanelAdc1);
+        i2s_set_adc_mode(_mainBoard->getAdcInfo().unit, _mainBoard->getAdcInfo().chanelAdc1);
 
         _mainBoard->adc1Init();
 

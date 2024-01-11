@@ -38,6 +38,7 @@ public:
 
     ~OscilAdc()
     {
+
     }
 
     void writeToBuffer(){
@@ -45,7 +46,7 @@ public:
         _interruptTime = micros() - _prevInterTime;
 
         // Измерение
-        uint32_t reading = adc1_get_raw(_board->getAdcInfo()->chanelAdc1); // adc1_get_raw(ADC1_CHANNEL_2);
+        uint32_t reading = adc1_get_raw(_board->getAdcInfo().chanelAdc1); // adc1_get_raw(ADC1_CHANNEL_2);
 
         _buffer[_lastPos] = reading;
 

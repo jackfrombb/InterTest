@@ -74,7 +74,7 @@ DisplayVirtual *display = new Nokia5110_U8g2();
 DisplayVirtual *display = new Display128x64_U8g2();
 #endif
 
-MainBoard mainBoard(&adcInfo, display, control);
+MainBoard mainBoard(adcInfo, display, control);
 
 #ifdef U8G2_ENGINE
 #include "interface/engines/interface_engine_u8g2.h"

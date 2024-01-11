@@ -19,30 +19,36 @@ typedef struct
 class ControlVirtual
 {
 protected:
-    control_event* _controlEvent;
+    void* _args = nullptr;
+    void (*_handler)(control_event_type eventType, void* args);
 
 private:
 public:
     ControlVirtual()
     {
-        _controlEvent = nullptr;
+
     }
     ~ControlVirtual()
     {
-        removeControlEvent();
+        removeControlHandler();
     }
 
-    virtual void init(){}
+    virtual void init(){
 
-    virtual void loop(){}
-
-    void setControlEvent(control_event* event){
-        _controlEvent = event;
     }
 
-    void removeControlEvent(){
-        delete _controlEvent;
-        _controlEvent = nullptr;
+    virtual void loop(){
+
+    }
+
+    void attachControlHandler(void (*handler)(control_event_type eventType, void* args), void* args){
+        _handler = handler;
+        _args = args;
+    }
+
+    void removeControlHandler(){
+        _handler = nullptr;
+        _args = nullptr;
     }
 
 };

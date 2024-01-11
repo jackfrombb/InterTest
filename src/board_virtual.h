@@ -31,7 +31,7 @@ class MainBoard : public ModuleVirtual
 protected:
     // Хранение характеристик ADC
     esp_adc_cal_characteristics_t *_adc_chars;
-    init_adc_info *_adcInfo;
+    init_adc_info _adcInfo;
     DisplayVirtual *_display;
     ControlVirtual *_control;
     adc_calibration_type _calibrationType;
@@ -39,7 +39,7 @@ protected:
 
 private:
 public:
-    MainBoard(init_adc_info *adcInfo, DisplayVirtual *display, ControlVirtual* control)
+    MainBoard(init_adc_info &adcInfo, DisplayVirtual *display, ControlVirtual* control)
     {
         _display = display;
         _adcInfo = adcInfo;
@@ -53,10 +53,10 @@ public:
 
         // Конфигурация и настройка АЦП(ADC)
         // Указываем разрядность, канал и аттенюацию (ADC_ATTEN_DB_11 должен уменьшать макс напряжение до 2.5v)
-        adc1_config_width(_adcInfo->width);
-        adc1_config_channel_atten(_adcInfo->chanelAdc1, _adcInfo->atten);
+        adc1_config_width(_adcInfo.width);
+        adc1_config_channel_atten(_adcInfo.chanelAdc1, _adcInfo.atten);
 
-        esp_adc_cal_value_t val_type = esp_adc_cal_characterize(_adcInfo->unit, _adcInfo->atten, _adcInfo->width,
+        esp_adc_cal_value_t val_type = esp_adc_cal_characterize(_adcInfo.unit, _adcInfo.atten, _adcInfo.width,
                                                                 ESP_ADC_CAL_VAL_DEFAULT_VREF, _adc_chars);
 
         if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF)
@@ -85,7 +85,7 @@ public:
         return _adc_chars;
     }
 
-    init_adc_info *getAdcInfo()
+    init_adc_info getAdcInfo()
     {
         return _adcInfo;
     }

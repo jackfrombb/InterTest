@@ -28,7 +28,7 @@ private:
         uint8_t heightPixelInSection = height / waveform->getHeightSectionsCount();
         uint8_t widthPixelsCount = width / waveform->getWidthSectionsCount();
 
-        Serial.println("Draw init OK");
+        // Serial.println("Draw init OK");
         int voltSectionTitle = waveform->getMaxMeasureValue();
 
         for (int8_t v = 0; v <= height; v += heightPixelInSection)
@@ -40,7 +40,7 @@ private:
                 {
                     String title = String(voltSectionTitle);
                     int x = titlePos;
-                    int y = v + (_u8g2->getMaxCharHeight()*1.5);
+                    int y = v + (_u8g2->getMaxCharHeight() * 1.5);
 
                     _u8g2->drawUTF8(x, y, title.c_str());
 
@@ -57,8 +57,8 @@ private:
     void _drawWaveform(ElWaveform<uint16_t> *waveform)
     {
         int bias = 0;
-        Serial.println("Max measure val: " + String(waveform->getMaxMeasureValue()));
-        // Преобразованный предел
+        // Serial.println("Max measure val: " + String(waveform->getMaxMeasureValue()));
+        //  Преобразованный предел
         const int maxMeasureValNormalized = (waveform->getMaxMeasureValue() * 1000);
 
         uint16_t width = waveform->getArea().getWidth();
@@ -134,6 +134,11 @@ public:
         _u8g2 = (U8G2 *)_display->getLibrarry();
     }
 
+    virtual void drawGroup(ElGroup* group)
+    {
+        
+    }
+
     virtual void drawButton(ElTextButton *button)
     {
         if (!button->isVisible())
@@ -168,7 +173,7 @@ public:
 
     virtual void drawText(ElText *text)
     {
-        _setTextSize(text->getEllementSize()); // Размер и шрифт. Обязательно вызывать перед расчетом положения
+        _setTextSize(text->getTextSize()); // Размер и шрифт. Обязательно вызывать перед расчетом положения
 
         int x = text->getX();
         int y = text->getY();

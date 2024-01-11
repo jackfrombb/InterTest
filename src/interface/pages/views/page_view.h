@@ -4,33 +4,26 @@
 #include "configuration.h"
 #include <vector>
 
-class PageView
+class PageView : public ElGroup
 {
 protected:
     DisplayVirtual *_display;
-    std::vector<EllementVirtual *> _ellements;
 
 public:
     PageView(DisplayVirtual *display)
     {
         _display = display;
+        //На весь экран
+        setArea(display_area{.leftUp = {
+                                 .x = 0,
+                                 .y = 0,
+                             },
+                             .rightDown{
+                                 .x = display->getResoluton().width,
+                                 .y = display->getResoluton().height,
+                             }});
     }
     ~PageView()
     {
-    }
-
-    virtual int8_t getEllementsSize()
-    {
-        return _ellements.size();
-    }
-
-    virtual EllementVirtual *getEllement(uint8_t num)
-    {
-        return _ellements[num];
-    }
-
-    virtual void addEllement(EllementVirtual *ellement)
-    {
-        _ellements.push_back(ellement);
     }
 };
