@@ -26,11 +26,8 @@ private:
     bool IRAM_ATTR missTick(void *args);
     HardTimer *_encoderTimer;
 
-    void static _encEvent(VirtButton *but, void *args)
+    void _encEvent()
     {
-        EncButton *enc = (EncButton *)but;
-
-        ControlEncoder *owner = (ControlEncoder *)args;
         // EB_PRESS - нажатие на кнопку
         // EB_HOLD - кнопка удержана
         // EB_STEP - импульсное удержание
@@ -43,25 +40,24 @@ private:
         // EB_REL_STEP - кнопка отпущена после степа
         // EB_REL_STEP_C - кнопка отпущена после степа с предв. кликами
 
-        if (owner->_handler != nullptr)
-            switch (enc->action())
+            switch (_enc->action())
             {
             case EB_HOLD:
-                owner->_handler(LONG_PRESS_OK, owner->_args);
+                _handler(LONG_PRESS_OK, _args);
                 break;
 
             case EB_CLICK:
-                owner->_handler(PRESS_OK, owner->_args);
+                _handler(PRESS_OK, _args);
                 break;
 
             case EB_TURN:
-                if (enc->encHolding())
+                if (_enc->encHolding())
                 {
-                    owner->_handler(enc->dir() > 0 ? LONG_PRESS_RIGHT : LONG_PRESS_LEFT, owner->_args);
+                    _handler(_enc->dir() > 0 ? LONG_PRESS_RIGHT : LONG_PRESS_LEFT, _args);
                 }
                 else
                 {
-                    owner->_handler(enc->dir() > 0 ? PRESS_RIGHT : PRESS_LEFT, owner->_args);
+                    _handler(_enc->dir() > 0 ? PRESS_RIGHT : PRESS_LEFT, _args);
                 }
                 break;
             }
@@ -85,7 +81,7 @@ public:
         pinMode(ENC_VCC, OUTPUT);
         digitalWrite(ENC_VCC, 1);
 
-        _enc->attach(_encEvent, this);
+        //_enc->attach(_encEvent, this);
 
         _encoderTimer->setArgs(this);
         _encoderTimer->init();
@@ -93,7 +89,7 @@ public:
 
     virtual void loop()
     {
-        _enc->tick();
+        if (_enc->tick()) _encEvent();
     }
 
     /// @brief Прерывание для обработки пропущенных считываний энкодера

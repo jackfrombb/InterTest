@@ -54,6 +54,7 @@ init_adc_info adcInfo = {
     .atten = ADC_ATTEN_11db,
     .width = ADC_WIDTH_13Bit,
 };
+
 #elif defined(WROOM32)
 init_adc_info adcInfo = {
     .unit = ADC_UNIT_1,
