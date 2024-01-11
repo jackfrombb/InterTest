@@ -17,7 +17,6 @@ private:
 public:
     ElWaveform()
     {
-        
     } 
     
     ElWaveform(T* points)

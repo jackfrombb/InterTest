@@ -13,8 +13,9 @@ public:
     PageView(DisplayVirtual *display)
     {
         _display = display;
+        
         //На весь экран
-        setArea(display_area{.leftUp = {
+        setArea(display_position{.leftUp = {
                                  .x = 0,
                                  .y = 0,
                              },

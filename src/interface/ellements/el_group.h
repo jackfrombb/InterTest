@@ -4,9 +4,9 @@
 
 class ElGroup : public EllementVirtual
 {
-protected:
+private:
     std::vector<EllementVirtual *> _ellements;
-
+protected:
 public:
     ElGroup(/* args */)
     {
@@ -26,16 +26,22 @@ public:
         return _ellements[num];
     }
 
-    virtual void addEllement(EllementVirtual *ellement)
+    virtual ElGroup *addEllement(EllementVirtual *ellement)
     {
+        ellement->setParent(this);
         _ellements.push_back(ellement);
+        return this;
     }
 
-    
-    virtual el_type getEllementType() { return el_type::EL_TYPE_GROUP; };
-
-    virtual bool isGroup(){ 
+    virtual bool isGroup()
+    {
         return true;
     }
 
+    std::vector<EllementVirtual *> getEllements()
+    {
+        return _ellements;
+    }
+
+    virtual el_type getEllementType() { return el_type::EL_TYPE_GROUP; };
 };

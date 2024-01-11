@@ -64,4 +64,12 @@ public:
     /// @brief Получить библиотеку дисплея
     /// @return Основной класс библиотеки, в зависимости от типа
     virtual void* getLibrarry() = 0;
+
+    virtual uint16_t getWidth(){
+        return getResoluton().width;
+    }
+
+    virtual uint16_t getHeight(){
+        return getResoluton().height;
+    }
 };

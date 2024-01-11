@@ -25,7 +25,7 @@ protected:
             .y = leftUp.y + height,
         };
 
-        display_area progresBarPos{
+        display_position progresBarPos{
             .leftUp = leftUp,
             .rightDown = rightDown,
         };
@@ -37,20 +37,23 @@ protected:
 
     virtual void _helloTextInit()
     {
-        _helloText.setTextSize(EL_TEXT_SIZE_MIDDLE);
-        _helloText.setText("InterTest");
-        // По центру экрана
-        int x = ELLEMENT_POSITION_CENTER;
+        _helloText.setText("InterTest")
+            ->setTextSize(EL_TEXT_SIZE_MIDDLE);
+
         // Выше чем прогресс загрузки ни 10px
         int y = _progressBar.getArea().leftUp.y - 20;
 
-        _helloText.setPosition(x, y);
+        _helloText.setPosition(0, y);
+        _helloText.setWidth(_display->getWidth());
+        _helloText.setHeight(_display->getHeight()*0.5);
+        _helloText.setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER);
+
     }
 
     virtual void _versionTextInit()
     {
-        _versionText.setText("ver: " + String(APP_VERSION));
-        _versionText.setTextSize(EL_TEXT_SIZE_SUPER_SMALL);
+        _versionText.setText("ver: " + String(APP_VERSION))
+            ->setTextSize(EL_TEXT_SIZE_SUPER_SMALL);
 
         int x = 0;
         int y = 0;
@@ -73,10 +76,12 @@ public:
         _versionTextInit();
         _helloTextInit();
 
-        _ellements = {
-            &_progressBar,
-            &_versionText,
-            &_helloText,
-        };
+        addEllement(&_progressBar)->addEllement(&_versionText)->addEllement(&_helloText);
+
+        // _ellements = {
+        //     &_progressBar,
+        //     &_versionText,
+        //     &_helloText,
+        // };
     }
 };

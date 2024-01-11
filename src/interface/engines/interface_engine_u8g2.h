@@ -17,9 +17,22 @@ private:
     DisplayVirtual *_display;
     MainBoard *_mainBoard;
 
+    // Буфер для заднего фона
+    uint8_t *_displayBuffer;
+    unsigned int bufferSize;
+    bool buffered = false;
+
     /// @brief Отрисовать ориентиры и надписи
     void _drawDotBack(ElWaveform<uint16_t> *waveform)
     {
+        if (buffered)
+        {
+            uint8_t *buf = _u8g2->getBufferPtr();
+            // Размер буфера равен 8 * u8g2.getBufferTileHeight () * u8g2.getBufferTileWidth ().
+            memcpy(buf, _displayBuffer, bufferSize);
+            return;
+        }
+
         _u8g2->setFont(u8g2_font_4x6_tr);
 
         uint16_t width = waveform->getArea().getWidth();
@@ -50,6 +63,9 @@ private:
                 _u8g2->drawPixel(x, v);
             }
         }
+
+        memcpy(_displayBuffer, _u8g2->getBufferPtr(), bufferSize);
+        buffered = true;
     }
 
     /// @brief Отрисовать график
@@ -86,6 +102,11 @@ private:
 
     void _setTextSize(el_text_size size)
     {
+        static el_text_size currentFont;
+
+        // if (currentFont == size)
+        //     return;
+
         switch (size)
         {
         case EL_TEXT_SIZE_SUPER_LARGE:
@@ -103,15 +124,15 @@ private:
         case EL_TEXT_SIZE_SUPER_SMALL:
             _u8g2->setFont(u8g2_font_4x6_t_cyrillic);
             break;
-
-        default:
-            break;
         }
+
+        currentFont = size;
     }
 
 protected:
     void _onStartDraw()
     {
+        _u8g2->enableUTF8Print();
         _u8g2->firstPage();
     }
 
@@ -126,17 +147,67 @@ protected:
         return fromX + ((float)width * 0.5) - ((float)textWidth * 0.5);
     }
 
+    /// @brief Высчитать занимаемую одним символом площадь, для упрощения дальнейших рассчетов ElText и пр.
+    /// @param forSize Для размера и шрифта
+    /// @return размеры в пикселях
+    area_size _getMaxCharSize(el_text_size forSize)
+    {
+        _setTextSize(forSize);
+        delay(100);
+        String text = "Ж";
+        return {
+            .width = _u8g2->getUTF8Width(text.c_str()),
+            .height = (uint16_t)_u8g2->getMaxCharHeight(),
+        };
+    }
+
+private:
 public:
     InterfaceEngine_U8g2(MainBoard *mainBoard)
     {
         _mainBoard = mainBoard;
         _display = mainBoard->getDisplay();
         _u8g2 = (U8G2 *)_display->getLibrarry();
+        bufferSize = (unsigned int)(8 * _u8g2->getBufferTileHeight() * _u8g2->getBufferTileWidth());
+        _displayBuffer = (uint8_t *)calloc(bufferSize, sizeof(uint8_t));
+    }
+    ~InterfaceEngine_U8g2()
+    {
+        free(_displayBuffer);
     }
 
-    virtual void drawGroup(ElGroup* group)
+    virtual void initTextSizeValues(el_text_px_area &vals)
     {
-        
+        vals = {
+            .S_LARGE = {.width = 10, .height = 20},
+            .LARGE = {.width = 8, .height = 13},
+            .MIDDLE = {.width = 6, .height = 12},
+            .SMALL = {.width = 5, .height = 7},
+            .S_SMALL = {.width = 4, .height = 6},
+        };
+    }
+
+    virtual void drawCenteredGroup(ElCenteredGroup *group)
+    {
+        // Serial.println("Draw centerd group");
+
+        _u8g2->drawRFrame(group->getX(), group->getY(), group->getWidth(), group->getHeight(), 2);
+
+        auto elsWidth = group->getArticularWidth();
+        auto elsCount = group->getEllementsCount();
+        auto newWidth = group->getWidth() / group->getEllementsCount();
+
+        auto groupArea = group->getArea();
+
+        int16_t prevX = 0;
+
+        for (int i = 0; i < group->getEllementsCount(); i++)
+        {
+            EllementVirtual *el = group->getEllement(i);
+            el->setWidth(newWidth);
+
+            drawElement(el);
+        }
     }
 
     virtual void drawButton(ElTextButton *button)
@@ -178,18 +249,20 @@ public:
         int x = text->getX();
         int y = text->getY();
 
-        if (x == ELLEMENT_POSITION_CENTER)
+        if (text->getAlignment() == el_text_align::EL_TEXT_ALIGN_CENTER)
         {
-            x = _getTextCenterX(text->getText(), 0, _display->getResoluton().width);
+            x = _getTextCenterX(text->getText(), 0, text->getWidth());
         }
 
-        if (y == ELLEMENT_POSITION_CENTER)
+        if (y == ELEMENT_POSITION_CENTER)
         {
-            y = (_display->getResoluton().height * 0.5) - (_u8g2->getMaxCharHeight() * 0.5);
+            y = (text->getHeight() * 0.5) - (_u8g2->getMaxCharHeight() * 0.5);
         }
 
         // Отрисовать текст (y эллемеента делаем по верхнему углу)
-        _u8g2->drawUTF8(x, y + _u8g2->getMaxCharHeight(), text->getText().c_str());
+        _u8g2->drawUTF8(x + text->getParent()->getX(),
+                        y + _u8g2->getMaxCharHeight() + text->getParent()->getY(),
+                        text->getText().c_str());
     }
 
     virtual void drawProgressBar(ElProgressBar *progressBar)

@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include "display_helper.h"
 #include "display_virtual.h"
+#include "interface/engines/interface_engine_u8g2.h"
 
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
@@ -43,12 +44,12 @@ public:
     {
         _u8g2 = new U8G2_PCD8544_84X48_F_4W_SW_SPI(U8G2_R0, /* clock=*/GPIO_NUM_19, /* data=*/GPIO_NUM_18,
                                                    /* cs=*/GPIO_NUM_17, /* dc=*/GPIO_NUM_5, /* reset=*/GPIO_NUM_16);
+
     }
 
     ~Nokia5110_U8g2()
     {
-        if (_u8g2 != nullptr)
-            delete _u8g2;
+        delete _u8g2;
     }
 
     void init()
@@ -86,4 +87,23 @@ public:
     /// @brief Получить библиотеку дисплея
     /// @return Основной класс библиотеки, в зависимости от типа
     virtual void *getLibrarry() { return _u8g2; }
+
+    virtual uint32_t getTextWidth(String text, el_text_size size)
+    {
+        return (uint32_t)_u8g2->getUTF8Width(text.c_str());
+    }
+
+    //  virtual display_position calculateTextPositions(String text, uint16_t x, uint16_t y)
+    // {
+    //     return display_position {
+    //         .leftUp{
+    //             .x = x,
+    //             .y = y,
+    //         },
+    //         .rightDown{
+    //             .x = x + _u8g2->getUTF8Width(text.c_str()),
+    //             .y = y + _u8g2->getMaxCharHeight(),
+    //         }
+    //     };
+    // }
 };

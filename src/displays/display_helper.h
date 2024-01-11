@@ -10,7 +10,7 @@ static int getTextCenterX(int textLength, int elementPositionX, int maxWidth, in
   return elementPositionX + ((maxWidth * 0.5) - (((maxCharWidth * textLength) * 0.5)*(cyrylic ? 0.5 : 1)));
 }
 
-static point_t getTextCenter(int textLength, display_area area, int8_t maxCharWidth, int8_t maxCharHeight)
+static point_t getTextCenter(int textLength, display_position area, int8_t maxCharWidth, int8_t maxCharHeight)
 {
   int cX = area.getX() + (area.getWidth() / 2) - ((textLength * maxCharWidth) / 2);
   int cY = area.getY() + maxCharHeight + 2;

@@ -75,10 +75,11 @@ DisplayVirtual *display = new Nokia5110_U8g2();
 DisplayVirtual *display = new Display128x64_U8g2();
 #endif
 
+el_text_px_area textSizeValues;
+
 MainBoard mainBoard(adcInfo, display, control);
 
 #ifdef U8G2_ENGINE
-#include "interface/engines/interface_engine_u8g2.h"
 InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(&mainBoard);
 #elif defined(ADAFRUIT_ENGINE)
 // In process
@@ -103,13 +104,18 @@ void setup()
   *progress = 0.3;
   delay(100);
 
+  //Инициализация стандартных размеров одной буквы для дальнейшего высчитывания ширины и высоты строки
+  interfaceEngine->initTextSizeValues(EllementVirtual::TEXT_SIZE_VALUES);
+  Serial.println("Text size values: " + String(EllementVirtual::TEXT_SIZE_VALUES.MIDDLE.width));
+
 #ifdef BUZZ
   Serial.println("Buzzer");
   setup_buzzer();
 #endif
 
   *progress = 0.6;
-  delay(100);
+  delay(300);
+
 
   // Настройка шим - временный костыль для проверки АЦП, позже вынесем в отдельный класс генератора
   ledcSetup(2, pwmF, 8);
