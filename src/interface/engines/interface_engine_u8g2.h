@@ -20,11 +20,12 @@ private:
     // Буфер для заднего фона
     uint8_t *_displayBuffer;
     unsigned int bufferSize;
-    bool buffered = false;
 
-    /// @brief Отрисовать ориентиры и надписи
+    /// @brief Отрисовать ориентиры и надписи (буферезируется)
     void _drawDotBack(ElWaveform<uint16_t> *waveform)
     {
+        static bool buffered = false; // Флаг буферизации фона
+
         if (buffered)
         {
             uint8_t *buf = _u8g2->getBufferPtr();
@@ -171,32 +172,22 @@ public:
         bufferSize = (unsigned int)(8 * _u8g2->getBufferTileHeight() * _u8g2->getBufferTileWidth());
         _displayBuffer = (uint8_t *)calloc(bufferSize, sizeof(uint8_t));
     }
+
     ~InterfaceEngine_U8g2()
     {
         free(_displayBuffer);
     }
 
-    virtual void initTextSizeValues(el_text_px_area &vals)
-    {
-        vals = {
-            .S_LARGE = {.width = 10, .height = 20},
-            .LARGE = {.width = 8, .height = 13},
-            .MIDDLE = {.width = 6, .height = 12},
-            .SMALL = {.width = 5, .height = 7},
-            .S_SMALL = {.width = 4, .height = 6},
-        };
-    }
-
     virtual void drawCenteredGroup(ElCenteredGroup *group)
     {
-        // Serial.println("Draw centerd group");
-
         _u8g2->drawRFrame(group->getX(), group->getY(), group->getWidth(), group->getHeight(), 2);
 
-        auto elsWidth = group->getArticularWidth();
-        auto elsCount = group->getEllementsCount();
-        auto newWidth = group->getWidth() / group->getEllementsCount();
+        if (group->getEllementsCount() == 0)
+        {
+            return;
+        }
 
+        auto newWidth = group->getWidth() / group->getEllementsCount();
         auto groupArea = group->getArea();
 
         int16_t prevX = 0;
@@ -205,6 +196,7 @@ public:
         {
             EllementVirtual *el = group->getEllement(i);
             el->setWidth(newWidth);
+            el->setX(newWidth * i);
 
             drawElement(el);
         }
@@ -251,12 +243,16 @@ public:
 
         if (text->getAlignment() == el_text_align::EL_TEXT_ALIGN_CENTER)
         {
-            x = _getTextCenterX(text->getText(), 0, text->getWidth());
+            x = _getTextCenterX(text->getText(), x, text->getWidth());
+        }
+        else if (text->getAlignment() == el_text_align::EL_TEXT_ALIGN_RIGHT)
+        {
+            x = text->getWidth() - _u8g2->getUTF8Width(text->getText().c_str());
         }
 
-        if (y == ELEMENT_POSITION_CENTER)
+        if (text->getVerticalAlignment() == el_vertical_align::EL_ALIGN_CENTER)
         {
-            y = (text->getHeight() * 0.5) - (_u8g2->getMaxCharHeight() * 0.5);
+            y = (text->getParent()->getHeight() * 0.5) - (_u8g2->getMaxCharHeight() * 0.5);
         }
 
         // Отрисовать текст (y эллемеента делаем по верхнему углу)

@@ -10,11 +10,11 @@ class InterfacePageVirtual
 {
 protected:
     DisplayVirtual *_display;
+
 private:
 public:
     InterfacePageVirtual(DisplayVirtual *display) : _display(display)
     {
-
     }
 
     ~InterfacePageVirtual(){
@@ -22,5 +22,13 @@ public:
     }
 
     virtual PageView* getPageView() = 0;
+
+    virtual void onDraw(ulong onMillis){
+        getPageView()->onDraw(onMillis);
+    }
+
+    virtual void onControlEvent(control_event_type eventType) {
+        getPageView()->onControlEvent(eventType);
+    }
 
 };

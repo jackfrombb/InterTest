@@ -24,7 +24,16 @@ public:
                                  .y = display->getResoluton().height,
                              }});
     }
+
     ~PageView()
     {
+    }
+
+    virtual void onControlEvent(control_event_type eventType) {
+        
+    }
+
+    void onDraw(ulong millis){
+
     }
 };

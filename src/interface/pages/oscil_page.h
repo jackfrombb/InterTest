@@ -16,9 +16,6 @@ public:
         _pageView = new OscilPageView(mainBoard->getDisplay());
         _oscil = new OscilI2s(mainBoard, 1000); // new OscilAdcDma(mainBoard, 20000);// new OscilAdc(mainBoard, 5500); //new OscilI2s(mainBoard, 1000);
         _mainBoard = mainBoard;
-        
-        // Подключаем упарвление
-        _mainBoard->getControl()->attachControlHandler(controlEvent, this);
 
         initOscil();
     }
@@ -29,36 +26,35 @@ public:
         delete _pageView;
     }
 
-    static void controlEvent(control_event_type eventType, void *args)
+    void onControlEvent(control_event_type eventType)
     {
-        OscilPage *page = (OscilPage *)args;
-
+        InterfacePageVirtual::onControlEvent(eventType);
         switch (eventType)
         {
         case control_event_type::PRESS_OK:
-            Serial.println("Press OK");
+            logi::p("OscilPage", "Press OK");
             break;
 
         case control_event_type::PRESS_LEFT:
         {
-            Serial.println("Press LEFT" + String(page->steepChngeOscilMeasures(false, 1)));
+            logi::p("OscilPage", "Press LEFT" + String(steepChngeOscilMeasures(false, 1)));
             break;
         }
 
         case control_event_type::PRESS_RIGHT:
-            Serial.println("Press RIGHT" + String(page->steepChngeOscilMeasures(true, 1)));
+            logi::p("OscilPage", "Press RIGHT" + String(steepChngeOscilMeasures(true, 1)));
             break;
 
         case control_event_type::LONG_PRESS_OK:
-            Serial.println("Press LONG OK");
+            logi::p("OscilPage", "Press LONG OK");
             break;
 
         case control_event_type::LONG_PRESS_RIGHT:
-            Serial.println("Press LONG RIGHT"+ String(page->steepChngeOscilMeasures(true, 500)));
+            logi::p("OscilPage", "Press LONG RIGHT" + String(steepChngeOscilMeasures(true, 500)));
             break;
 
         case control_event_type::LONG_PRESS_LEFT:
-            Serial.println("Press LONG LEFT"+ String(page->steepChngeOscilMeasures(false, 500)));
+            logi::p("OscilPage", "Press LONG LEFT" + String(steepChngeOscilMeasures(false, 500)));
             break;
         }
     }
@@ -70,11 +66,12 @@ public:
         _pageView->_waitText.setVisibility(false);
     }
 
-    uint32_t steepChngeOscilMeasures(bool increase, int16_t multipler){
-
+    uint32_t steepChngeOscilMeasures(bool increase, int16_t multipler)
+    {
         auto t = _oscil->getMeasuresInSecond();
-        t = increase ? t + (1*multipler) : t - (1*multipler);
-        _oscil->setMeasuresInSecond(t);
+        t = increase ? t + (1 * multipler) : t - (1 * multipler);
+        if (t > 500)
+            _oscil->setMeasuresInSecond(t);
 
         return t;
     }
@@ -93,6 +90,12 @@ public:
         }
 
         _oscil = oscil;
+    }
+
+    virtual void onDraw(ulong onMillis){
+        //InterfacePageVirtual::onDraw(onMillis);
+        _pageView->onDraw(onMillis);
+        //logi::p("OscilPage", "onDraw");
     }
 
     virtual PageView *getPageView()

@@ -4,6 +4,7 @@
 #include "displays/display_virtual.h"
 #include "interface/engines/interface_engine.h"
 #include "interface/pages/page_list.h"
+#include "logi.h"
 
 class InterfaceController
 {
@@ -23,7 +24,8 @@ private:
 
     static void _drawInterfaceThread(void *pvParameters)
     {
-        Serial.println("Interfae thread start");
+        logi::p("Interface controller", "Interface thread start");
+
         static TickType_t xLastWakeTime;
         static TickType_t xFrequency = 50;
         InterfaceController *controller = (InterfaceController *)pvParameters;
@@ -34,10 +36,19 @@ private:
             controller->_drawInProcess = true;
             if (!controller->_startClear && controller->_currentPage != nullptr)
             {
+                controller->_currentPage->onDraw(millis());
                 controller->_interfaceEngine->drawPage(controller->_currentPage->getPageView());
             }
             controller->_drawInProcess = false;
             xTaskDelayUntil(&xLastWakeTime, xFrequency);
+        }
+    }
+
+    static void _controlEvent(control_event_type eventType, void *args)
+    {
+        InterfaceController* iController = (InterfaceController*) args;
+        if(iController->_currentPage != nullptr){
+            iController->_currentPage->onControlEvent(eventType);
         }
     }
 
@@ -47,6 +58,9 @@ public:
         _mainBoard = mainBoard;
         _display = mainBoard->getDisplay();
         _interfaceEngine = interfaceEngine;
+        
+        // Подключаем упарвление
+        _mainBoard->getControl()->attachControlHandler(_controlEvent, this);
     }
 
     ~InterfaceController()

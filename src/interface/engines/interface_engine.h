@@ -69,6 +69,4 @@ public:
         drawGroup(group);
         _onEndDraw();
     }
-
-    virtual void initTextSizeValues(el_text_px_area &vals) = 0;
 };

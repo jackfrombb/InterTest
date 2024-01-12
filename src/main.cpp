@@ -4,6 +4,7 @@
 
 // Переключение железа здесь
 #include "configuration.h"
+#include "logi.h"
 
 // Вспомогательные методы общие
 #include "helpers.h"
@@ -93,6 +94,8 @@ int pwmF = 100000;
 void setup()
 {
   Serial.begin(115200);
+  logi::p("Main", "Start");
+
   delay(100);
 
   mainBoard.init();
@@ -103,10 +106,6 @@ void setup()
 
   *progress = 0.3;
   delay(100);
-
-  //Инициализация стандартных размеров одной буквы для дальнейшего высчитывания ширины и высоты строки
-  interfaceEngine->initTextSizeValues(EllementVirtual::TEXT_SIZE_VALUES);
-  Serial.println("Text size values: " + String(EllementVirtual::TEXT_SIZE_VALUES.MIDDLE.width));
 
 #ifdef BUZZ
   Serial.println("Buzzer");
