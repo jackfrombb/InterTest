@@ -204,28 +204,26 @@ public:
 
     virtual void drawButton(ElTextButton *button)
     {
-        if (!button->isVisible())
-            return;
+        drawText(button);
 
-        _u8g2->setFont(u8g2_font_5x8_t_cyrillic);
-        int minHeight = _u8g2->getMaxCharHeight() + 6;
-        int height = button->getHeight() < minHeight ? minHeight : button->getHeight();
+        int x = _getTextCenterX(button->getText(), button->getX(), button->getWidth())+ button->getParent()->getX();
+        int y = button->getParent()->getY() + (button->getParent()->getHeight() * 0.5) - ((_u8g2->getMaxCharHeight() + 2) * 0.5);
 
         if (button->isPushed()) // если нажата то заполненный скругленый прямоугольник
         {
-            _u8g2->drawRBox(button->getX(), button->getY(), button->getWidth(), height, 4);
+            logi::p("IEngine", "Parent x" + String(button->getParent()->getX()));
+
+            _u8g2->drawRBox(x - 4,
+                            y,
+                            _u8g2->getUTF8Width(button->getText().c_str()) + 8,
+                            _u8g2->getMaxCharHeight() + 2,
+                            2);
         }
         else if (button->isSelected()) // если активна то рисуем рамку вокруг
         {
-            _u8g2->drawRFrame(button->getX(), button->getY(), button->getWidth(), height, 4);
+            _u8g2->drawRFrame(button->getX(), button->getY(),
+                              _u8g2->getUTF8Width(button->getText().c_str()) + 2, _u8g2->getMaxCharHeight(), 2);
         }
-        // Иначе просто текст
-
-        // Надпись по центру кнопки
-        point_t centered = getTextCenter(button->getTitle()->length(), button->getArea(),
-                                         _u8g2->getMaxCharWidth(), _u8g2->getMaxCharHeight());
-        // Отрисовать текст
-        _u8g2->drawStr(centered.x, centered.y, button->getTitle()->c_str());
     }
 
     virtual void drawWaveform(ElWaveform<uint16_t> *waveform)

@@ -5,7 +5,9 @@
 #include "displays/display_virtual.h"
 #include "interface/ellements/ellement_virtual.h"
 #include "interface/pages/views/page_view.h"
+#include "controls/control_virtual.h"
 
+/// @brief Контроллер для страницы. Управление основными объектами страницы здесь
 class InterfacePageVirtual
 {
 protected:

@@ -1,67 +1,75 @@
 #pragma once
 #include <Arduino.h>
 #include "ellement_virtual.h"
+#include "el_text.h"
 
-typedef struct {
-    void (*event) (void* args);
-    void* args;
+typedef struct
+{
+    void (*event)(void *args);
+    void *args;
 } ui_event;
 
-class ElTextButton : public EllementVirtual
+class ElTextButton : public ElText
 {
 private:
-    String _title;  // надпись на кнопке
-    bool _pushed;   // кнопка нажата
-    bool _selected; // кнопка выбрана
+    bool _pushed;    // кнопка нажата
+    bool _selected;  // кнопка выбрана
     ui_event _event; // событие по нажатию кнопки
     el_text_size _textSize;
 
 public:
     ElTextButton()
     {
+        setArea({});
+        _selected = false;
+        _pushed = false;
     }
 
-    ElTextButton(String title, display_position area, el_text_size size) : EllementVirtual()
+    ElTextButton(String title, display_position area, el_text_size size) : ElText(title)
     {
-        _title = title;
         setArea(area);
+        _selected = false;
+        _pushed = false;
     }
     ~ElTextButton()
     {
     }
 
-    void setEvent(ui_event event){
+    ElTextButton *setEvent(ui_event event)
+    {
         _event = event;
+        return this;
     }
 
-    ui_event getEvent(){
+    ui_event getEvent()
+    {
         return _event;
     }
 
-    void setTitle(String title){
-        _title = title;
-    }
-
-    String* getTitle(){
-        return &_title;
-    }
-
-    void setPushed(bool pushed){
+    ElTextButton *setPushed(bool pushed)
+    {
         _pushed = pushed;
-        if(_pushed){
+        if (_pushed)
+        {
             _event.event(_event.args);
         }
+
+        return this;
     }
 
-    bool isPushed(){
+    bool isPushed()
+    {
         return _pushed;
     }
 
-    void setSelected(bool selected){
+    ElTextButton *setSelected(bool selected)
+    {
         _selected = selected;
+        return this;
     }
 
-    bool isSelected(){
+    bool isSelected()
+    {
         return _selected;
     }
 

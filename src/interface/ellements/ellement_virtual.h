@@ -34,9 +34,10 @@ public:
         return false;
     }
 
-    virtual void setVisibility(bool visible)
+    virtual EllementVirtual* setVisibility(bool visible)
     {
         _visible = visible;
+        return this;
     }
 
     virtual bool isVisible()
@@ -44,7 +45,7 @@ public:
         return _visible;
     }
 
-    virtual EllementVirtual *setArea(display_position area)
+    virtual EllementVirtual* setArea(display_position area)
     {
         _area = area;
         return this;

@@ -4,18 +4,13 @@
 class ElText : public EllementVirtual
 {
 private:
-    String *_text;
+    String _text;
     el_text_size _elSize;
     el_text_align _alignment;
 
 public:
     ElText()
     {
-    }
-
-    ElText(String *text)
-    {
-        setText(text);
     }
 
     ElText(String text)
@@ -25,25 +20,22 @@ public:
 
     ~ElText()
     {
-        if (_text != nullptr)
-            delete _text;
+
     }
 
-    ElText *setText(String *text)
+    ElText *setText(String text)
     {
         _text = text;
         return this;
     }
 
-    ElText *setText(String text)
-    {
-        _text = new String(text);
-        return this;
-    }
-
     String getText()
     {
-        return *_text;
+        return _text;
+    }
+
+    String* getTextPtr(){
+        return &_text;
     }
 
     virtual ElText *setPosition(int x, int y)

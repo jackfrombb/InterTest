@@ -3,18 +3,17 @@
 class OscilPageView : public PageView
 {
 private:
-    uint16_t _showBottomMenuFrames = 0;
     ElCenteredGroup _bottomButtons;
 
-    display_position *_bottomMenuPosition;
-    bool _showBottomMenu = true;
-    int _bottomMenuPositionOnShow = 0;
-    int16_t _bottomMenuHeight;
+    display_position *_bottomMenuPosition; // Указатель на позицию меню, для анимации перемещения
+    bool _showBottomMenuTrigger = true;           // Триггер для отображения меню
+    int _bottomMenuPositionOnShow;         // Изначальное, нормальное положение меню
 
     ulong lastButtonPressTime;
 
     void _initBottomMenu()
     {
+
         _volt.setText("Vm")
             ->setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER)
@@ -46,9 +45,9 @@ private:
             ->setHeight(_volt.getHeight() + 4);
 
         _bottomButtons.addEllement(&_volt)->addEllement(&_herz)->addEllement(&_pause);
+
         _bottomMenuPosition = _bottomButtons.getAreaPtr();
         _bottomMenuPositionOnShow = _bottomButtons.getArea().getY();
-        _bottomMenuHeight = _bottomButtons.getHeight();
     }
 
     void _initWaveform()
@@ -70,13 +69,21 @@ private:
         _waitText.setText("Подождите")->setPosition(ELEMENT_POSITION_CENTER, ELEMENT_POSITION_CENTER)->setTextSize(EL_TEXT_SIZE_SMALL);
     }
 
+    void _showMenu()
+    {
+        lastButtonPressTime = millis();
+        _showBottomMenuTrigger = true;
+    }
+
 public:
     ElWaveform<uint16_t> _waveform;
     ElText _waitText;
+    ElText bottomInfoText;
+    ElText leftUpInfoText;
 
-    ElText _volt;
-    ElText _herz;
-    ElText _pause;
+    ElTextButton _volt;
+    ElTextButton _herz;
+    ElTextButton _pause;
 
     OscilPageView(DisplayVirtual *display) : PageView(display)
     {
@@ -90,13 +97,12 @@ public:
 
     void onControlEvent(control_event_type eventType)
     {
-        lastButtonPressTime = millis();
-        _showBottomMenu = true;
+
     }
 
     void onDraw(int onMillis)
     {
-        if (_showBottomMenu && _bottomMenuPosition->getY() > _bottomMenuPositionOnShow)
+        if (_showBottomMenuTrigger && _bottomMenuPosition->getY() > _bottomMenuPositionOnShow)
         {
             if (!_bottomButtons.isVisible())
             {
@@ -106,7 +112,7 @@ public:
             _bottomMenuPosition->leftUp.y -= 2;
             _bottomMenuPosition->rightDown.y -= 2;
         }
-        else if (!_showBottomMenu && _bottomMenuPosition->getY() < _display->getResoluton().height)
+        else if (!_showBottomMenuTrigger && _bottomMenuPosition->getY() < _display->getResoluton().height)
         {
             _bottomMenuPosition->leftUp.y += 2;
             _bottomMenuPosition->rightDown.y += 2;
@@ -117,9 +123,9 @@ public:
             }
         }
 
-        if (_showBottomMenu &&  millis() - lastButtonPressTime > 3000)
+        if (_showBottomMenuTrigger && millis() - lastButtonPressTime > 3000)
         {
-            _showBottomMenu = false;
+            _showBottomMenuTrigger = false;
         }
     }
 };
