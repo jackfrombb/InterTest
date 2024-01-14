@@ -24,16 +24,13 @@ private:
     int32_t _lastValue = 0; //Последнее значение записанное в буфер
     ulong _interruptTime = 0; // Фермя затраченное на одно считывание
     ulong _prevInterTime = 0; // Предыдущее время тика
-    MainBoard* _board; // Информация о главной плате
-
 public:
     HardTimer oscilTimer;
     
     OscilAdc() = default; // Для неинициализированных объектов
 
-    OscilAdc(MainBoard* mainBoard, int measureTime)
+    OscilAdc(MainBoard* mainBoard, int measureTime) : OscilVirtual(mainBoard)
     {
-        _board = mainBoard;
         _measureTime = measureTime;
     }
 
@@ -45,7 +42,7 @@ public:
         _interruptTime = micros() - _prevInterTime;
 
         // Измерение
-        uint32_t reading = adc1_get_raw(_board->getAdcInfo().chanelAdc1); // adc1_get_raw(ADC1_CHANNEL_2);
+        uint32_t reading = adc1_get_raw(_mainBoard->getAdcInfo().chanelAdc1); // adc1_get_raw(ADC1_CHANNEL_2);
 
         _buffer[_lastPos] = reading;
 
@@ -103,7 +100,7 @@ public:
 
     esp_err_t init() override
     {
-        _board->adc1Init();
+        _mainBoard->adc1Init();
 
         oscilTimer = HardTimer(timerInterrupt, TIMER_GROUP_0, TIMER_1, _measureTime, 2);
         oscilTimer.setArgs(this);

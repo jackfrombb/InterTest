@@ -10,7 +10,6 @@
 class OscilI2s : public OscilVirtual
 {
 private:
-    MainBoard *_mainBoard;
     uint32_t _sampleRate;
     size_t bytes_read;
     uint16_t _buffer[OSCIL_I2S_BUFFER_LENGTH];
@@ -19,11 +18,11 @@ private:
     const TickType_t xFrequency = 50;
     ulong fft_loop_cntr = 0;
     TaskHandle_t _workingThread;
+    bool _isOnPause = false;
 
 public:
-    OscilI2s(MainBoard *mainBoard, uint32_t sampleRate)
+    OscilI2s(MainBoard *mainBoard, uint32_t sampleRate) : OscilVirtual(mainBoard)
     {
-        _mainBoard = mainBoard;
         _sampleRate = sampleRate;
     }
 
@@ -49,9 +48,12 @@ public:
         //(I2S port, destination adress, data size in bytes, bytes read counter, RTOS ticks to wait)
         while (1)
         {
-            auto resultI2cRead = i2s_read(OSCIL_I2S_NUM, &oscil->_buffer, sizeof(uint16_t) * OSCIL_I2S_BUFFER_LENGTH,
-                                          &oscil->bytes_read, portMAX_DELAY);
-            invertBytes(oscil->_buffer, OSCIL_I2S_BUFFER_LENGTH);
+            if (!oscil->_isOnPause)
+            {
+                auto resultI2cRead = i2s_read(OSCIL_I2S_NUM, &oscil->_buffer, sizeof(uint16_t) * OSCIL_I2S_BUFFER_LENGTH,
+                                              &oscil->bytes_read, portMAX_DELAY);
+                invertBytes(oscil->_buffer, OSCIL_I2S_BUFFER_LENGTH);
+            }
             xTaskDelayUntil(&oscil->xLastWakeTime, oscil->xFrequency);
         }
 
@@ -117,7 +119,8 @@ public:
         vTaskDelete(_workingThread);
     }
 
-    virtual uint16_t getBufferLength() {
+    virtual uint16_t getBufferLength()
+    {
         return OSCIL_I2S_BUFFER_LENGTH;
     }
 
@@ -128,7 +131,11 @@ public:
 
     uint16_t *getBuffer() { return _buffer; }
 
-    virtual bool playPause() { return false; }
+    virtual bool playPause()
+    {
+        _isOnPause = !_isOnPause;
+        return _isOnPause;
+    }
 
     virtual uint32_t getMeasuresInSecond()
     {

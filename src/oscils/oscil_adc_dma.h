@@ -47,7 +47,7 @@ private:
     }
 
 public:
-    OscilAdcDma(MainBoard *mainBoard, int sampleRate)
+    OscilAdcDma(MainBoard *mainBoard, int sampleRate) : OscilVirtual(mainBoard)
     {
         _sampleRate = sampleRate;
     }

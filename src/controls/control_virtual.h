@@ -14,8 +14,6 @@ typedef struct
     void *args;
 } control_event;
 
-
-
 class ControlVirtual
 {
 protected:
