@@ -2,8 +2,6 @@
 #include "displays/display_virtual.h"
 #include "controls/control_virtual.h"
 #include "interface/ellements/ellements_list.h"
-#include "configuration.h"
-#include <vector>
 
 /// @brief Визуальная часть страницы
 class PageView : public ElGroup
@@ -22,8 +20,8 @@ public:
                                  .y = 0,
                              },
                              .rightDown{
-                                 .x = display->getResoluton().width,
-                                 .y = display->getResoluton().height,
+                                 .x = display->getResolution().width,
+                                 .y = display->getResolution().height,
                              }});
     }
 
@@ -35,7 +33,7 @@ public:
         
     }
 
-    void onDraw(ulong millis){
+    void onDraw() override{
 
     }
 };

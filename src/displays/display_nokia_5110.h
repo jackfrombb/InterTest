@@ -52,7 +52,7 @@ public:
         delete _u8g2;
     }
 
-    void init()
+    void init() override
     {
         Serial.println("Display width: " + String(_u8g2->getWidth()));
 
@@ -67,43 +67,24 @@ public:
 
     /// @brief Получить тип подключения дисплея
     /// @return DIPLAY_TYPE_SPI
-    virtual display_type getType() { return DISPLAY_TYPE_SPI; }
+    display_type getType() override { return DISPLAY_TYPE_SPI; }
 
     /// @brief Получить разрешение дисплея
     /// @return Структура с width и height
-    virtual display_resolution getResoluton() { return display_resolution{
+    display_resolution getResolution() override { return display_resolution{
         .width = _u8g2->getWidth(),
         .height = _u8g2->getHeight(),
     }; }
 
     /// @brief Получить отличительную характеристику дисплея (для определения типа интерфейса)
     /// @return DISPLAY_INTERFACE_TYPE_WIDE
-    virtual display_interface_type getUserInterfaceType() { return DISPLAY_INTERFACE_TYPE_WIDE; }
+    display_interface_type getUserInterfaceType() override { return DISPLAY_INTERFACE_TYPE_WIDE; }
 
     /// @brief Получить тип библиотеки использованный для подключения дисплея
     /// @return DISPLAY_LIB_U8G2
-    virtual display_library getDisplayLibraryType() { return DISPLAY_LIB_U8G2; }
+    display_library getDisplayLibraryType() override { return DISPLAY_LIB_U8G2; }
 
     /// @brief Получить библиотеку дисплея
     /// @return Основной класс библиотеки, в зависимости от типа
-    virtual void *getLibrarry() { return _u8g2; }
-
-    virtual uint32_t getTextWidth(String text, el_text_size size)
-    {
-        return (uint32_t)_u8g2->getUTF8Width(text.c_str());
-    }
-
-    //  virtual display_position calculateTextPositions(String text, uint16_t x, uint16_t y)
-    // {
-    //     return display_position {
-    //         .leftUp{
-    //             .x = x,
-    //             .y = y,
-    //         },
-    //         .rightDown{
-    //             .x = x + _u8g2->getUTF8Width(text.c_str()),
-    //             .y = y + _u8g2->getMaxCharHeight(),
-    //         }
-    //     };
-    // }
+    void *getLibrary() override { return _u8g2; }
 };

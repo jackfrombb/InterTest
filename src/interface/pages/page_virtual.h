@@ -15,22 +15,14 @@ protected:
 
 private:
 public:
-    InterfacePageVirtual(DisplayVirtual *display) : _display(display)
+    explicit InterfacePageVirtual(DisplayVirtual *display) : _display(display) {}
+
+    ~InterfacePageVirtual() = default;
+
+    virtual PageView *getPageView() = 0;
+
+    virtual void onControlEvent(control_event_type eventType)
     {
-    }
-
-    ~InterfacePageVirtual(){
-
-    }
-
-    virtual PageView* getPageView() = 0;
-
-    virtual void onDraw(ulong onMillis){
-        getPageView()->onDraw(onMillis);
-    }
-
-    virtual void onControlEvent(control_event_type eventType) {
         getPageView()->onControlEvent(eventType);
     }
-
 };

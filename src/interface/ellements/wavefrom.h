@@ -5,27 +5,26 @@
 #include "displays/display_structs.h"
 
 template <typename T>
-class ElWaveform : public EllementVirtual
+class ElWaveform : public ElementVirtual
 {
 private:
     T *_points;
-    uint32_t _pointsLength;
+    uint32_t _pointsLength{};
     uint8_t _sectionCountW = 8;
     uint8_t _sectionCountH = 4;
     float _maxMeasureValue = 4.0;
 
 public:
     ElWaveform()
-    {
-    } 
+    = default;
     
-    ElWaveform(T* points)
+    explicit ElWaveform(T* points)
     {
         _points = points;
     }
+
     ~ElWaveform()
-    {
-    }
+    = default;
 
     void setPoints(T *points, uint32_t pointsLength)
     {
@@ -65,7 +64,7 @@ public:
         return _sectionCountH;
     }
 
-    virtual el_type getEllementType()
+    el_type getElementType() override
     {
         return EL_TYPE_WAVEFORM;
     }

@@ -28,7 +28,7 @@ private:
 
         static TickType_t xLastWakeTime;
         static TickType_t xFrequency = 50;
-        InterfaceController *controller = (InterfaceController *)pvParameters;
+        auto *controller = (InterfaceController *)pvParameters;
 
         xLastWakeTime = xTaskGetTickCount();
         while (1)
@@ -36,7 +36,6 @@ private:
             controller->_drawInProcess = true;
             if (!controller->_startClear && controller->_currentPage != nullptr)
             {
-                controller->_currentPage->onDraw(millis());
                 controller->_interfaceEngine->drawPage(controller->_currentPage->getPageView());
             }
             controller->_drawInProcess = false;

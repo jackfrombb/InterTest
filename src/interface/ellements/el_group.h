@@ -2,46 +2,44 @@
 #include "ellement_virtual.h"
 #include <vector>
 
-class ElGroup : public EllementVirtual
+class ElGroup : public ElementVirtual
 {
 private:
-    std::vector<EllementVirtual *> _ellements;
+    std::vector<ElementVirtual *> _elements;
 protected:
 public:
     ElGroup(/* args */)
-    {
-    }
+    = default;
 
     ~ElGroup()
+    = default;
+
+    virtual int8_t getElementsCount()
     {
+        return (int8_t) _elements.size();
     }
 
-    virtual int8_t getEllementsCount()
+    virtual ElementVirtual *getElement(uint8_t num)
     {
-        return _ellements.size();
+        return _elements[num];
     }
 
-    virtual EllementVirtual *getEllement(uint8_t num)
+    virtual ElGroup *addElement(ElementVirtual *element)
     {
-        return _ellements[num];
-    }
-
-    virtual ElGroup *addEllement(EllementVirtual *ellement)
-    {
-        ellement->setParent(this);
-        _ellements.push_back(ellement);
+        element->setParent(this);
+        _elements.push_back(element);
         return this;
     }
 
-    virtual bool isGroup()
+    bool isGroup() override
     {
         return true;
     }
 
-    std::vector<EllementVirtual *> getEllements()
+    std::vector<ElementVirtual *> getElements()
     {
-        return _ellements;
+        return _elements;
     }
 
-    virtual el_type getEllementType() { return el_type::EL_TYPE_GROUP; };
+    el_type getElementType() override { return el_type::EL_TYPE_GROUP; }
 };

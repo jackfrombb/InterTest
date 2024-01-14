@@ -13,19 +13,13 @@ public:
         _articularWidth = 0;
     }
 
-    virtual ElGroup *addEllement(EllementVirtual *ellement)
+    ElGroup *addElement(ElementVirtual *element) override
     {
-        _articularWidth += ellement->getWidth();
-        ElGroup::addEllement(ellement);
+        ElGroup::addElement(element);
         return this;
     }
 
-    uint16_t getArticularWidth()
-    {
-        return _articularWidth;
-    }
-
-    virtual el_type getEllementType()
+    el_type getElementType() override
     {
         return el_type::EL_TYPE_CENTERED_GROUP;
     }

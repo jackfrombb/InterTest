@@ -4,16 +4,16 @@
 class HelloPageView : public PageView
 {
 protected:
-    virtual void _progressBarInit()
+    void _progressBarInit()
     {
-        display_resolution resolution = _display->getResoluton();
+        display_resolution resolution = _display->getResolution();
 
         // Настройка размера ========================
         int width = resolution.width - 10;
         int height = 10;
 
         // На четверть от низа
-        int y = ((resolution.height - (float)resolution.height * 0.25)) - ((float)height * 0.5);
+        int y = (int)(((resolution.height - (float)resolution.height * 0.25)) - ((float)height * 0.5));
 
         point_t leftUp{
             .x = 5,
@@ -32,10 +32,10 @@ protected:
 
         // Присоединение переменных
         _progressBar.setArea(progresBarPos);
-        _progressBar.setProgresPtr(_progress);
+        _progressBar.setProgressPtr(_progress);
     }
 
-    virtual void _helloTextInit()
+    void _helloTextInit()
     {
         _helloText.setText("InterTest")
             ->setTextSize(EL_TEXT_SIZE_MIDDLE);
@@ -45,12 +45,12 @@ protected:
 
         _helloText.setPosition(0, y);
         _helloText.setWidth(_display->getWidth());
-        _helloText.setHeight(_display->getHeight()*0.5);
+        _helloText.setHeight((uint32_t)(_display->getHeight()*0.5));
         _helloText.setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER);
 
     }
 
-    virtual void _versionTextInit()
+    void _versionTextInit()
     {
         _versionText.setText("ver: " + String(APP_VERSION))
             ->setTextSize(EL_TEXT_SIZE_SUPER_SMALL);
@@ -71,17 +71,10 @@ public:
     HelloPageView(DisplayVirtual *display, float *progress) : PageView(display)
     {
         _progress = progress;
-
         _progressBarInit();
         _versionTextInit();
         _helloTextInit();
 
-        addEllement(&_progressBar)->addEllement(&_versionText)->addEllement(&_helloText);
-
-        // _ellements = {
-        //     &_progressBar,
-        //     &_versionText,
-        //     &_helloText,
-        // };
+        addElement(&_progressBar)->addElement(&_versionText)->addElement(&_helloText);
     }
 };

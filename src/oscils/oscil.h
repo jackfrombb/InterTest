@@ -29,7 +29,8 @@ private:
 public:
     HardTimer oscilTimer;
     
-    OscilAdc() {} // Для неинициализированных объектов
+    OscilAdc() = default; // Для неинициализированных объектов
+
     OscilAdc(MainBoard* mainBoard, int measureTime)
     {
         _board = mainBoard;
@@ -37,9 +38,7 @@ public:
     }
 
     ~OscilAdc()
-    {
-
-    }
+    = default;
 
     void writeToBuffer(){
 
@@ -65,44 +64,44 @@ public:
 
     static bool IRAM_ATTR timerInterrupt(void *args)
     {
-        OscilAdc *oscil = (OscilAdc *)args;
+        auto *oscil = (OscilAdc *)args;
         oscil->writeToBuffer();
         return false;
     }
 
-    ulong getRealSampleTime()
+    ulong getRealSampleTime() override
     {
         return _interruptTime;
     }
 
-    uint32_t getMeasuresInSecond(){
+    uint32_t getMeasuresInSecond() override{
         return getTimer().getTickTime();
     }
 
-    void setMeasuresInSecond(uint32_t tickTime){
+    void setMeasuresInSecond(uint32_t tickTime) override{
         getTimer().setNewTickTime(tickTime);
     }
 
-    uint16_t *getBuffer()
+    uint16_t *getBuffer() override
     {
         return _buffer;
     }
     
-    virtual uint16_t getBufferLength() {
+    uint16_t getBufferLength() override {
         return BUFFER_LENGTH;
     }
 
-    bool isBufferReady()
+    bool isBufferReady() override
     {
         return _bufferReady;
     }
 
-    void readNext()
+    void readNext() override
     {
         _bufferReady = false;
     }
 
-    esp_err_t init()
+    esp_err_t init() override
     {
         _board->adc1Init();
 
@@ -113,15 +112,15 @@ public:
         return ESP_OK;
     }
 
-    void deinit(){
+    void deinit() override{
         oscilTimer.deinit();
     }
 
-    bool playPause(){
+    bool playPause() override{
         return getTimer().playPause();
     }
 
-    HardTimer getTimer()
+    HardTimer getTimer() const
     {
         return oscilTimer;
     }

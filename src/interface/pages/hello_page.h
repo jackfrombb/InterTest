@@ -12,7 +12,7 @@ private:
     HelloPageView* _pageView;
 
 public:
-    HelloPage(DisplayVirtual *display) : InterfacePageVirtual(display), _progress(0.0)
+    explicit HelloPage(DisplayVirtual *display) : InterfacePageVirtual(display), _progress(0.0)
     {
         _pageView = new HelloPageView(display, &_progress);
     }
@@ -23,7 +23,7 @@ public:
         delete _pageView;
     }
 
-    virtual PageView* getPageView(){
+    PageView* getPageView() override{
         return _pageView;
     }
 

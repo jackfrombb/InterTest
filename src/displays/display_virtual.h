@@ -39,11 +39,9 @@ protected:
 private:
 public:
     DisplayVirtual(/* args */)
-    {
-    }
+    = default;
     ~DisplayVirtual()
-    {
-    }
+    = default;
 
     /// @brief Получить тип подключения дисплея
     /// @return DISPLAY_TYPE_UNKNOWN, DIPLAY_TYPE_SPI, DISPLAY_TYPE_I2C
@@ -51,7 +49,7 @@ public:
 
     /// @brief Получить разрешение дисплея
     /// @return Структура с width и height
-    virtual display_resolution getResoluton() = 0;
+    virtual display_resolution getResolution() = 0;
 
     /// @brief Получить отличительную характеристику дисплея (для определения типа интерфейса)
     /// @return DISPLAY_INTERFACE_TYPE_UNKNOWN,DISPLAY_INTERFACE_TYPE_WIDE,DISPLAY_INTERFACE_TYPE_SLIM,
@@ -63,13 +61,13 @@ public:
 
     /// @brief Получить библиотеку дисплея
     /// @return Основной класс библиотеки, в зависимости от типа
-    virtual void* getLibrarry() = 0;
+    virtual void* getLibrary() = 0;
 
     virtual uint16_t getWidth(){
-        return getResoluton().width;
+        return getResolution().width;
     }
 
     virtual uint16_t getHeight(){
-        return getResoluton().height;
+        return getResolution().height;
     }
 };

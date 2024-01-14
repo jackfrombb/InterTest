@@ -18,18 +18,24 @@ protected:
 
     virtual void drawGroup(ElGroup *group)
     {
-        for (auto el : group->getEllements())
+        if(!group->isVisible())
+            return;
+
+        group->onDraw();
+
+        for (auto el : group->getElements())
         {
             if (!el->isVisible())
                 continue;
 
+            el->onDraw();
             drawElement(el);
         }
     }
 
-    virtual void drawElement(EllementVirtual *el)
+    virtual void drawElement(ElementVirtual *el)
     {
-        switch (el->getEllementType())
+        switch (el->getElementType())
         {
         case el_type::EL_TYPE_BUTTON:
             drawButton((ElTextButton *)el);
@@ -48,12 +54,10 @@ protected:
             break;
 
         case el_type::EL_TYPE_GROUP:
-            //Serial.println("Draw group");
             drawGroup((ElGroup *)el);
             break;
 
         case el_type::EL_TYPE_CENTERED_GROUP:
-            //Serial.println("Draw centered");
             drawCenteredGroup((ElCenteredGroup *)el);
             break;
         }

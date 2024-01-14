@@ -23,7 +23,6 @@ class ControlEncoder : public ControlVirtual
 {
 private:
     EncButton *_enc;
-    bool IRAM_ATTR missTick(void *args);
     HardTimer *_encoderTimer;
 
     void _encEvent()
@@ -40,27 +39,34 @@ private:
         // EB_REL_STEP - кнопка отпущена после степа
         // EB_REL_STEP_C - кнопка отпущена после степа с предв. кликами
 
-            switch (_enc->action())
+        switch (_enc->action())
+        {
+        case EB_HOLD:
+            _handler(LONG_PRESS_OK, _args);
+            break;
+
+        case EB_CLICK:
+            _handler(PRESS_OK, _args);
+            break;
+
+        case EB_CLICKS:
+            if (_enc->getClicks() == 2)
             {
-            case EB_HOLD:
-                _handler(LONG_PRESS_OK, _args);
-                break;
-
-            case EB_CLICK:
-                _handler(PRESS_OK, _args);
-                break;
-
-            case EB_TURN:
-                if (_enc->encHolding())
-                {
-                    _handler(_enc->dir() > 0 ? LONG_PRESS_RIGHT : LONG_PRESS_LEFT, _args);
-                }
-                else
-                {
-                    _handler(_enc->dir() > 0 ? PRESS_RIGHT : PRESS_LEFT, _args);
-                }
-                break;
+                logi::p("Control encoder", "Two clicks test OK");
             }
+            break;
+
+        case EB_TURN:
+            if (_enc->encHolding())
+            {
+                _handler(_enc->dir() > 0 ? LONG_PRESS_RIGHT : LONG_PRESS_LEFT, _args);
+            }
+            else
+            {
+                _handler(_enc->dir() > 0 ? PRESS_RIGHT : PRESS_LEFT, _args);
+            }
+            break;
+        }
     }
 
 public:
@@ -76,7 +82,7 @@ public:
         delete _encoderTimer;
     }
 
-    virtual void init()
+    void init() override
     {
         pinMode(ENC_VCC, OUTPUT);
         digitalWrite(ENC_VCC, 1);
@@ -87,9 +93,10 @@ public:
         _encoderTimer->init();
     }
 
-    virtual void loop()
+    void loop() override
     {
-        if (_enc->tick()) _encEvent();
+        if (_enc->tick())
+            _encEvent();
     }
 
     /// @brief Прерывание для обработки пропущенных считываний энкодера
@@ -99,7 +106,7 @@ public:
     {
         if (args != nullptr)
         {
-            ControlEncoder *control = (ControlEncoder *)args;
+            auto *control = (ControlEncoder *)args;
             control->_enc->tickISR();
         }
         return false;

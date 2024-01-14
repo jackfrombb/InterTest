@@ -3,30 +3,23 @@
 #include "ellements_structs.h"
 #include "displays/display_structs.h"
 
-class EllementVirtual
+class ElementVirtual
 {
 protected:
     bool _visible = true;
-    display_position _area;
-    EllementVirtual *_root = nullptr;
-    EllementVirtual *_parent = nullptr;
-    el_vertical_align _vertAlign;
+    display_position _area {};
+    ElementVirtual *_parent = nullptr;
+    el_vertical_align _vertAlign = el_vertical_align::EL_ALGN_TOP;
 
 private:
 public:
-    static el_text_px_area TEXT_SIZE_VALUES;
 
-    EllementVirtual()
-    {
-        setArea({});
-    }
+    ElementVirtual()
+    = default;
 
-    EllementVirtual(EllementVirtual *root, EllementVirtual *parent)
+    explicit ElementVirtual(ElementVirtual *parent)
     {
-        _root = root;
         _parent = parent;
-
-        setArea({});
     }
 
     virtual bool isGroup()
@@ -34,7 +27,7 @@ public:
         return false;
     }
 
-    virtual EllementVirtual* setVisibility(bool visible)
+    virtual ElementVirtual *setVisibility(bool visible)
     {
         _visible = visible;
         return this;
@@ -45,7 +38,7 @@ public:
         return _visible;
     }
 
-    virtual EllementVirtual* setArea(display_position area)
+    virtual ElementVirtual *setArea(display_position area)
     {
         _area = area;
         return this;
@@ -56,26 +49,17 @@ public:
         return _area;
     }
 
-    virtual display_position* getAreaPtr(){
+    virtual display_position *getAreaPtr()
+    {
         return &_area;
     }
 
-    void setRoot(EllementVirtual *root)
-    {
-        _root = root;
-    }
-
-    EllementVirtual *getRoot()
-    {
-        return _root;
-    }
-
-    EllementVirtual *getParent()
+    ElementVirtual *getParent()
     {
         return _parent;
     }
 
-    void setParent(EllementVirtual *parent)
+    void setParent(ElementVirtual *parent)
     {
         _parent = parent;
     }
@@ -85,7 +69,7 @@ public:
         return _area.leftUp.x;
     }
 
-    virtual EllementVirtual *setX(int x)
+    virtual ElementVirtual *setX(int x)
     {
         _area.leftUp.x = x;
         return this;
@@ -96,7 +80,7 @@ public:
         return _area.leftUp.y;
     }
 
-    virtual EllementVirtual *setY(int y)
+    virtual ElementVirtual *setY(int y)
     {
         _area.leftUp.y = y;
         return this;
@@ -107,7 +91,7 @@ public:
         return _area.getWidth();
     }
 
-    virtual EllementVirtual *setWidth(uint32_t width)
+    virtual ElementVirtual *setWidth(uint32_t width)
     {
         _area.setWidth(width);
         return this;
@@ -118,13 +102,13 @@ public:
         return _area.getHeight();
     }
 
-    virtual EllementVirtual *setHeight(uint32_t height)
+    virtual ElementVirtual *setHeight(uint32_t height)
     {
         _area.setHeight(height);
         return this;
     }
 
-    virtual EllementVirtual *setVertialAlignment(el_vertical_align vAlign)
+    virtual ElementVirtual *setVerticalAlignment(el_vertical_align vAlign)
     {
         _vertAlign = vAlign;
         return this;
@@ -135,7 +119,10 @@ public:
         return _vertAlign;
     }
 
-    virtual el_type getEllementType() = 0;
-};
+    virtual void onDraw()
+    {
+        
+    }
 
-el_text_px_area EllementVirtual::TEXT_SIZE_VALUES;
+    virtual el_type getElementType() = 0;
+};

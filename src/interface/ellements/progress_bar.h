@@ -2,7 +2,7 @@
 #include "ellement_virtual.h"
 #include "helpers.h"
 
-class ElProgressBar : public EllementVirtual
+class ElProgressBar : public ElementVirtual
 {
 private:
     float *_progress;
@@ -11,8 +11,7 @@ public:
     ElProgressBar() : _progress(new float()) {}
     ~ElProgressBar()
     {
-        if (_progress != nullptr)
-            delete _progress;
+        delete _progress;
     }
 
     void setProgress(float progress)
@@ -22,7 +21,7 @@ public:
         _progress = new float(progress);
     }
 
-    void setProgresPtr(float *progress)
+    void setProgressPtr(float *progress)
     {
         _progress = progress;
     }
@@ -35,7 +34,7 @@ public:
             return 1.0; // Если ссылка вникуда, то, вероятнее всего, загрузка завершилась и переенная стерта из кучи
     }
 
-    virtual el_type getEllementType()
+    el_type getElementType() override
     {
         return EL_TYPE_PROGRESS_BAR;
     }

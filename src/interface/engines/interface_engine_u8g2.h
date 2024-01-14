@@ -43,20 +43,20 @@ private:
         uint8_t widthPixelsCount = width / waveform->getWidthSectionsCount();
 
         // Serial.println("Draw init OK");
-        int voltSectionTitle = waveform->getMaxMeasureValue();
+        int voltSectionTitle = (int) waveform->getMaxMeasureValue();
 
-        for (int8_t v = 0; v <= height; v += heightPixelInSection)
+        for (uint16_t v = 0; v <= height; v += heightPixelInSection)
         {
-            for (uint8_t x = 0; x <= width; x += widthPixelsCount)
+            for (uint16_t x = 0; x <= width; x += widthPixelsCount)
             {
                 int titlePos = width - widthPixelsCount;
                 if (x >= titlePos)
                 {
                     String title = String(voltSectionTitle);
-                    int x = titlePos;
-                    int y = v + (_u8g2->getMaxCharHeight() * 1.5);
+                    int xPos = titlePos;
+                    int y = (int)(v + (_u8g2->getMaxCharHeight() * 1.5));
 
-                    _u8g2->drawUTF8(x, y, title.c_str());
+                    _u8g2->drawUTF8(xPos, y, title.c_str());
 
                     voltSectionTitle -= 1;
                 }
@@ -76,16 +76,16 @@ private:
         int bias = 0;
         // Serial.println("Max measure val: " + String(waveform->getMaxMeasureValue()));
         //  Преобразованный предел
-        const int maxMeasureValNormalized = (waveform->getMaxMeasureValue() * 1000);
+        const int maxMeasureValNormalized = (int)(waveform->getMaxMeasureValue() * 1000);
 
         uint16_t width = waveform->getArea().getWidth();
         uint16_t height = waveform->getArea().getHeight();
-        uint32_t *buf = (uint32_t *)waveform->getPoints();
+        auto *buf = (uint32_t *)waveform->getPoints();
 
-        for (uint8_t x = 0; x <= width; x++)
+        for (uint16_t x = 0; x <= width; x++)
         {
-            int realVolt = _mainBoard->rawToVoltage(buf[x]);
-            int next = x == width ? 0 : buf[x + 1];
+            int realVolt = (int) _mainBoard->rawToVoltage(buf[x]);
+            int next = x == width ? 0 : (int) buf[x + 1];
 
             byte val = map(realVolt, 0, maxMeasureValNormalized, height - 1, 0);
 
@@ -95,7 +95,7 @@ private:
             }
             else
             {
-                byte val2 = map(_mainBoard->rawToVoltage(next), 0, maxMeasureValNormalized, height - 1, 0);
+                byte val2 = map((long)_mainBoard->rawToVoltage(next), 0, maxMeasureValNormalized, height - 1, 0);
                 _u8g2->drawLine(x, val, x + 1, val2);
             }
         }
@@ -131,44 +131,30 @@ private:
     }
 
 protected:
-    void _onStartDraw()
+    void _onStartDraw() override
     {
         _u8g2->enableUTF8Print();
         _u8g2->firstPage();
     }
 
-    void _onEndDraw()
+    void _onEndDraw() override
     {
         _u8g2->nextPage();
     }
 
-    int _getTextCenterX(String text, int fromX, int width)
+    int _getTextCenterX(const String& text, int fromX, int width)
     {
         int textWidth = _u8g2->getUTF8Width(text.c_str());
-        return fromX + ((float)width * 0.5) - ((float)textWidth * 0.5);
-    }
-
-    /// @brief Высчитать занимаемую одним символом площадь, для упрощения дальнейших рассчетов ElText и пр.
-    /// @param forSize Для размера и шрифта
-    /// @return размеры в пикселях
-    area_size _getMaxCharSize(el_text_size forSize)
-    {
-        _setTextSize(forSize);
-        delay(100);
-        String text = "Ж";
-        return {
-            .width = _u8g2->getUTF8Width(text.c_str()),
-            .height = (uint16_t)_u8g2->getMaxCharHeight(),
-        };
+        return (int)(fromX + ((float)width * 0.5) - ((float)textWidth * 0.5));
     }
 
 private:
 public:
-    InterfaceEngine_U8g2(MainBoard *mainBoard)
+    explicit InterfaceEngine_U8g2(MainBoard *mainBoard)
     {
         _mainBoard = mainBoard;
         _display = mainBoard->getDisplay();
-        _u8g2 = (U8G2 *)_display->getLibrarry();
+        _u8g2 = (U8G2 *) _display->getLibrary();
         bufferSize = (unsigned int)(8 * _u8g2->getBufferTileHeight() * _u8g2->getBufferTileWidth());
         _displayBuffer = (uint8_t *)calloc(bufferSize, sizeof(uint8_t));
     }
@@ -178,23 +164,23 @@ public:
         free(_displayBuffer);
     }
 
-    virtual void drawCenteredGroup(ElCenteredGroup *group)
+    void drawCenteredGroup(ElCenteredGroup *group) override
     {
         _u8g2->drawRFrame(group->getX(), group->getY(), group->getWidth(), group->getHeight(), 2);
 
-        if (group->getEllementsCount() == 0)
+        if (group->getElementsCount() == 0)
         {
             return;
         }
 
-        auto newWidth = group->getWidth() / group->getEllementsCount();
+        auto newWidth = group->getWidth() / group->getElementsCount();
         auto groupArea = group->getArea();
 
         int16_t prevX = 0;
 
-        for (int i = 0; i < group->getEllementsCount(); i++)
+        for (int i = 0; i < group->getElementsCount(); i++)
         {
-            EllementVirtual *el = group->getEllement(i);
+            ElementVirtual *el = group->getElement(i);
             el->setWidth(newWidth);
             el->setX(newWidth * i);
 
@@ -202,17 +188,15 @@ public:
         }
     }
 
-    virtual void drawButton(ElTextButton *button)
+    void drawButton(ElTextButton *button) override
     {
         drawText(button);
 
-        int x = _getTextCenterX(button->getText(), button->getX(), button->getWidth())+ button->getParent()->getX();
-        int y = button->getParent()->getY() + (button->getParent()->getHeight() * 0.5) - ((_u8g2->getMaxCharHeight() + 2) * 0.5);
+        int x = _getTextCenterX(button->getText(), button->getX(), button->getWidth()) + button->getParent()->getX();
+        int y = (int)(button->getParent()->getY() + (button->getParent()->getHeight() * 0.5) - ((_u8g2->getMaxCharHeight() + 2) * 0.5));
 
         if (button->isPushed()) // если нажата то заполненный скругленый прямоугольник
         {
-            logi::p("IEngine", "Parent x" + String(button->getParent()->getX()));
-
             _u8g2->drawRBox(x - 4,
                             y,
                             _u8g2->getUTF8Width(button->getText().c_str()) + 8,
@@ -221,18 +205,21 @@ public:
         }
         else if (button->isSelected()) // если активна то рисуем рамку вокруг
         {
-            _u8g2->drawRFrame(button->getX(), button->getY(),
-                              _u8g2->getUTF8Width(button->getText().c_str()) + 2, _u8g2->getMaxCharHeight(), 2);
+            _u8g2->drawRFrame(x - 4,
+                              y,
+                              _u8g2->getUTF8Width(button->getText().c_str()) + 8,
+                              _u8g2->getMaxCharHeight() + 2,
+                              2);
         }
     }
 
-    virtual void drawWaveform(ElWaveform<uint16_t> *waveform)
+    void drawWaveform(ElWaveform<uint16_t> *waveform) override
     {
         _drawDotBack(waveform);
         _drawWaveform(waveform);
     }
 
-    virtual void drawText(ElText *text)
+    void drawText(ElText *text) override
     {
         _setTextSize(text->getTextSize()); // Размер и шрифт. Обязательно вызывать перед расчетом положения
 
@@ -250,7 +237,7 @@ public:
 
         if (text->getVerticalAlignment() == el_vertical_align::EL_ALIGN_CENTER)
         {
-            y = (text->getParent()->getHeight() * 0.5) - (_u8g2->getMaxCharHeight() * 0.5);
+            y = (int)((text->getParent()->getHeight() * 0.5) - (_u8g2->getMaxCharHeight() * 0.5));
         }
 
         // Отрисовать текст (y эллемеента делаем по верхнему углу)
@@ -259,13 +246,13 @@ public:
                         text->getText().c_str());
     }
 
-    virtual void drawProgressBar(ElProgressBar *progressBar)
+    void drawProgressBar(ElProgressBar *progressBar) override
     {
         // Serial.println("Progress: " + String(progressBar->getProgress()));
 
         _u8g2->drawRFrame(progressBar->getX(), progressBar->getY(), progressBar->getWidth(), progressBar->getHeight(), 2);
 
-        int progressLineWidth = ((progressBar->getWidth() - 4) * progressBar->getProgress());
+        int progressLineWidth = (int)((float)(progressBar->getWidth() - 4) * progressBar->getProgress());
 
         progressLineWidth = max(progressLineWidth, 0);
         progressLineWidth = min(progressLineWidth, progressBar->getWidth() - 4);

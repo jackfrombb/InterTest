@@ -18,7 +18,8 @@ public:
 
     virtual ulong getRealSampleTime() {return 0;}
     virtual uint16_t *getBuffer() {return 0;}
-    bool isBufferReady() {
+
+    virtual bool isBufferReady() {
         return _bufferReady;
     }
     virtual esp_err_t init()= 0;

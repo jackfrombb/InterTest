@@ -1,40 +1,50 @@
 #pragma once
+#include <utility>
+
 #include "ellement_virtual.h"
 
-class ElText : public EllementVirtual
+class ElText : public ElementVirtual
 {
 private:
     String _text;
-    el_text_size _elSize;
-    el_text_align _alignment;
+    el_text_size _elSize = {};
+    el_text_align _alignment = {};
+    std::function<String()> _calculateText = nullptr;
 
 public:
     ElText()
-    {
-    }
+    = default;
 
-    ElText(String text)
+    explicit ElText(String text)
     {
-        setText(text);
+        setText(std::move(text));
     }
 
     ~ElText()
-    {
-
-    }
+    = default;
 
     ElText *setText(String text)
     {
-        _text = text;
+        _text = std::move(text);
+        return this;
+    }
+
+    ElText *setCalculatedText(std::function<String()> calculateText)
+    {
+        _calculateText = std::move(calculateText);
         return this;
     }
 
     String getText()
     {
-        return _text;
+        if (_calculateText != nullptr)
+            return _calculateText();
+        else
+            return _text;
     }
 
-    String* getTextPtr(){
+    String *getTextPtr()
+    {
         return &_text;
     }
 
@@ -59,16 +69,18 @@ public:
         return this;
     }
 
-    virtual el_text_align getAlignment(){
+    virtual el_text_align getAlignment()
+    {
         return _alignment;
     }
 
-    virtual ElText* setAlignment(el_text_align alignment){
+    virtual ElText *setAlignment(el_text_align alignment)
+    {
         _alignment = alignment;
         return this;
     }
 
-    virtual el_type getEllementType()
+    el_type getElementType() override
     {
         return EL_TYPE_TEXT;
     }

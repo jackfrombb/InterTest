@@ -48,31 +48,3 @@ typedef struct
     uint16_t width;
     uint16_t height;
 } area_size;
-
-typedef struct
-{
-    area_size S_LARGE;
-    area_size LARGE;
-    area_size MIDDLE;
-    area_size SMALL;
-    area_size S_SMALL;
-
-    area_size getSizesInPx(el_text_size size)
-    {
-        switch (size)
-        {
-        case el_text_size::EL_TEXT_SIZE_SUPER_LARGE:
-            return S_LARGE;
-        case el_text_size::EL_TEXT_SIZE_LARGE:
-            return LARGE;
-        case el_text_size::EL_TEXT_SIZE_MIDDLE:
-            return MIDDLE;
-        case el_text_size::EL_TEXT_SIZE_SMALL:
-            return SMALL;
-        case el_text_size::EL_TEXT_SIZE_SUPER_SMALL:
-            return S_SMALL;
-        }
-
-        return MIDDLE;
-    }
-} el_text_px_area;

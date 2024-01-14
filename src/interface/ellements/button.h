@@ -12,6 +12,9 @@ typedef struct
 class ElTextButton : public ElText
 {
 private:
+    uint8_t _buttonId;        // ID этой кнопки
+    uint8_t *_selectedButton; // ID кнопки на которой сейчас курсор
+
     bool _pushed;    // кнопка нажата
     bool _selected;  // кнопка выбрана
     ui_event _event; // событие по нажатию кнопки
@@ -32,12 +35,28 @@ public:
         _pushed = false;
     }
     ~ElTextButton()
-    {
-    }
+    = default;
 
     ElTextButton *setEvent(ui_event event)
     {
         _event = event;
+        return this;
+    }
+
+    ElTextButton *setButtonId(uint8_t buttonId)
+    {
+        _buttonId = buttonId;
+        return this;
+    }
+
+    uint8_t getButtonId() const
+    {
+        return _buttonId;
+    }
+
+    ElTextButton *setSelectedButtonPtr(uint8_t *selectedButton)
+    {
+        _selectedButton = selectedButton;
         return this;
     }
 
@@ -49,11 +68,6 @@ public:
     ElTextButton *setPushed(bool pushed)
     {
         _pushed = pushed;
-        if (_pushed)
-        {
-            _event.event(_event.args);
-        }
-
         return this;
     }
 
@@ -62,18 +76,12 @@ public:
         return _pushed;
     }
 
-    ElTextButton *setSelected(bool selected)
-    {
-        _selected = selected;
-        return this;
-    }
-
     bool isSelected()
     {
-        return _selected;
+        return _selectedButton != nullptr && *_selectedButton == _buttonId; //_selected;
     }
 
-    virtual el_type getEllementType()
+    el_type getElementType() override
     {
         return EL_TYPE_BUTTON;
     }
