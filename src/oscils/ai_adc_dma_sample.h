@@ -22,10 +22,6 @@ static adc_channel_t adc_channels[ADC_CHANNEL_NUM] = {ADC_CHANNEL_6, ADC_CHANNEL
 static uint16_t adc_channel_mask = BIT(6) | BIT(7);
 // Буфер для хранения результатов АЦП
 static uint8_t adc_buffer[ADC_BUFFER_SIZE];
-// // Указатель на дескриптор АЦП
-// static adc_digi_handle_t adc_handle = NULL;
-// Тег для логов
-static const char *TAG = "ADC DMA";
 
 // Функция инициализации АЦП
 void adc_init()

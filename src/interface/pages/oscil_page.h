@@ -14,7 +14,7 @@ private:
 public:
     explicit OscilPage(MainBoard *mainBoard) : InterfacePageVirtual(mainBoard->getDisplay())
     {
-        _oscil = new OscilI2s(mainBoard, 98000); // new OscilAdcDma(mainBoard, 20000);// new OscilAdc(mainBoard, 5500); //new OscilI2s(mainBoard, 1000);
+        _oscil = new OscilAdcDma(mainBoard, 20000);// new OscilAdcDma(mainBoard, 20000);// new OscilAdc(mainBoard, 5500); //new OscilI2s(mainBoard, 1000);
         _mainBoard = mainBoard;
         _pageView = new OscilPageView(mainBoard->getDisplay(), _oscil);
 

@@ -39,7 +39,7 @@ protected:
 
 private:
 public:
-    MainBoard(init_adc_info &adcInfo, DisplayVirtual *display, ControlVirtual* control)
+    MainBoard(init_adc_info &adcInfo, DisplayVirtual *display, ControlVirtual *control)
     {
         _display = display;
         _adcInfo = adcInfo;
@@ -95,12 +95,16 @@ public:
         return _display;
     }
 
-    ControlVirtual *getControl(){
+    ControlVirtual *getControl()
+    {
         return _control;
     }
 
     uint32_t rawToVoltage(uint32_t reading)
     {
-        return esp_adc_cal_raw_to_voltage(reading, getAdcChars());
+        if (getAdcChars() != nullptr)
+            return esp_adc_cal_raw_to_voltage(reading, getAdcChars()); // reading * 3.3 / 4096.0; // esp_adc_cal_raw_to_voltage(reading, getAdcChars());
+        else
+            return reading * 3.2 / 4096.0;
     }
 };
