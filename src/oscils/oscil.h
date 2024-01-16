@@ -24,6 +24,7 @@ private:
     int32_t _lastValue = 0; //Последнее значение записанное в буфер
     ulong _interruptTime = 0; // Фермя затраченное на одно считывание
     ulong _prevInterTime = 0; // Предыдущее время тика
+    
 public:
     HardTimer oscilTimer;
     
