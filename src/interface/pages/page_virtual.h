@@ -7,9 +7,28 @@
 #include "interface/pages/views/page_view.h"
 #include "controls/control_virtual.h"
 
-typedef enum {
-    PAGE_LIST_OSCIL, PAGE_LIST_VOLT, PAGE_LIST_OHM
+typedef enum
+{
+    PAGE_LIST_OSCIL,
+    PAGE_LIST_VOLT,
+    PAGE_LIST_OHM,
+    pagesCount, // Для определения кол-ва страниц
 } pages_list;
+
+String pages_list_getName(pages_list page)
+{
+    switch (page)
+    {
+    case pages_list::PAGE_LIST_OSCIL:
+        return "Осциллограф";
+    case pages_list::PAGE_LIST_VOLT:
+        return "Вольтметр";
+    case pages_list::PAGE_LIST_OHM:
+        return "Омметр";
+    }
+
+    return "Error_02";
+}
 
 /// @brief Контроллер для страницы. Управление основными объектами страницы здесь
 class InterfacePageVirtual

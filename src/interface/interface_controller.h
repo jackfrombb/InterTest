@@ -45,8 +45,9 @@ private:
 
     static void _controlEvent(control_event_type eventType, void *args)
     {
-        InterfaceController* iController = (InterfaceController*) args;
-        if(iController->_currentPage != nullptr){
+        InterfaceController *iController = (InterfaceController *)args;
+        if (iController->_currentPage != nullptr)
+        {
             iController->_currentPage->onControlEvent(eventType);
         }
     }
@@ -57,7 +58,7 @@ public:
         _mainBoard = mainBoard;
         _display = mainBoard->getDisplay();
         _interfaceEngine = interfaceEngine;
-        
+
         // Подключаем упарвление
         _mainBoard->getControl()->attachControlHandler(_controlEvent, this);
     }
@@ -78,10 +79,18 @@ public:
     void start()
     {
         clear();
-        setCurrentPage(new OscilPage(_mainBoard));
+        setCurrentPage(new StartPage(_mainBoard->getDisplay(),
+                                     [this](pages_list p)
+                                     { onPageSelected(p); }));
     }
 
-    void setCurrentPage(InterfacePageVirtual* page){
+    void onPageSelected(pages_list page)
+    {
+        logi::p("Inerface_Controller", "Select " + String(page));
+    }
+
+    void setCurrentPage(InterfacePageVirtual *page)
+    {
         _currentPage = page;
         _startClear = false;
     }

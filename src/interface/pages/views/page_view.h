@@ -13,27 +13,27 @@ public:
     PageView(DisplayVirtual *display)
     {
         _display = display;
-        
-        //На весь экран
+
+        // На весь экран
         setArea(display_position{.leftUp = {
-                                 .x = 0,
-                                 .y = 0,
-                             },
-                             .rightDown{
-                                 .x = display->getResolution().width,
-                                 .y = display->getResolution().height,
-                             }});
+                                     .x = 0,
+                                     .y = 0,
+                                 },
+                                 .rightDown{
+                                     .x = display->getResolution().width,
+                                     .y = display->getResolution().height,
+                                 }});
     }
 
     ~PageView()
     {
     }
 
-    virtual void onControlEvent(control_event_type eventType) {
-        
+    virtual void onControlEvent(control_event_type eventType)
+    {
     }
 
-    void onDraw() override{
-
+    void onDraw() override
+    {
     }
 };

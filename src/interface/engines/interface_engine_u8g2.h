@@ -44,7 +44,7 @@ private:
         uint8_t widthPixelsCount = width / waveform->getWidthSectionsCount();
 
         // Serial.println("Draw init OK");
-        int voltSectionTitle = (int)waveform->getMaxMeasureValue();
+        int voltSectionTitle = (int)waveform->getMaxMeasureValue() - 1;
 
         for (uint16_t v = 0; v <= height; v += heightPixelInSection)
         {
@@ -94,14 +94,14 @@ private:
 
         uint16_t width = waveform->getArea().getWidth();
         uint16_t height = waveform->getArea().getHeight();
-        auto *buf =  waveform->getPoints();
+        auto *buf = waveform->getPoints();
 
         int max = 0;
 
         for (uint16_t x = bias; x <= width + bias; x++)
         {
             int realVolt = (int)_mainBoard->rawToVoltage(buf[x]);
-            //logi::p("Engine", "Raw: " + String(buf[x]) + " Volt: "+ String(realVolt));
+            // logi::p("Engine", "Raw: " + String(buf[x]) + " Volt: "+ String(realVolt));
 
             int next = x == width ? 0 : (int)buf[x + 1];
             if (realVolt > max)

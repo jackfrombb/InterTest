@@ -47,7 +47,7 @@ public:
         uint32_t read_counter = 0;
         uint64_t read_sum = 0;
 
-        uint16_t offset = (int)oscil->_mainBoard->getAdcInfo().unit * 0x1000 + 0xFFF;
+        // uint16_t offset = (int)oscil->_mainBoard->getAdcInfo().unit * 0x1000 + 0xFFF;
         //(I2S port, destination adress, data size in bytes, bytes read counter, RTOS ticks to wait)
         while (1)
         {
@@ -58,7 +58,7 @@ public:
                 auto resultI2cRead = i2s_read(OSCIL_I2S_NUM, &oscil->_buffer, sizeof(uint16_t) * OSCIL_I2S_BUFFER_LENGTH,
                                               &oscil->bytes_read, portMAX_DELAY);
 
-                //invertBytes(oscil->_buffer, OSCIL_I2S_BUFFER_LENGTH);
+                // invertBytes(oscil->_buffer, OSCIL_I2S_BUFFER_LENGTH);
 
                 oscil->setBufferBussy(false);
             }
@@ -142,6 +142,16 @@ public:
     virtual bool playPause()
     {
         _isOnPause = !_isOnPause;
+        
+        if (_isOnPause)
+        {
+            i2s_adc_disable(OSCIL_I2S_NUM);
+        }
+        else
+        {
+            i2s_adc_enable(OSCIL_I2S_NUM);
+        }
+
         return _isOnPause;
     }
 

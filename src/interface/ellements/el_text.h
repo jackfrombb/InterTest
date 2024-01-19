@@ -7,8 +7,8 @@ class ElText : public ElementVirtual
 {
 private:
     String _text;
-    el_text_size _elSize = {};
-    el_text_align _alignment = {};
+    el_text_size _elSize = el_text_size::EL_TEXT_SIZE_MIDDLE;
+    el_text_align _alignment = el_text_align::EL_TEXT_ALIGN_LEFT;
     std::function<String()> _calculateText = nullptr;
 
 public:

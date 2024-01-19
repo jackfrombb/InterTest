@@ -11,17 +11,19 @@
 // Вспомогательные структуры дисплея
 #include "displays/display_structs.h"
 
+// esp32 библиотеки для работы ADC
+#include "driver/adc.h"
+#include "esp_adc_cal.h"
+#include "driver/i2s.h"
+
 // Логика осцилографа
 #include "oscils/oscils_list.h"
 // Логика вольтметра
 #include "voltmeter.h"
 // Логика тамера прерываний
 #include "hard_timer.h"
-
-// esp32 библиотеки для работы ADC
-#include "driver/adc.h"
-#include "esp_adc_cal.h"
-#include "driver/i2s.h"
+// Логика генератора сигналов
+#include "signal_generator.h"
 
 // Определяем UI
 #ifdef WIDE_UI
@@ -35,6 +37,7 @@
 #include "interface/interface_controller.h"
 #include "displays/display_helper.h"
 #include "controls/control_virtual.h"
+
 
 // Пищалка
 #ifdef BUZZ
@@ -89,6 +92,8 @@ InterfaceController interfaceController(&mainBoard, interfaceEngine);
 // Частота генерации
 int pwmF = 160000;
 
+SignalGenerator sigGen(GPIO_NUM_4);
+
 void setup()
 {
   Serial.begin(115200);
@@ -113,12 +118,8 @@ void setup()
   *progress = 0.6;
   delay(300);
 
-
-  // Настройка шим - временный костыль для проверки АЦП, позже вынесем в отдельный класс генератора
-  ledcSetup(2, pwmF, 8);
-  ledcAttachPin(GPIO_NUM_4, 2);
-  ledcWrite(2, 50);
-
+  //Временный костыль для проверки АЦП
+  sigGen.startMeandrLedc(pwmF, 0.5);
 
   *progress = 0.8;
   delay(100);

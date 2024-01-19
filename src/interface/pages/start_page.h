@@ -5,13 +5,18 @@
 class StartPage : public InterfacePageVirtual
 {
 private:
-    StartPageView* pageView;
+    StartPageView *pageView;
+
 public:
-    StartPage(DisplayVirtual *display) : InterfacePageVirtual(display)
+    StartPage(DisplayVirtual *display, function<void(pages_list)> onPageSelected) : InterfacePageVirtual(display)
     {
-        
+        pageView = new StartPageView(display, onPageSelected);
     }
-    ~StartPage() = default;
+
+    ~StartPage()
+    {
+        delete pageView;
+    }
 
     PageView *getPageView() override
     {
