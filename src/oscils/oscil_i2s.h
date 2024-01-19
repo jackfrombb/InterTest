@@ -12,7 +12,8 @@ class OscilI2s : public OscilVirtual
 private:
     uint32_t _sampleRate;
     size_t bytes_read;
-    uint16_t _buffer[OSCIL_I2S_BUFFER_LENGTH];
+    uint16_t _buffer[OSCIL_I2S_BUFFER_LENGTH] = {};
+    uint16_t _outBuffer[OSCIL_I2S_BUFFER_LENGTH] = {};
     ulong t_start = millis();
     TickType_t xLastWakeTime;
     const TickType_t xFrequency = 50;
@@ -24,6 +25,7 @@ public:
     OscilI2s(MainBoard *mainBoard, uint32_t sampleRate) : OscilVirtual(mainBoard)
     {
         _sampleRate = sampleRate;
+        _bufferReady = true;
     }
 
     ~OscilI2s()
@@ -38,7 +40,8 @@ public:
     static void i2sReadSignal(void *pvParameters)
     {
         OscilI2s *oscil = (OscilI2s *)pvParameters;
-        Serial.println("OscilI2S start communicate");
+        logi::p("Oscil_I2S", "Start communicate");
+
         oscil->xLastWakeTime = xTaskGetTickCount();
 
         uint32_t read_counter = 0;
@@ -48,27 +51,34 @@ public:
         //(I2S port, destination adress, data size in bytes, bytes read counter, RTOS ticks to wait)
         while (1)
         {
-            if (!oscil->_isOnPause)
+            if (!oscil->_isOnPause && !oscil->_bufferBussy)
             {
+                oscil->setBufferBussy(true);
+
                 auto resultI2cRead = i2s_read(OSCIL_I2S_NUM, &oscil->_buffer, sizeof(uint16_t) * OSCIL_I2S_BUFFER_LENGTH,
                                               &oscil->bytes_read, portMAX_DELAY);
+
                 invertBytes(oscil->_buffer, OSCIL_I2S_BUFFER_LENGTH);
+
+                oscil->setBufferBussy(false);
             }
             xTaskDelayUntil(&oscil->xLastWakeTime, oscil->xFrequency);
         }
 
+        logi::p("Oscil_I2S", "End communicate");
         vTaskDelete(NULL);
     }
 
     esp_err_t init()
     {
         Serial.println("I2s init start");
+
         i2s_config_t i2s_config = {
             .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_ADC_BUILT_IN),
             .sample_rate = _sampleRate,                   // The format of the signal using ADC_BUILT_IN
             .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT, // is fixed at 12bit, stereo, MSB
             .channel_format = I2S_CHANNEL_FMT_ALL_LEFT,
-            .communication_format = i2s_comm_format_t(I2S_COMM_FORMAT_STAND_I2S),
+            .communication_format = i2s_comm_format_t::I2S_COMM_FORMAT_STAND_I2S,
             .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
             .dma_buf_count = 4,  // number of DMA buffers
             .dma_buf_len = 1024, // number of samples (in bytes)
@@ -86,16 +96,11 @@ public:
 
         // SYSCON.saradc_ctrl2.sar1_inv = 1;     // SAR ADC samples are inverted by default
         // SYSCON.saradc_ctrl.sar1_patt_len = 0; // Use only the first entry of the pattern table
+
         delay(300); // required for stability of ADC
 
-        auto i2c_adc_err = i2s_adc_enable(OSCIL_I2S_NUM);
-
-        if (i2c_adc_err == ESP_OK)
-            Serial.println("I2s adc enabled");
-        else if (i2c_adc_err == ESP_ERR_INVALID_ARG)
-            Serial.println("I2s adc INVALIDE ARGS");
-        else if (i2c_adc_err == ESP_ERR_INVALID_STATE)
-            Serial.println("I2s adc INVALIDE STATE");
+        auto i2s_adc_err = i2s_adc_enable(OSCIL_I2S_NUM);
+        logi::err("Oscil i2s", i2s_adc_err);
 
         delay(100); // required for stability of ADC
 
@@ -110,7 +115,7 @@ public:
             0                // Core where the task should run
         );
 
-        return i2c_adc_err;
+        return i2s_adc_err;
     }
 
     void deinit()
@@ -129,7 +134,10 @@ public:
         return i2s_get_clk(OSCIL_I2S_NUM);
     }
 
-    uint16_t *getBuffer() { return _buffer; }
+    uint16_t *getBuffer()
+    {
+        return _buffer;
+    }
 
     virtual bool playPause()
     {
@@ -139,12 +147,14 @@ public:
 
     virtual uint32_t getMeasuresInSecond()
     {
-        return i2s_get_clk(OSCIL_I2S_NUM);
+        return _sampleRate;
     }
 
     virtual void setMeasuresInSecond(uint32_t tickTime)
     {
-        // i2s_set_sample_rates(OSCIL_I2S_NUM, _sampleRate);
-        i2s_set_clk(OSCIL_I2S_NUM, tickTime, I2S_BITS_PER_SAMPLE_16BIT, I2S_CHANNEL_MONO);
+        _isOnPause = true;
+        i2s_set_sample_rates(OSCIL_I2S_NUM, tickTime);
+        _sampleRate = tickTime;
+        _isOnPause = false;
     }
 };

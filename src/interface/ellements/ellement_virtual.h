@@ -7,15 +7,13 @@ class ElementVirtual
 {
 protected:
     bool _visible = true;
-    display_position _area {};
+    display_position _area{};
     ElementVirtual *_parent = nullptr;
     el_vertical_align _vertAlign = el_vertical_align::EL_ALGN_TOP;
 
 private:
 public:
-
-    ElementVirtual()
-    = default;
+    ElementVirtual() = default;
 
     explicit ElementVirtual(ElementVirtual *parent)
     {
@@ -121,7 +119,11 @@ public:
 
     virtual void onDraw()
     {
-        
+    }
+
+    virtual bool onControl(control_event_type type, void *args)
+    {
+        return false;
     }
 
     virtual el_type getElementType() = 0;

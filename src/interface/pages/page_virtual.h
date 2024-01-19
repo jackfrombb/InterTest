@@ -7,6 +7,10 @@
 #include "interface/pages/views/page_view.h"
 #include "controls/control_virtual.h"
 
+typedef enum {
+    PAGE_LIST_OSCIL, PAGE_LIST_VOLT, PAGE_LIST_OHM
+} pages_list;
+
 /// @brief Контроллер для страницы. Управление основными объектами страницы здесь
 class InterfacePageVirtual
 {

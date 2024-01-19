@@ -1,13 +1,12 @@
 /* **********************************************
-Author: JackFromBB - jack@boringbar.ru / 
+Author: JackFromBB - jack@boringbar.ru /
 Placement from: https://github.com/jackfrombb/
 The library for ESP32 under Arduino Environment
 ************************************************ */
 #pragma once
+
 #include <stdio.h>
 #include <Arduino.h>
-
-extern int range(int input, int min, int max, bool infin = false);
 
 template <typename T>
 T rangeV2(T input, T min, T max)
@@ -15,18 +14,59 @@ T rangeV2(T input, T min, T max)
   return input < min ? min : (input > max ? max : input);
 }
 
-extern void copy(int *src, int *dst, int len);
+static void copy(int *src, int *dst, int len)
+{
+  memcpy(dst, src, sizeof(src[0]) * len);
+}
 
-extern float mK;// = 0.4; // коэффициент фильтрации, 0.0-1.0
-/// бегущее среднее
-extern float expRunningAverage(float newVal);
+/// @brief Ограничивает значение
+/// @param input входное
+/// @param min минимальное
+/// @param max максимальное
+/// @param infin если true, то при переполнении возвращает минимальное, а при "пробитии дна" максимальное
+///             (используется для бесконечной прокрутки меню)
+/// @return ограниченное значение
+int range(int input, int min, int max, bool infin = false)
+{
+  return input < min ? (infin ? max : min) : (input > max ? (infin ? min : max) : input);
+}
+
+float mK = 0.4; // коэффициент фильтрации, 0.0-1.0
+float expRunningAverage(float newVal)
+{
+  static float filVal = 0;
+  filVal += (newVal - filVal) * mK;
+  return filVal;
+}
+
+void invertBytes(uint16_t *buf, int length)
+{
+  for (int i = 0; i < length; i++)
+  {
+    buf[i] = buf[i] & 0x0FFF;
+    i++;
+  }
+}
+
+int16_t invertBytes(int val)
+{
+  return val & 0x0FFF;
+}
 
 // Обычное среднее
-extern float midArifm2(float newVal, float measureSize);
+float midArifm2(float newVal, float measureSize)
+{
 
-/// @brief Инвертировать байты
-/// @param buf ссылка на массив
-/// @param length длинна массива
-void invertBytes(uint16_t* buf, int length);
-
-int16_t invertBytes(uint16_t val);
+  static byte counter = 0;     // счётчик
+  static float prevResult = 0; // хранит предыдущее готовое значение
+  static float sum = 0;        // сумма
+  sum += newVal;               // суммируем новое значение
+  counter++;                   // счётчик++
+  if (counter == measureSize)
+  {                                 // достигли кол-ва измерений
+    prevResult = sum / measureSize; // считаем среднее
+    sum = 0;                        // обнуляем сумму
+    counter = 0;                    // сброс счётчика
+  }
+  return prevResult;
+}

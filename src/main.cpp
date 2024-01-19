@@ -87,7 +87,7 @@ InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(&mainBoard);
 InterfaceController interfaceController(&mainBoard, interfaceEngine);
 
 // Частота генерации
-int pwmF = 100000;
+int pwmF = 160000;
 
 void setup()
 {
@@ -117,7 +117,7 @@ void setup()
   // Настройка шим - временный костыль для проверки АЦП, позже вынесем в отдельный класс генератора
   ledcSetup(2, pwmF, 8);
   ledcAttachPin(GPIO_NUM_4, 2);
-  ledcWrite(2, 254 / 2);
+  ledcWrite(2, 50);
 
 
   *progress = 0.8;

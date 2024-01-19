@@ -157,7 +157,7 @@ public:
     }
 
     ulong getRealSampleTime() override { return 0; }
-    uint16_t *getBuffer() override { return (uint16_t *)adc_buffer_out; }
+    uint16_t *getBuffer() override { return (uint16_t*) adc_buffer_out; }
     bool isBufferReady() override
     {
         return _bufferReady;

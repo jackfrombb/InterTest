@@ -53,6 +53,7 @@ private:
             if (_enc->getClicks() == 2)
             {
                 logi::p("Control encoder", "Two clicks test OK");
+                _handler(control_event_type::PRESS_BACK, _args);
             }
             break;
 

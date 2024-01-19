@@ -86,7 +86,13 @@ private:
                 .y = _display->getResolution().height}};
 
         _waveform.setArea(size);
-        _waveform.setPoints(_oscil->getBuffer(), _oscil->getBufferLength());
+
+        //_waveform.setPoints(_oscil->getBuffer(), _oscil->getBufferLength());
+        _waveform.setPointsSource([this]
+                                  { return _oscil->getBuffer(); },
+                                  _oscil->getBufferLength());
+
+        _waveform.setOscil(_oscil);
     }
 
     void _initWaitText()
@@ -129,7 +135,7 @@ public:
                                 // 1 - управление семплированием
                                 // 2 - плей/пауза
 
-    ElWaveform<uint16_t> _waveform;
+    ElWaveform <uint16_t> _waveform;
     ElText _waitText;
     ElText oscilFreqText;
     ElText leftUpInfoText;
@@ -148,6 +154,7 @@ public:
         _initInfoTexts();
 
         addElement(&_waveform)->addElement(&_waitText)->addElement(&_bottomButtons)->addElement(&oscilFreqText);
+
         _lastButtonPressTime = millis();
     }
 

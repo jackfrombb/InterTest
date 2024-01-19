@@ -18,7 +18,7 @@ protected:
 
     virtual void drawGroup(ElGroup *group)
     {
-        if(!group->isVisible())
+        if (!group->isVisible())
             return;
 
         group->onDraw();
@@ -42,7 +42,7 @@ protected:
             break;
 
         case el_type::EL_TYPE_WAVEFORM:
-            drawWaveform((ElWaveform<uint16_t> *)el);
+            drawWaveform((ElWaveform<uint16_t>*)el);
             break;
 
         case el_type::EL_TYPE_TEXT:

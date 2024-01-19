@@ -3,6 +3,7 @@
 #include <U8g2lib.h>
 #include "displays/display_virtual.h"
 #include "board_virtual.h"
+#include "oscils/sync.h"
 
 // #define LCDWidth                        u8g2.getDisplayWidth()
 // #define ALIGN_CENTER(t)                 ((LCDWidth - (u8g2.getUTF8Width(t))) / 2)
@@ -43,7 +44,7 @@ private:
         uint8_t widthPixelsCount = width / waveform->getWidthSectionsCount();
 
         // Serial.println("Draw init OK");
-        int voltSectionTitle = (int) waveform->getMaxMeasureValue();
+        int voltSectionTitle = (int)waveform->getMaxMeasureValue();
 
         for (uint16_t v = 0; v <= height; v += heightPixelInSection)
         {
@@ -73,32 +74,53 @@ private:
     /// @param waveform данные осциллограммы
     void _drawWaveform(ElWaveform<uint16_t> *waveform)
     {
-        int bias = 0;
-        // Serial.println("Max measure val: " + String(waveform->getMaxMeasureValue()));
+        // Если происходит буфер уже занят, то задерживаем поток и ждем
+        // иначе занимаем буфер
+        if (waveform->getOscil()->isBufferBussy())
+        {
+            delayMicroseconds(100);
+            _drawWaveform(waveform);
+            return;
+        }
+        else
+        {
+            waveform->getOscil()->setBufferBussy(true);
+        }
+
+        int bias = 0; // SyncBuffer::findSignalOffset(waveform->getPoints(), waveform->getPointsLength());
+
         //  Преобразованный предел
         const int maxMeasureValNormalized = (int)(waveform->getMaxMeasureValue() * 1000);
 
         uint16_t width = waveform->getArea().getWidth();
         uint16_t height = waveform->getArea().getHeight();
-        auto *buf = (uint32_t *)waveform->getPoints();
+        auto *buf = (int*) waveform->getPoints();
 
-        for (uint16_t x = 0; x <= width; x++)
+        int max = 0;
+
+        for (uint16_t x = bias; x <= width + bias; x++)
         {
-            int realVolt = (int) _mainBoard->rawToVoltage(buf[x]);
-            int next = x == width ? 0 : (int) buf[x + 1];
+            int realVolt = (int)_mainBoard->rawToVoltage(buf[x]);
+            //logi::p("Engine", "Raw: " + String(buf[x]) + " Volt: "+ String(realVolt));
+
+            int next = x == width ? 0 : (int)buf[x + 1];
+            if (realVolt > max)
+                max = realVolt;
+            // logi::p("Engine", "RealV: " + String(realVolt) + " Max: " + String(max));
 
             byte val = map(realVolt, 0, maxMeasureValNormalized, height - 1, 0);
 
-            if (x == width - 1)
+            if (x == width + bias)
             {
-                _u8g2->drawPixel(x, val);
+                _u8g2->drawPixel(x - bias, val);
             }
             else
             {
                 byte val2 = map((long)_mainBoard->rawToVoltage(next), 0, maxMeasureValNormalized, height - 1, 0);
-                _u8g2->drawLine(x, val, x + 1, val2);
+                _u8g2->drawLine(x - bias, val, (x - bias) + 1, val2);
             }
         }
+        // waveform->getOscil()->setBufferBussy(false);
     }
 
     void _setTextSize(el_text_size size)
@@ -142,7 +164,7 @@ protected:
         _u8g2->nextPage();
     }
 
-    int _getTextCenterX(const String& text, int fromX, int width)
+    int _getTextCenterX(const String &text, int fromX, int width)
     {
         int textWidth = _u8g2->getUTF8Width(text.c_str());
         return (int)(fromX + ((float)width * 0.5) - ((float)textWidth * 0.5));
@@ -153,8 +175,9 @@ public:
     explicit InterfaceEngine_U8g2(MainBoard *mainBoard)
     {
         _mainBoard = mainBoard;
+
         _display = mainBoard->getDisplay();
-        _u8g2 = (U8G2 *) _display->getLibrary();
+        _u8g2 = (U8G2 *)_display->getLibrary();
         bufferSize = (unsigned int)(8 * _u8g2->getBufferTileHeight() * _u8g2->getBufferTileWidth());
         _displayBuffer = (uint8_t *)calloc(bufferSize, sizeof(uint8_t));
     }

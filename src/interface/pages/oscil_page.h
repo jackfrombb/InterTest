@@ -10,13 +10,15 @@ private:
     OscilVirtual *_oscil;
     OscilPageView *_pageView;
     MainBoard *_mainBoard;
+    uint16_t* voltBuffer;
 
 public:
     explicit OscilPage(MainBoard *mainBoard) : InterfacePageVirtual(mainBoard->getDisplay())
-    {
-        _oscil = new OscilAdcDma(mainBoard, 98000);// new OscilAdcDma(mainBoard, 20000);// new OscilAdc(mainBoard, 5500); //new OscilI2s(mainBoard, 1000);
-        _mainBoard = mainBoard;
+    {      
+         _mainBoard = mainBoard;
+        _oscil = new OscilI2s(mainBoard, 158000);// new OscilAdcDma(mainBoard, 20000);// new OscilAdc(mainBoard, 5500); //new OscilI2s(mainBoard, 1000);
         _pageView = new OscilPageView(mainBoard->getDisplay(), _oscil);
+    
         initOscil();
     }
 
