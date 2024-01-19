@@ -58,7 +58,7 @@ public:
                 auto resultI2cRead = i2s_read(OSCIL_I2S_NUM, &oscil->_buffer, sizeof(uint16_t) * OSCIL_I2S_BUFFER_LENGTH,
                                               &oscil->bytes_read, portMAX_DELAY);
 
-                invertBytes(oscil->_buffer, OSCIL_I2S_BUFFER_LENGTH);
+                //invertBytes(oscil->_buffer, OSCIL_I2S_BUFFER_LENGTH);
 
                 oscil->setBufferBussy(false);
             }

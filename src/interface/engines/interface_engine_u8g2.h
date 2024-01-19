@@ -94,7 +94,7 @@ private:
 
         uint16_t width = waveform->getArea().getWidth();
         uint16_t height = waveform->getArea().getHeight();
-        auto *buf = (int*) waveform->getPoints();
+        auto *buf =  waveform->getPoints();
 
         int max = 0;
 
@@ -120,7 +120,7 @@ private:
                 _u8g2->drawLine(x - bias, val, (x - bias) + 1, val2);
             }
         }
-        // waveform->getOscil()->setBufferBussy(false);
+        waveform->getOscil()->setBufferBussy(false);
     }
 
     void _setTextSize(el_text_size size)

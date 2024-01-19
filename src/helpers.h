@@ -43,7 +43,7 @@ void invertBytes(uint16_t *buf, int length)
 {
   for (int i = 0; i < length; i++)
   {
-    buf[i] = buf[i] & 0x0FFF;
+    buf[i] = buf[i] & 0xFFFF;
     i++;
   }
 }
