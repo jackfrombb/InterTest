@@ -5,6 +5,8 @@
 #include "board_virtual.h"
 #include "oscils/sync.h"
 
+#define PAGE_TAG "Engine_U8G2"
+
 // #define LCDWidth                        u8g2.getDisplayWidth()
 // #define ALIGN_CENTER(t)                 ((LCDWidth - (u8g2.getUTF8Width(t))) / 2)
 // #define ALIGN_RIGHT(t)                  (LCDWidth -  u8g2.getUTF8Width(t))
@@ -23,7 +25,7 @@ private:
     unsigned int bufferSize;
 
     /// @brief Отрисовать ориентиры и надписи (буферезируется)
-    void _drawDotBack(ElWaveform<uint16_t> *waveform)
+    void _drawDotBack(ElWaveform *waveform)
     {
         static bool buffered = false; // Флаг буферизации фона
 
@@ -72,21 +74,8 @@ private:
 
     /// @brief Отрисовать график
     /// @param waveform данные осциллограммы
-    void _drawWaveform(ElWaveform<uint16_t> *waveform)
+    void _drawWaveform(ElWaveform *waveform)
     {
-        // Если происходит буфер уже занят, то задерживаем поток и ждем
-        // иначе занимаем буфер
-        if (waveform->getOscil()->isBufferBussy())
-        {
-            delayMicroseconds(100);
-            _drawWaveform(waveform);
-            return;
-        }
-        else
-        {
-            waveform->getOscil()->setBufferBussy(true);
-        }
-
         int bias = 0; // SyncBuffer::findSignalOffset(waveform->getPoints(), waveform->getPointsLength());
 
         //  Преобразованный предел
@@ -94,19 +83,13 @@ private:
 
         uint16_t width = waveform->getArea().getWidth();
         uint16_t height = waveform->getArea().getHeight();
-        auto *buf = waveform->getPoints();
 
-        int max = 0;
+        auto measures = waveform->getMeasures();
 
         for (uint16_t x = bias; x <= width + bias; x++)
         {
-            int realVolt = (int)_mainBoard->rawToVoltage(buf[x]);
-            // logi::p("Engine", "Raw: " + String(buf[x]) + " Volt: "+ String(realVolt));
-
-            int next = x == width ? 0 : (int)buf[x + 1];
-            if (realVolt > max)
-                max = realVolt;
-            // logi::p("Engine", "RealV: " + String(realVolt) + " Max: " + String(max));
+            uint32_t realVolt = measures.buffer[x]; //(int)_mainBoard->rawToVoltage(buf[x]);
+            uint32_t next = x == width ? 0 : measures.buffer[x + 1];
 
             byte val = map(realVolt, 0, maxMeasureValNormalized, height - 1, 0);
 
@@ -116,11 +99,10 @@ private:
             }
             else
             {
-                byte val2 = map((long)_mainBoard->rawToVoltage(next), 0, maxMeasureValNormalized, height - 1, 0);
+                byte val2 = map(next, 0, maxMeasureValNormalized, height - 1, 0);
                 _u8g2->drawLine(x - bias, val, (x - bias) + 1, val2);
             }
         }
-        waveform->getOscil()->setBufferBussy(false);
     }
 
     void _setTextSize(el_text_size size)
@@ -215,28 +197,28 @@ public:
     {
         drawText(button);
 
-        int x = _getTextCenterX(button->getText(), button->getX(), button->getWidth()) + button->getParent()->getX();
-        int y = (int)(button->getParent()->getY() + (button->getParent()->getHeight() * 0.5) - ((_u8g2->getMaxCharHeight() + 2) * 0.5));
+        int x = button->getParent()->getX() + button->getX();
+        int y = button->getParent()->getY() + button->getY();
 
         if (button->isPushed()) // если нажата то заполненный скругленый прямоугольник
         {
-            _u8g2->drawRBox(x - 4,
-                            y,
-                            _u8g2->getUTF8Width(button->getText().c_str()) + 8,
+            _u8g2->drawRBox(x - 2,
+                            y - 2,
+                            _u8g2->getUTF8Width(button->getText().c_str()) + 4,
                             _u8g2->getMaxCharHeight() + 2,
                             2);
         }
         else if (button->isSelected()) // если активна то рисуем рамку вокруг
         {
-            _u8g2->drawRFrame(x - 4,
-                              y,
-                              _u8g2->getUTF8Width(button->getText().c_str()) + 8,
-                              _u8g2->getMaxCharHeight() + 2,
+            _u8g2->drawRFrame(x - 2,
+                              y - 2,
+                              _u8g2->getUTF8Width(button->getText().c_str()) + 4,
+                              _u8g2->getMaxCharHeight() + 4,
                               2);
         }
     }
 
-    void drawWaveform(ElWaveform<uint16_t> *waveform) override
+    void drawWaveform(ElWaveform *waveform) override
     {
         _drawDotBack(waveform);
         _drawWaveform(waveform);

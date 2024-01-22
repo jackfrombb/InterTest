@@ -32,6 +32,7 @@ int range(int input, int min, int max, bool infin = false)
 }
 
 float mK = 0.4; // коэффициент фильтрации, 0.0-1.0
+/// Бегущее среднее
 float expRunningAverage(float newVal)
 {
   static float filVal = 0;
@@ -54,19 +55,24 @@ int16_t invertBytes(int val)
 }
 
 // Обычное среднее
-float midArifm2(float newVal, float measureSize)
+template <typename T>
+T midArifm2(T newVal, T measureSize)
 {
 
-  static byte counter = 0;     // счётчик
+  static uint16_t counter = 0;     // счётчик
   static float prevResult = 0; // хранит предыдущее готовое значение
   static float sum = 0;        // сумма
   sum += newVal;               // суммируем новое значение
   counter++;                   // счётчик++
+
   if (counter == measureSize)
   {                                 // достигли кол-ва измерений
     prevResult = sum / measureSize; // считаем среднее
     sum = 0;                        // обнуляем сумму
     counter = 0;                    // сброс счётчика
+
+    logi::p("Helpers", "RESSET; Prev: " + String(prevResult));
   }
-  return prevResult;
+  logi::p("Helpers", "SUM: " + String(sum) + " Prev result: " + String(prevResult) + " Counter: " + String(counter));
+  return (T)prevResult;
 }

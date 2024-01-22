@@ -114,6 +114,10 @@ public:
         oscilTimer.deinit();
     }
 
+    bool isOnPause(){
+        return getTimer().isOnPause();
+    }
+
     bool playPause() override{
         return getTimer().playPause();
     }

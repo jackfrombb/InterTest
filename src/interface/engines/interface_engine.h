@@ -12,7 +12,7 @@ protected:
 
     virtual void drawProgressBar(ElProgressBar *progressBar) = 0;
     virtual void drawButton(ElTextButton *button) = 0;
-    virtual void drawWaveform(ElWaveform<uint16_t> *waveform) = 0;
+    virtual void drawWaveform(ElWaveform *waveform) = 0;
     virtual void drawText(ElText *text) = 0;
     virtual void drawCenteredGroup(ElCenteredGroup *group) = 0;
 
@@ -42,7 +42,7 @@ protected:
             break;
 
         case el_type::EL_TYPE_WAVEFORM:
-            drawWaveform((ElWaveform<uint16_t>*)el);
+            drawWaveform((ElWaveform *)el);
             break;
 
         case el_type::EL_TYPE_TEXT:

@@ -3,98 +3,76 @@
 #include <Arduino.h>
 #include "ellement_virtual.h"
 #include "displays/display_structs.h"
+#include "oscils/oscil_virtual.h"
 
 using namespace std;
 
-template <typename T>
 class ElWaveform : public ElementVirtual
 {
 private:
-    T *_points;
-    T *_prevPoints;
-    OscilVirtual* _oscil;
+    adc_measures_t _measures;
     uint32_t _pointsLength{};
     uint8_t _sectionCountW = 8;
     uint8_t _sectionCountH = 4;
     float _maxMeasureValue = 4.0;
-    function<T*()> _getPointsFunc = nullptr;
+    function<adc_measures_t()> _getMeasuresFunc = nullptr;
 
 public:
-    ElWaveform()
-    = default;
-    
-    explicit ElWaveform(T* points)
+    ElWaveform() = default;
+
+    ~ElWaveform() = default;
+
+    void setPointsSource(function<adc_measures_t()> getMeasuresFunc)
     {
-        _points = points;
+        _getMeasuresFunc = getMeasuresFunc;
     }
 
-    ~ElWaveform(){
-        free(_prevPoints);
-    }
-
-    void setPointsSource(function<T*()> getPointsFunc, uint32_t lenght){
-        _getPointsFunc = getPointsFunc;
-        _pointsLength = lenght;
-    }
-
-    void setPoints(T *points, uint32_t pointsLength)
+    void setPoints(adc_measures_t measures)
     {
-        _points = points;
-        _pointsLength = pointsLength;
-        _prevPoints = (T*) calloc(_pointsLength, sizeof(T));
+        _measures = measures;
     }
 
-    T* getPoints(){
-        if(_getPointsFunc != nullptr){
-            return _getPointsFunc();
+    adc_measures_t getMeasures()
+    {
+        if (_getMeasuresFunc != nullptr)
+        {
+            return _getMeasuresFunc();
         }
-        return _points;
+        return _measures;
     }
 
-    ElWaveform* setOscil(OscilVirtual* oscil){
-        _oscil = oscil;
-
-        return this;
-    }
-
-    OscilVirtual* getOscil(){
-        return _oscil;
-    }
-
-    T* getPrevPoints(){
-        return _prevPoints;
-    }
-
-    ElWaveform* copyPointsToPrev(){
-        memcpy(getPrevPoints(), getPoints(), getPointsLength() * sizeof(T));
-        return this;
-    }
-
-    uint32_t getPointsLength(){
+    uint32_t getPointsLength()
+    {
         return _pointsLength;
     }
 
-    void setWidthSectionsCount(uint8_t count){
+    void setWidthSectionsCount(uint8_t count)
+    {
         _sectionCountW = count;
-    } 
-    
-    void setHeightSectionsCount(uint8_t count){
+    }
+
+    void setHeightSectionsCount(uint8_t count)
+    {
         _sectionCountH = count;
     }
 
-    void setMaxMeasureValue(float val){
+    void setMaxMeasureValue(float val)
+    {
         _maxMeasureValue = val;
     }
 
-    float getMaxMeasureValue(){
+    float getMaxMeasureValue()
+    {
         return _maxMeasureValue;
     }
 
-    uint8_t getWidthSectionsCount(){
+    uint8_t getWidthSectionsCount()
+    {
         return _sectionCountW;
     }
 
-    uint8_t getHeightSectionsCount(){
+    uint8_t getHeightSectionsCount()
+    {
         return _sectionCountH;
     }
 

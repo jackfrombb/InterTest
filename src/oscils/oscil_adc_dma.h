@@ -177,6 +177,10 @@ public:
         vTaskDelete(_workingThreadHandler);
     }
 
+    bool isOnPause(){
+        return _pause;
+    }
+
     bool playPause() override
     {
         _pause = !_pause;

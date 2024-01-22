@@ -3,6 +3,8 @@
 #include "board_virtual.h"
 #include "oscil_virtual.h"
 #include "freertos/FreeRTOS.h"
+#include "logi.h"
+#include "helpers.h"
 
 #define OSCIL_I2S_NUM I2S_NUM_0
 #define OSCIL_I2S_BUFFER_LENGTH 512
@@ -12,8 +14,10 @@ class OscilI2s : public OscilVirtual
 private:
     uint32_t _sampleRate;
     size_t bytes_read;
+
+    //Буфер с непреобразованными значениями
     uint16_t _buffer[OSCIL_I2S_BUFFER_LENGTH] = {};
-    uint16_t _outBuffer[OSCIL_I2S_BUFFER_LENGTH] = {};
+
     ulong t_start = millis();
     TickType_t xLastWakeTime;
     const TickType_t xFrequency = 50;
@@ -92,7 +96,7 @@ public:
 
         _mainBoard->adc1Init();
 
-        Serial.println("I2s init ok");
+        logi::p("Oscil i2s", "I2s init ok");
 
         // SYSCON.saradc_ctrl2.sar1_inv = 1;     // SAR ADC samples are inverted by default
         // SYSCON.saradc_ctrl.sar1_patt_len = 0; // Use only the first entry of the pattern table
@@ -139,10 +143,15 @@ public:
         return _buffer;
     }
 
-    virtual bool playPause()
+    bool isOnPause() override
+    {
+        return _isOnPause;
+    }
+
+    bool playPause() override
     {
         _isOnPause = !_isOnPause;
-        
+
         if (_isOnPause)
         {
             i2s_adc_disable(OSCIL_I2S_NUM);

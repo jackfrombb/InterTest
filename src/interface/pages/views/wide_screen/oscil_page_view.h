@@ -1,5 +1,7 @@
 #pragma once
 #include "interface/pages/views/page_view.h"
+#include "voltmeter.h"
+
 using namespace std;
 
 class OscilPageView : public PageView
@@ -7,15 +9,16 @@ class OscilPageView : public PageView
 private:
     ElCenteredGroup _bottomButtons;
     OscilVirtual *_oscil;
+    Voltmetr *_voltmeter;
 
-    display_position *_bottomMenuPosition; // Указатель на позицию меню, для анимации перемещения
-    bool _showBottomMenuTrigger = true;    // Триггер для отображения меню
-    int _bottomMenuPositionOnShow;         // Изначальное, нормальное положение меню
+    bool _isOnSampleChangeMod = false;
+    uint8_t _selectedMeasuresMode = 0; // 0 - Пик ту пик, 1 - среднее, 2 - герцы
+
+    // display_position *_bottomMenuPosition; // Указатель на позицию меню, для анимации перемещения
+    // bool _showBottomMenuTrigger = true;    // Триггер для отображения меню
+    int _defaultBottomMenuPosition; // Изначальное, нормальное положение меню
 
     ulong _lastButtonPressTime;
-    bool _isOnSampleChangeMod = false;
-
-    uint8_t _selectedMeasuresMode = 0;
 
     void _initInfoTexts()
     {
@@ -24,54 +27,63 @@ private:
             ->setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER)
             ->setX(0)
-            ->setY(_bottomMenuPositionOnShow)
+            ->setY(_defaultBottomMenuPosition)
             ->setWidth(_display->getWidth())
             ->setVisibility(false);
     }
 
     void _initBottomMenu()
     {
-
         _volt.setButtonId(0)
             ->setSelectedButtonPtr(&selectedButton)
-            ->setText("Vm")
+            ->setCalculatedText(
+                [this]
+                {
+                String out = "";
+                switch(_selectedMeasuresMode){
+                    case 0:
+                    //Максимальное значение напряжения
+                    out = String(_voltmeter->getMax()) + "v";
+                    break;
+
+                    case 1:
+                    //Среднее значение напряжения
+                    out = String(_voltmeter->getMiddle()) + "v";
+                    break;
+
+                    case 2:
+                    //Когда нибудь будем тут частоту отображать
+                    out = String(0.0) + "hz";
+                    break;
+                }
+                return  out; })
             ->setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)
-            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER)
-            ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER)
-            ->setWidth(20)
-            ->setHeight(10);
+            ->setX(4)
+            ->setY(3);
 
         _herz.setButtonId(1)
             ->setSelectedButtonPtr(&selectedButton)
-            ->setText("Hz")
+            ->setCalculatedText([this]
+                                { 
+                                    String out;
+                                    if(_isOnSampleChangeMod){
+                                    out =  String(_oscil->getMeasuresInSecond()) + "Hz"; 
+                                    }
+                                    else {
+                                    out =  "Smps";
+                                    }  
+                                    return out; })
             ->setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)
-            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER)
-            ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER)
-            ->setWidth(30)
-            ->setHeight(10);
+            ->setX(4)
+            ->setY(_display->getHeight() - 10);
 
         _pause.setButtonId(2)
             ->setSelectedButtonPtr(&selectedButton)
-            ->setText("P")
+            ->setCalculatedText([this]
+                                { return _oscil->isOnPause() ? ">" : "II"; })
             ->setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)
-            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER)
-            ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER)
-            ->setWidth(30)
-            ->setHeight(10);
-
-        int16_t paddingW = 2;
-        int16_t paddingBottom = 2;
-
-        _bottomButtons
-            .setX(paddingW)
-            ->setY(_display->getHeight() - (_volt.getHeight() + 4 + paddingBottom))
-            ->setWidth(_display->getWidth() - paddingW)
-            ->setHeight(_volt.getHeight() + 4);
-
-        _bottomButtons.addElement(&_volt)->addElement(&_herz)->addElement(&_pause);
-
-        _bottomMenuPosition = _bottomButtons.getAreaPtr();
-        _bottomMenuPositionOnShow = _bottomButtons.getArea().getY();
+            ->setX(_display->getWidth() - 20)
+            ->setY(_display->getHeight() - 10);
     }
 
     void _initWaveform()
@@ -87,17 +99,16 @@ private:
 
         _waveform.setArea(size);
 
-        //_waveform.setPoints(_oscil->getBuffer(), _oscil->getBufferLength());
         _waveform.setPointsSource([this]
-                                  { return _oscil->getBuffer(); },
-                                  _oscil->getBufferLength());
-
-        _waveform.setOscil(_oscil);
+                                  { return _voltmeter->getMeasures(); });
     }
 
     void _initWaitText()
     {
-        _waitText.setText("Подождите")->setPosition(ELEMENT_POSITION_CENTER, ELEMENT_POSITION_CENTER)->setTextSize(EL_TEXT_SIZE_SMALL);
+        _waitText
+            .setText("Подождите")
+            ->setPosition(ELEMENT_POSITION_CENTER, ELEMENT_POSITION_CENTER)
+            ->setTextSize(EL_TEXT_SIZE_SMALL);
     }
 
     void onOkPress()
@@ -106,25 +117,17 @@ private:
         {
         case 0:
             // Сменить отображаемые в углу данные
-            _selectedMeasuresMode = range(_selectedMeasuresMode, 0, 2, true);
+            _selectedMeasuresMode = range(_selectedMeasuresMode + 1, 0, 2, true);
             break;
 
         case 1:
             // Войти в режим выбора частоты
             sampleChangeMode(true);
-            hideBottomMenu();
             break;
 
         case 2:
             // Плей пауза для осцилографа
-            if (_oscil->playPause())
-            {
-                hideBottomMenu();
-            }
-            else
-            {
-                showBottomMenu();
-            }
+            _oscil->playPause();
             break;
         }
     }
@@ -134,8 +137,9 @@ public:
     uint8_t selectedButton = 1; // 0 - сменить измеряемые данные
                                 // 1 - управление семплированием
                                 // 2 - плей/пауза
+                                // 3 - открыть подменю
 
-    ElWaveform <uint16_t> _waveform;
+    ElWaveform _waveform;
     ElText _waitText;
     ElText oscilFreqText;
     ElText leftUpInfoText;
@@ -144,16 +148,24 @@ public:
     ElTextButton _herz;
     ElTextButton _pause;
 
-    OscilPageView(DisplayVirtual *display, OscilVirtual *oscil) : PageView(display)
+    OscilPageView(DisplayVirtual *display, OscilVirtual *oscil, Voltmetr *voltmeter) : PageView(display)
     {
         _oscil = oscil;
+        _voltmeter = voltmeter;
 
         _initWaveform();
         _initWaitText();
         _initBottomMenu();
         _initInfoTexts();
 
-        addElement(&_waveform)->addElement(&_waitText)->addElement(&_bottomButtons)->addElement(&oscilFreqText);
+        addElement(&_waveform)
+            ->addElement(&_waitText)
+            ->addElement(&_bottomButtons)
+            ->addElement(&oscilFreqText)
+            ->addElement(&_volt)
+            ->addElement(&_herz)
+            ->addElement(&_pause) //
+            ;
 
         _lastButtonPressTime = millis();
     }
@@ -166,24 +178,21 @@ public:
             {
             case control_event_type::PRESS_OK:
                 sampleChangeMode(false);
-                showBottomMenu();
                 break;
 
             case control_event_type::PRESS_LEFT:
                 // Уменьшить семпл рейт
-                changeOscilMeasures(false, 1);
+                changeOscilSamplerate(false, 1);
                 break;
 
             case control_event_type::PRESS_RIGHT:
                 // Увеличить семпл рейт
-                changeOscilMeasures(true, 1);
+                changeOscilSamplerate(true, 1);
                 break;
             }
         }
         else
         {
-            showBottomMenu();
-
             switch (eventType)
             {
             case control_event_type::PRESS_OK:
@@ -201,7 +210,7 @@ public:
         }
     }
 
-    uint32_t changeOscilMeasures(bool increase, int16_t multipler)
+    uint32_t changeOscilSamplerate(bool increase, int16_t multipler)
     {
         auto t = _oscil->getMeasuresInSecond();
         t = increase ? t + (1 * multipler) : t - (1 * multipler);
@@ -215,47 +224,10 @@ public:
     {
         // Частота семплирования появляется когда в режиме её изменения и когда
         oscilFreqText.setVisibility(_isOnSampleChangeMod);
-
-        if (_showBottomMenuTrigger && _bottomMenuPosition->getY() > _bottomMenuPositionOnShow)
-        {
-            if (!_bottomButtons.isVisible())
-            {
-                _bottomButtons.setVisibility(true);
-            }
-
-            _bottomMenuPosition->leftUp.y -= 2;
-            _bottomMenuPosition->rightDown.y -= 2;
-        }
-        else if (!_showBottomMenuTrigger && _bottomMenuPosition->getY() < _display->getResolution().height)
-        {
-            _bottomMenuPosition->leftUp.y += 2;
-            _bottomMenuPosition->rightDown.y += 2;
-
-            if (_display->getResolution().height <= _bottomMenuPosition->leftUp.y)
-            {
-                _bottomButtons.setVisibility(false);
-            }
-        }
-
-        if (_showBottomMenuTrigger && millis() - _lastButtonPressTime > 3000)
-        {
-            hideBottomMenu();
-        }
     }
 
     void sampleChangeMode(bool on)
     {
         _isOnSampleChangeMod = on;
-    }
-
-    void showBottomMenu()
-    {
-        _lastButtonPressTime = millis();
-        _showBottomMenuTrigger = true;
-    }
-
-    void hideBottomMenu()
-    {
-        _showBottomMenuTrigger = false;
     }
 };

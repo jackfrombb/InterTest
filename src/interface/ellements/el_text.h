@@ -12,16 +12,14 @@ private:
     std::function<String()> _calculateText = nullptr;
 
 public:
-    ElText()
-    = default;
+    ElText() = default;
 
     explicit ElText(String text)
     {
         setText(std::move(text));
     }
 
-    ~ElText()
-    = default;
+    ~ElText() = default;
 
     ElText *setText(String text)
     {
