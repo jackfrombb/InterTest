@@ -3,7 +3,7 @@
 #include "interface/pages/views/page_view.h"
 #include "interface/pages/page_virtual.h"
 
-// #define TEST_ANIM_ENABLE
+#define TEST_ANIM_ENABLE
 
 class StartPageView : public PageView
 {
@@ -149,8 +149,8 @@ public:
     void onDraw() override
     {
         // Подрубаем анимацию для пунктов
-        _current.nextAnimStep();
         _next.nextAnimStep();
         _prev.nextAnimStep();
+        _current.nextAnimStep();
     }
 };
