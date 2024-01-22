@@ -87,6 +87,13 @@ public:
     void onPageSelected(pages_list page)
     {
         logi::p("Inerface_Controller", "Select " + String(page));
+        switch (page)
+        {
+        case pages_list::PAGE_LIST_OSCIL:
+            clear();
+            setCurrentPage(new OscilPage(_mainBoard));
+            break;
+        }
     }
 
     void setCurrentPage(InterfacePageVirtual *page)

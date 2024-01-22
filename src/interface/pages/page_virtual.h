@@ -12,6 +12,7 @@ typedef enum
     PAGE_LIST_OSCIL,
     PAGE_LIST_VOLT,
     PAGE_LIST_OHM,
+    PAGE_SETTINGS,
     pagesCount, // Для определения кол-ва страниц
 } pages_list;
 
@@ -25,6 +26,8 @@ String pages_list_getName(pages_list page)
         return "Вольтметр";
     case pages_list::PAGE_LIST_OHM:
         return "Омметр";
+    case pages_list::PAGE_SETTINGS:
+        return "Настройки";
     }
 
     return "Error_02";

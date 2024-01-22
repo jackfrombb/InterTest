@@ -4,9 +4,9 @@
  * @brief Вспомогательные структуры для дисплея
  * @version 0.1
  * @date 2024-01-03
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 #pragma once
 #include <Arduino.h>
@@ -21,36 +21,75 @@ typedef struct
 /// @brief Участок дисплея
 typedef struct display_position
 {
-  point_t leftUp; //Левая верхняя точка
-  point_t rightDown; //Правая нижняя точка
+  point_t leftUp;    // Левая верхняя точка
+  point_t rightDown; // Правая нижняя точка
 
-  int getX() const{
+  int getX() const
+  {
     return leftUp.x;
   }
 
-  int getY() const{
+  int getY() const
+  {
     return leftUp.y;
+  }
+
+  void setX(int x)
+  {
+    int diff = leftUp.x - x;
+    leftUp.x = x;
+    rightDown.x += diff;
+  }
+
+  void setY(int y)
+  {
+    int diff = leftUp.y - y;
+    leftUp.y = y;
+    rightDown.y += diff;
   }
 
   /// @brief Ширина участка на дисплее
   /// @return ширина в пикселях
-  int getWidth() const{
+  int getWidth() const
+  {
     return rightDown.x - leftUp.x;
   }
 
-  void setWidth(uint32_t width) {
+  void setWidth(uint32_t width)
+  {
     rightDown.x = leftUp.x + width;
   }
 
   /// @brief Высота участка на дисплее
   /// @return высота в пикселях
-  int getHeight() const{
+  int getHeight() const
+  {
     return rightDown.y - leftUp.y;
   }
 
-  void setHeight(uint32_t height) {
+  void setHeight(uint32_t height)
+  {
     rightDown.y = leftUp.y + height;
   }
-  
-} display_position;
 
+  bool operator!=(const display_position &another) const
+  {
+    if (getX() == another.getX() && getY() == another.getY() && getWidth() == another.getWidth() && getHeight() == another.getHeight())
+    {
+      return false;
+    }
+
+    return true;
+  }
+
+  bool operator==(const display_position &another) const
+  {
+    if (getX() == another.getX() && getY() == another.getY() && getWidth() == another.getWidth() && getHeight() == another.getHeight())
+    {
+      return true;
+    }
+
+    return false;
+  }
+
+} display_position;
