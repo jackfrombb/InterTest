@@ -151,8 +151,8 @@ public:
 
         _isAnimationInProcess = true;
 
-        logi::p("ElementVirtual", "Animation set. To X: " + String(x) +
-                                      " StepX = " + String(_stepInFrameX) + " stepY = " + String(_stepInFrameY));
+        // logi::p("ElementVirtual", "Animation set. To X: " + String(x) +
+        //                               " StepX = " + String(_stepInFrameX) + " stepY = " + String(_stepInFrameY));
     }
 
     virtual void nextAnimStep()
@@ -187,12 +187,12 @@ public:
                 _onAnimationEnd = nullptr;
             }
 
-            String msgS = (_isAnimationInProcess ? "Animation in process " : "Animation end ");
-            logi::p("ElementVirtual", msgS +
-                                          " diffX: " + String(diffX) +
-                                          // " diffY: " + String(diffY) +
-                                          " X: " + String(getX()) +
-                                          " To X: " + String(_flyToArea.getX()));
+            // String msgS = (_isAnimationInProcess ? "Animation in process " : "Animation end ");
+            // logi::p("ElementVirtual", msgS +
+            //                               " diffX: " + String(diffX) +
+            //                               // " diffY: " + String(diffY) +
+            //                               " X: " + String(getX()) +
+            //                               " To X: " + String(_flyToArea.getX()));
             // " Y: " + String(getY()));
         }
     }

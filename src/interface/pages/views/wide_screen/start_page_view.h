@@ -27,6 +27,10 @@ private:
 
     int8_t lastDir = 0;
 #endif
+    void _scrollFocus(int8_t direction)
+    {
+        _focusPage = (pages_list)range(((int)_focusPage + (1 * direction)), 0, pages_list::pagesCount - 1);
+    }
 
     void _initPoints()
     {
@@ -72,8 +76,13 @@ private:
 #ifdef TEST_ANIM_ENABLE
     void _spinPoints(int8_t dir)
     {
-        if ((_current.isAnimationInProcess() || _next.isAnimationInProcess() || _prev.isAnimationInProcess()) || dir == 0)
+        if ((_current.isAnimationInProcess() || _next.isAnimationInProcess() || _prev.isAnimationInProcess()))
+        {
+            // Если анимация предыдущего перелистывания еще не закончилась,
+            //  то переводим фокус без анимации, что бы избежать заторможенности
+            _scrollFocus(1 * dir);
             return;
+        }
 
         lastDir = dir;
 
@@ -81,8 +90,8 @@ private:
 
         auto onAniationEnd = [this](ElementVirtual *el, void *args)
         {
-            _focusPage = (pages_list)range(((int)_focusPage + (1 * lastDir)), 0, pages_list::pagesCount - 1);
-            logi::p("StartPageView", "animation ends focus on : " + String(_focusPage));
+            _scrollFocus(1 * lastDir);
+            // logi::p("StartPageView", "animation ends focus on : " + String(_focusPage));
 
             _prev.setArea(_prevPosDef);
             _next.setArea(_nexPosDef);
@@ -130,7 +139,7 @@ public:
             if ((int)_focusPage != 0)
                 _spinPoints(-1);
 #else
-            _focusPage = (pages_list)range(((int)_focusPage - 1), 0, pages_list::pagesCount - 1);
+            _scrollFocus(-1);
 #endif
 
             break;
@@ -140,7 +149,7 @@ public:
             if ((int)_focusPage != pages_list::pagesCount - 1)
                 _spinPoints(+1);
 #else
-            _focusPage = (pages_list)range(((int)_focusPage + 1), 0, pages_list::pagesCount - 1);
+            _scrollFocus(+1);
 #endif
             break;
         }
