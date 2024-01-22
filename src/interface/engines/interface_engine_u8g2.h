@@ -76,15 +76,15 @@ private:
     /// @param waveform данные осциллограммы
     void _drawWaveform(ElWaveform *waveform)
     {
-        int bias = 0; // SyncBuffer::findSignalOffset(waveform->getPoints(), waveform->getPointsLength());
-
-        //  Преобразованный предел
-        const int maxMeasureValNormalized = (int)(waveform->getMaxMeasureValue() * 1000);
+        auto measures = waveform->getMeasures();
 
         uint16_t width = waveform->getArea().getWidth();
         uint16_t height = waveform->getArea().getHeight();
 
-        auto measures = waveform->getMeasures();
+        int bias = measures.bias > measures.bufferSize - (width + 1) ? 0 : measures.bias; // SyncBuffer::findSignalOffset(waveform->getPoints(), waveform->getPointsLength());
+
+        //  Преобразованный предел
+        const int maxMeasureValNormalized = (int)(waveform->getMaxMeasureValue() * 1000);
 
         for (uint16_t x = bias; x <= width + bias; x++)
         {

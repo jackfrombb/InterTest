@@ -8,6 +8,7 @@ typedef struct
     uint16_t bufferSize;
     uint16_t middle;
     uint16_t max;
+    int16_t bias;
 } adc_measures_t;
 
 class OscilVirtual
