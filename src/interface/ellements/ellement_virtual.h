@@ -150,9 +150,6 @@ public:
         _animArgs = animArgs;
 
         _isAnimationInProcess = true;
-
-        // logi::p("ElementVirtual", "Animation set. To X: " + String(x) +
-        //                               " StepX = " + String(_stepInFrameX) + " stepY = " + String(_stepInFrameY));
     }
 
     virtual void nextAnimStep()

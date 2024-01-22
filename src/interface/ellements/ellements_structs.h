@@ -40,7 +40,7 @@ typedef enum
     EL_TYPE_POINT,
     EL_TYPE_PROGRESS_BAR,
     EL_TYPE_GROUP,
-    EL_TYPE_CENTERED_GROUP
+    EL_TYPE_CENTERED_GROUP,
 } el_type;
 
 typedef struct

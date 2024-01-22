@@ -7,6 +7,7 @@ The library for ESP32 under Arduino Environment
 
 #include <stdio.h>
 #include <Arduino.h>
+#include <cmath>
 
 template <typename T>
 T rangeV2(T input, T min, T max)
@@ -54,12 +55,18 @@ int16_t invertBytes(int val)
   return val & 0x0FFF;
 }
 
+template <typename T>
+uint16_t getMaxNumPosition(T num)
+{
+  return floor(log10(num)) + 1;
+}
+
 // Обычное среднее
 template <typename T>
 T midArifm2(T newVal, T measureSize)
 {
 
-  static uint16_t counter = 0;     // счётчик
+  static uint16_t counter = 0; // счётчик
   static float prevResult = 0; // хранит предыдущее готовое значение
   static float sum = 0;        // сумма
   sum += newVal;               // суммируем новое значение

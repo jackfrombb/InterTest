@@ -10,6 +10,7 @@ private:
     el_text_size _elSize = el_text_size::EL_TEXT_SIZE_MIDDLE;
     el_text_align _alignment = el_text_align::EL_TEXT_ALIGN_LEFT;
     std::function<String()> _calculateText = nullptr;
+    int8_t _editPosition = -1;
 
 public:
     ElText() = default;
@@ -54,6 +55,18 @@ public:
         }});
 
         return this;
+    }
+
+    /// @brief Установить точку для уредактирования
+    /// @param position позиция символа в тексте для редактирования либо -1 для выключения функции
+    ElText *setEditPosition(int8_t position)
+    {
+        _editPosition = position;
+        return this;
+    }
+
+    int8_t getEditPosition(){
+        return _editPosition;
     }
 
     virtual el_text_size getTextSize()

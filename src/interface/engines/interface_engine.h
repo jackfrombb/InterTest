@@ -15,6 +15,7 @@ protected:
     virtual void drawWaveform(ElWaveform *waveform) = 0;
     virtual void drawText(ElText *text) = 0;
     virtual void drawCenteredGroup(ElCenteredGroup *group) = 0;
+    virtual void drawLine(ElLine *line) = 0;
 
     virtual void drawGroup(ElGroup *group)
     {
@@ -59,6 +60,10 @@ protected:
 
         case el_type::EL_TYPE_CENTERED_GROUP:
             drawCenteredGroup((ElCenteredGroup *)el);
+            break;
+
+            case el_type::EL_TYPE_LINE:
+            drawLine((ElLine*) el);
             break;
         }
     }

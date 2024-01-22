@@ -8,3 +8,4 @@
 #include "progress_bar.h"
 #include "el_group.h"
 #include "el_centered_group.h"
+#include "el_line.h"

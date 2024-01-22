@@ -75,7 +75,7 @@ public:
     {
         uint16_t period = 0;             // variable to store the period of the signal
         uint16_t last_value = buffer[0]; // variable to store the last value of the signal
-        uint16_t threshold = 100;        // threshold value for filtering out noise
+        uint16_t threshold = 1000;        // threshold value for filtering out noise
 
         for (int i = 1; i < size; i++)
         {
@@ -150,7 +150,7 @@ public:
 
         int16_t period = findPeriodV2(_outBuffer, _oscil->getBufferLength());
 
-        logi::p("Voltmeter", "Period: " + String(period));
+        //logi::p("Voltmeter", "Period: " + String(period));
 
         return adc_measures_t{
             .buffer = _outBuffer,

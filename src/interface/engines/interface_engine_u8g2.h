@@ -4,6 +4,9 @@
 #include "displays/display_virtual.h"
 #include "board_virtual.h"
 #include "oscils/sync.h"
+#include <string>
+#include <iostream>
+#include <math.h>
 
 #define PAGE_TAG "Engine_U8G2"
 
@@ -81,8 +84,8 @@ private:
         uint16_t width = waveform->getArea().getWidth();
         uint16_t height = waveform->getArea().getHeight();
 
-        int bias = measures.bias > measures.bufferSize - (width + 1) ? 0 : measures.bias; // SyncBuffer::findSignalOffset(waveform->getPoints(), waveform->getPointsLength());
-
+        int bias = measures.bias > measures.bufferSize - (width + 1) ? 0 : measures.bias - 1; // SyncBuffer::findSignalOffset(waveform->getPoints(), waveform->getPointsLength());
+        bias = max(bias, 0);
         //  Преобразованный предел
         const int maxMeasureValNormalized = (int)(waveform->getMaxMeasureValue() * 1000);
 
@@ -193,6 +196,11 @@ public:
         }
     }
 
+    void drawLine(ElLine *line) override
+    {
+        _u8g2->drawLine(line->getX(), line->getY(), line->getArea().rightDown.x, line->getArea().rightDown.y);
+    }
+
     void drawButton(ElTextButton *button) override
     {
         drawText(button);
@@ -200,15 +208,16 @@ public:
         int x = button->getParent()->getX() + button->getX();
         int y = button->getParent()->getY() + button->getY();
 
-        if (button->isPushed()) // если нажата то заполненный скругленый прямоугольник
-        {
-            _u8g2->drawRBox(x - 2,
-                            y - 2,
-                            _u8g2->getUTF8Width(button->getText().c_str()) + 4,
-                            _u8g2->getMaxCharHeight() + 2,
-                            2);
-        }
-        else if (button->isSelected()) // если активна то рисуем рамку вокруг
+        // if (button->isPushed()) // если нажата то заполненный скругленый прямоугольник
+        // {
+        //     _u8g2->drawRBox(x - 2,
+        //                     y - 2,
+        //                     _u8g2->getUTF8Width(button->getText().c_str()) + 4,
+        //                     _u8g2->getMaxCharHeight() + 2,
+        //                     2);
+        // }
+        // else
+        if (button->isSelected() && button->getEditPosition() < 0) // если активна то рисуем рамку вокруг
         {
             _u8g2->drawRFrame(x - 2,
                               y - 2,
@@ -228,16 +237,18 @@ public:
     {
         _setTextSize(text->getTextSize()); // Размер и шрифт. Обязательно вызывать перед расчетом положения
 
+        String textTitle = text->getText();
+
         int x = text->getX();
         int y = text->getY();
 
         if (text->getAlignment() == el_text_align::EL_TEXT_ALIGN_CENTER)
         {
-            x = _getTextCenterX(text->getText(), x, text->getWidth());
+            x = _getTextCenterX(textTitle, x, text->getWidth());
         }
         else if (text->getAlignment() == el_text_align::EL_TEXT_ALIGN_RIGHT)
         {
-            x = text->getWidth() - _u8g2->getUTF8Width(text->getText().c_str());
+            x = text->getWidth() - _u8g2->getUTF8Width(textTitle.c_str());
         }
 
         if (text->getVerticalAlignment() == el_vertical_align::EL_ALIGN_CENTER)
@@ -245,10 +256,23 @@ public:
             y = (int)((text->getParent()->getHeight() * 0.5) - (_u8g2->getMaxCharHeight() * 0.5));
         }
 
+        uint16_t textX = x + text->getParent()->getX();
+        uint16_t textY = y + _u8g2->getMaxCharHeight() + text->getParent()->getY();
+
         // Отрисовать текст (y эллемеента делаем по верхнему углу)
-        _u8g2->drawUTF8(x + text->getParent()->getX(),
-                        y + _u8g2->getMaxCharHeight() + text->getParent()->getY(),
-                        text->getText().c_str());
+        _u8g2->drawUTF8(textX, textY, textTitle.c_str());
+
+        if (text->getEditPosition() >= 0 && textTitle.length() > 0)
+        {
+            uint8_t maxPosition = text->getText().length() - 1;
+            uint8_t pos = std::min<uint8_t>(maxPosition, text->getEditPosition());
+            String sub = textTitle.substring(0, pos);
+            String subText = (String)textTitle[pos];
+            uint8_t subWidth = _u8g2->getUTF8Width(subText.c_str());
+            uint16_t textWidth = _u8g2->getUTF8Width(sub.c_str());
+            
+            _u8g2->drawLine((textX + textWidth) - (subWidth + 2), textY + 2, textX + textWidth - 1, textY + 2);
+        }
     }
 
     void drawProgressBar(ElProgressBar *progressBar) override

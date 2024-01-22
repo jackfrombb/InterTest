@@ -12,6 +12,8 @@ private:
     Voltmetr *_voltmeter;
 
     bool _isOnSampleChangeMod = false;
+    uint16_t _smapleChangeMultipler = 1;
+
     uint8_t _selectedMeasuresMode = 0; // 0 - Пик ту пик, 1 - среднее, 2 - герцы
 
     // display_position *_bottomMenuPosition; // Указатель на позицию меню, для анимации перемещения
@@ -177,17 +179,23 @@ public:
             switch (eventType)
             {
             case control_event_type::PRESS_OK:
+                // auto maxPos = getMaxNumPosition<uint32_t>(_oscil->getMeasuresInSecond());
+                _smapleChangeMultipler = range(_smapleChangeMultipler * 10, 1, _oscil->getMeasuresInSecond(), true);
+                sampleChangeMode(true);
+                break;
+
+            case control_event_type::PRESS_BACK:
                 sampleChangeMode(false);
                 break;
 
             case control_event_type::PRESS_LEFT:
                 // Уменьшить семпл рейт
-                changeOscilSamplerate(false, 1);
+                changeOscilSamplerate(false, _smapleChangeMultipler);
                 break;
 
             case control_event_type::PRESS_RIGHT:
                 // Увеличить семпл рейт
-                changeOscilSamplerate(true, 1);
+                changeOscilSamplerate(true, _smapleChangeMultipler);
                 break;
             }
         }
@@ -229,5 +237,16 @@ public:
     void sampleChangeMode(bool on)
     {
         _isOnSampleChangeMod = on;
+
+        if (on)
+        {
+            auto multiplerPos = getMaxNumPosition<uint32_t>(_smapleChangeMultipler);
+            auto maxPos = getMaxNumPosition<uint32_t>(_oscil->getMeasuresInSecond());
+            _herz.setEditPosition(maxPos - (multiplerPos - 1));
+        }
+        else
+        {
+            _herz.setEditPosition(-1);
+        }
     }
 };
