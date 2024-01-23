@@ -22,4 +22,10 @@ public:
     {
         return pageView;
     }
+
+    bool onControlEvent(control_event_type eventType) override
+    {
+        pageView->onControlEvent(eventType);
+        return true;
+    }
 };

@@ -56,7 +56,8 @@ private:
             for (uint16_t x = 0; x <= width; x += widthPixelsCount)
             {
                 int titlePos = width - widthPixelsCount;
-                if (x >= titlePos)
+
+                if (x >= titlePos && voltSectionTitle > 0)
                 {
                     String title = String(voltSectionTitle);
                     int xPos = titlePos;
@@ -162,7 +163,13 @@ public:
         _mainBoard = mainBoard;
 
         _display = mainBoard->getDisplay();
+
+        if (_display->getDisplayLibraryType() != display_library::DISPLAY_LIB_U8G2)
+            throw "The library type is incorrect. It should be U8g2";
+
         _u8g2 = (U8G2 *)_display->getLibrary();
+
+        //Выделяем место для хранения статичного буфера
         bufferSize = (unsigned int)(8 * _u8g2->getBufferTileHeight() * _u8g2->getBufferTileWidth());
         _displayBuffer = (uint8_t *)calloc(bufferSize, sizeof(uint8_t));
     }
@@ -208,15 +215,6 @@ public:
         int x = button->getParent()->getX() + button->getX();
         int y = button->getParent()->getY() + button->getY();
 
-        // if (button->isPushed()) // если нажата то заполненный скругленый прямоугольник
-        // {
-        //     _u8g2->drawRBox(x - 2,
-        //                     y - 2,
-        //                     _u8g2->getUTF8Width(button->getText().c_str()) + 4,
-        //                     _u8g2->getMaxCharHeight() + 2,
-        //                     2);
-        // }
-        // else
         if (button->isSelected() && button->getEditPosition() < 0) // если активна то рисуем рамку вокруг
         {
             _u8g2->drawRFrame(x - 2,
@@ -270,7 +268,7 @@ public:
             String subText = (String)textTitle[pos];
             uint8_t subWidth = _u8g2->getUTF8Width(subText.c_str());
             uint16_t textWidth = _u8g2->getUTF8Width(sub.c_str());
-            
+
             _u8g2->drawLine((textX + textWidth) - (subWidth + 2), textY + 2, textX + textWidth - 1, textY + 2);
         }
     }

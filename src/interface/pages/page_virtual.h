@@ -43,12 +43,15 @@ private:
 public:
     explicit InterfacePageVirtual(DisplayVirtual *display) : _display(display) {}
 
-    ~InterfacePageVirtual() = default;
+    virtual ~InterfacePageVirtual()
+    {
+        logi::p("PageVirtual", "Destroed");
+    }
 
     virtual PageView *getPageView() = 0;
 
-    virtual void onControlEvent(control_event_type eventType)
+    virtual bool onControlEvent(control_event_type eventType)
     {
-        getPageView()->onControlEvent(eventType);
+        return getPageView()->onControlEvent(eventType);
     }
 };

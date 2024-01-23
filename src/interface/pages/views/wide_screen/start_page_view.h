@@ -126,7 +126,7 @@ public:
 
     ~StartPageView() = default;
 
-    void onControlEvent(control_event_type eventType) override
+    bool onControlEvent(control_event_type eventType) override
     {
         switch (eventType) // Открыть страничку
         {
@@ -153,6 +153,8 @@ public:
 #endif
             break;
         }
+
+        return true;
     }
 
     void onDraw() override

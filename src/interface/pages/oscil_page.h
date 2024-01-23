@@ -27,16 +27,18 @@ public:
         initOscil();
     }
 
-    ~OscilPage()
+    ~OscilPage() override
     {
+        logi::p("OscilPage", "Destroed");
+
         delete _oscil;
         delete _voltmeter;
         delete _pageView;
     }
 
-    void onControlEvent(control_event_type eventType) override
+    bool onControlEvent(control_event_type eventType) override
     {
-        InterfacePageVirtual::onControlEvent(eventType);
+        return InterfacePageVirtual::onControlEvent(eventType);
     }
 
     void initOscil()

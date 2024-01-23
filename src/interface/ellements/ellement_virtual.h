@@ -26,6 +26,7 @@ protected:
 private:
 public:
     ElementVirtual() = default;
+    virtual ~ElementVirtual() = default;
 
     explicit ElementVirtual(ElementVirtual *parent)
     {

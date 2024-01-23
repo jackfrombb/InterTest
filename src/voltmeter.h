@@ -75,7 +75,7 @@ public:
     {
         uint16_t period = 0;             // variable to store the period of the signal
         uint16_t last_value = buffer[0]; // variable to store the last value of the signal
-        uint16_t threshold = 1000;        // threshold value for filtering out noise
+        uint16_t threshold = 1000;       // threshold value for filtering out noise
 
         for (int i = 1; i < size; i++)
         {
@@ -120,37 +120,52 @@ public:
         {
             delayMicroseconds(100);
         }
-
         _oscil->setBufferBussy(true);
         memcpy(_copyOscilBuffer, _oscil->getBuffer(), _oscil->getBufferLength());
         _oscil->setBufferBussy(false);
 
+        // Для удобства
         uint16_t *buffer = _copyOscilBuffer;
 
+        // Переменные для определения отклонения (периода)
+        int16_t period = 0;             // variable to store the period of the signal
+        uint16_t last_value = buffer[0]; // variable to store the last value of the signal
+        uint16_t threshold = 1000;       // threshold value for filtering out noise
+        bool periodFound = false;
+
+        // переменные для хранения минимальных и максимальных значений
         uint16_t max = 0.0;
         uint16_t mid = 0.0;
-        //std::vector<uint16_t> bufVect;
 
         for (int i = 0; i < _oscil->getBufferLength(); i++)
         {
+            //Преобразуем из попугаев в микровольты
             auto val = _mainBoard->rawToVoltage(buffer[i]);
             _outBuffer[i] = val;
 
-            mid = Voltmetr::midArifm2<uint16_t>(val, _oscil->getBufferLength() * 4);
-            //bufVect.push_back(val);
+            //Вычисляем среднее
+            mid = Voltmetr::midArifm2<uint16_t>(val, _oscil->getBufferLength() * 4); //Длину умножаем на 4, что бы значения поеньше скакали
 
+            //Вычисляем максимальное
             if (val > max)
             {
                 max = val;
+            }
+
+            //Поиск отклонения для синхронизации
+            if (!periodFound)
+            {
+                if (buffer[i] > last_value && buffer[i] > threshold)
+                {
+                    period = i; // update the period
+                    periodFound = true;
+                }
+                last_value = buffer[i];
             }
         }
 
         lastMax = max;
         lastMid = mid;
-
-        int16_t period = findPeriodV2(_outBuffer, _oscil->getBufferLength());
-
-        //logi::p("Voltmeter", "Period: " + String(period));
 
         return adc_measures_t{
             .buffer = _outBuffer,

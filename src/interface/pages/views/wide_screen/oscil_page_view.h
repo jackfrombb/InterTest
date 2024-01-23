@@ -172,14 +172,13 @@ public:
         _lastButtonPressTime = millis();
     }
 
-    void onControlEvent(control_event_type eventType)
+    bool onControlEvent(control_event_type eventType)
     {
         if (_isOnSampleChangeMod)
         {
             switch (eventType)
             {
             case control_event_type::PRESS_OK:
-                // auto maxPos = getMaxNumPosition<uint32_t>(_oscil->getMeasuresInSecond());
                 _smapleChangeMultipler = range(_smapleChangeMultipler * 10, 1, _oscil->getMeasuresInSecond(), true);
                 sampleChangeMode(true);
                 break;
@@ -207,6 +206,10 @@ public:
                 onOkPress();
                 break;
 
+            case control_event_type::PRESS_BACK:
+                
+                return false;
+
             case control_event_type::PRESS_LEFT:
                 selectedButton = range(selectedButton - 1, 0, buttonsCount - 1, true);
                 break;
@@ -216,12 +219,15 @@ public:
                 break;
             }
         }
+
+        return true;
     }
 
     uint32_t changeOscilSamplerate(bool increase, int16_t multipler)
     {
         auto t = _oscil->getMeasuresInSecond();
         t = increase ? t + (1 * multipler) : t - (1 * multipler);
+
         if (t > 500)
             _oscil->setMeasuresInSecond(t);
 

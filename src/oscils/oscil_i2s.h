@@ -34,6 +34,8 @@ public:
 
     ~OscilI2s()
     {
+        logi::p("I2sOscil", "Destroed");
+        deinit();
     }
 
     ulong _prevMicros = 0;
@@ -75,7 +77,7 @@ public:
 
     esp_err_t init()
     {
-        Serial.println("I2s init start");
+        logi::p("Oscil i2s", "I2s init start");
 
         i2s_config_t i2s_config = {
             .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_ADC_BUILT_IN),
@@ -124,8 +126,9 @@ public:
 
     void deinit()
     {
-        i2s_adc_disable(OSCIL_I2S_NUM);
         vTaskDelete(_workingThread);
+        i2s_adc_disable(OSCIL_I2S_NUM);
+        i2s_driver_uninstall(OSCIL_I2S_NUM);
     }
 
     virtual uint16_t getBufferLength()

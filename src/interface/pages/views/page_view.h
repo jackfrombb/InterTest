@@ -25,12 +25,13 @@ public:
                                  }});
     }
 
-    ~PageView()
+    virtual ~PageView()
     {
     }
 
-    virtual void onControlEvent(control_event_type eventType)
+    virtual bool onControlEvent(control_event_type eventType)
     {
+        return false;
     }
 
     void onDraw() override

@@ -43,13 +43,19 @@ private:
         }
     }
 
-    static void _controlEvent(control_event_type eventType, void *args)
+    static bool _controlEvent(control_event_type eventType, void *args)
     {
         InterfaceController *iController = (InterfaceController *)args;
         if (iController->_currentPage != nullptr)
         {
-            iController->_currentPage->onControlEvent(eventType);
+            if (!iController->_currentPage->onControlEvent(eventType) && eventType == control_event_type::PRESS_BACK)
+            {
+                logi::p("iController", "Pressed back to main menu");
+                iController->showMainMenu();
+            }
         }
+
+        return true;
     }
 
 public:
@@ -78,6 +84,11 @@ public:
 
     void start()
     {
+        showMainMenu();
+    }
+
+    void showMainMenu()
+    {
         clear();
         setCurrentPage(new StartPage(_mainBoard->getDisplay(),
                                      [this](pages_list p)
@@ -105,11 +116,8 @@ public:
     void clear()
     {
         _startClear = true;
-        if (_currentPage != nullptr)
-        {
-            delete _currentPage;
-            _currentPage = nullptr;
-        }
+        delete _currentPage;
+        _currentPage = nullptr;
     }
 
     void init()

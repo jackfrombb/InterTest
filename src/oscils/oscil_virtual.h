@@ -26,7 +26,7 @@ public:
         _mainBoard = mainBoard;
     }
 
-    ~OscilVirtual() {}
+    virtual ~OscilVirtual() {}
 
     virtual void readNext()
     {

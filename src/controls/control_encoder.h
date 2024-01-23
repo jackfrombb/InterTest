@@ -45,15 +45,20 @@ private:
             _handler(LONG_PRESS_OK, _args);
             break;
 
-        case EB_CLICK:
-            _handler(PRESS_OK, _args);
-            break;
+            // case EB_CLICK:
+            //     _handler(PRESS_OK, _args);
+            //     break;
 
         case EB_CLICKS:
-            if (_enc->getClicks() == 2)
+            if (_enc->getClicks() == 1)
             {
-                logi::p("Control encoder", "Two clicks test OK");
-                _handler(control_event_type::PRESS_BACK, _args);
+                logi::p("Control encoder", "One click");
+                _handler(PRESS_OK, _args);
+            }
+            else if (_enc->getClicks() == 2)
+            {
+                bool isHandled = _handler(control_event_type::PRESS_BACK, _args);
+                logi::p("Control encoder", "Two clicks " + String(isHandled));
             }
             break;
 
