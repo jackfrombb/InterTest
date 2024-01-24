@@ -4,7 +4,6 @@
 // esp32 библиотеки для работы ADC
 #include "driver/adc.h"
 #include "esp_adc_cal.h"
-
 #include <cmath>
 
 class Voltmetr

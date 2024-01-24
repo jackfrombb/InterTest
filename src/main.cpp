@@ -98,17 +98,6 @@ void setup()
   Serial.begin(115200);
   logi::p("Main", "Start");
 
-  try
-  {
-    //logi::err("Main", psramInit());
-    String msg = psramFound() ? "not found" : " found";
-    logi::p("Main", "PSRAM " + msg);
-  }
-  catch (const char *msg)
-  {
-    logi::p("Main", "PSRAM init error: " + (String)msg);
-  }
-
   delay(100);
 
   mainBoard.init();
