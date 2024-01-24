@@ -38,7 +38,6 @@
 #include "displays/display_helper.h"
 #include "controls/control_virtual.h"
 
-
 // Пищалка
 #ifdef BUZZ
 #include "buzzer.h"
@@ -46,8 +45,8 @@
 
 #ifdef ENCODER
 #include "controls/control_encoder.h"
-ControlVirtual* control = new ControlEncoder();
-#elif defined (KEYPAD)
+ControlVirtual *control = new ControlEncoder();
+#elif defined(KEYPAD)
 #endif
 
 // Определение АЦП в зависимости от платы
@@ -99,16 +98,32 @@ void setup()
   Serial.begin(115200);
   logi::p("Main", "Start");
 
+  try
+  {
+    //logi::err("Main", psramInit());
+    String msg = psramFound() ? "not found" : " found";
+    logi::p("Main", "PSRAM " + msg);
+  }
+  catch (const char *msg)
+  {
+    logi::p("Main", "PSRAM init error: " + (String)msg);
+  }
+
   delay(100);
 
   mainBoard.init();
   delay(100);
-  
+
   interfaceController.init();
   float *progress = interfaceController.showHelloPage();
 
   *progress = 0.3;
   delay(100);
+
+  logi::p("Main", "Model: " + String(ESP.getChipModel()) +
+                      "\nCores: " + String(ESP.getChipCores()) +
+                      "\nCore Freq: " + String(ESP.getCpuFreqMHz()) +
+                      "\nHeap: " + String(ESP.getHeapSize()));
 
 #ifdef BUZZ
   Serial.println("Buzzer");
@@ -118,7 +133,7 @@ void setup()
   *progress = 0.6;
   delay(300);
 
-  //Временный костыль для проверки АЦП
+  // Временный костыль для проверки АЦП
   sigGen.startMeandrLedc(pwmF, 0.5);
 
   *progress = 0.8;

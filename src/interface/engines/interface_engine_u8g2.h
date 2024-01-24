@@ -4,9 +4,6 @@
 #include "displays/display_virtual.h"
 #include "board_virtual.h"
 #include "oscils/sync.h"
-#include <string>
-#include <iostream>
-#include <math.h>
 
 #define PAGE_TAG "Engine_U8G2"
 
