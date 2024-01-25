@@ -16,7 +16,6 @@ private:
     bool _startClear = false;
 
     InterfacePageVirtual *_currentPage = nullptr;
-    InterfacePageVirtual *_preparePage = nullptr; // Для ожидания инициализации основной страницы
 
     bool _drawInProcess = false;
 
@@ -27,14 +26,16 @@ private:
         logi::p("Interface controller", "Interface thread start");
 
         static TickType_t xLastWakeTime;
-        static TickType_t xFrequency = 50;
+        static TickType_t xFrequency = 30;
         auto *controller = (InterfaceController *)pvParameters;
 
         xLastWakeTime = xTaskGetTickCount();
         while (1)
         {
             controller->_drawInProcess = true;
-            if (!controller->_startClear && controller->_currentPage != nullptr)
+            if (!controller->_startClear &&
+                controller->_currentPage != nullptr &&
+                controller->_currentPage->getPageView() != nullptr)
             {
                 controller->_interfaceEngine->drawPage(controller->_currentPage->getPageView());
             }
@@ -46,13 +47,12 @@ private:
     static bool _controlEvent(control_event_type eventType, void *args)
     {
         InterfaceController *iController = (InterfaceController *)args;
-        if (iController->_currentPage != nullptr)
+
+        if ((iController->_currentPage == nullptr || !iController->_currentPage->onControlEvent(eventType)) &&
+            eventType == control_event_type::PRESS_BACK)
         {
-            if (!iController->_currentPage->onControlEvent(eventType) && eventType == control_event_type::PRESS_BACK)
-            {
-                logi::p("iController", "Pressed back to main menu");
-                iController->showMainMenu();
-            }
+            logi::p("iController", "Pressed back to main menu");
+            iController->showMainMenu();
         }
 
         return true;
@@ -90,19 +90,29 @@ public:
     void showMainMenu()
     {
         clear();
+        logi::p("iController", "Before start page");
         setCurrentPage(new StartPage(_mainBoard->getDisplay(),
                                      [this](pages_list p)
                                      { onPageSelected(p); }));
+        // setCurrentPage(new OscilPage(_mainBoard));
     }
 
     void onPageSelected(pages_list page)
     {
         logi::p("Inerface_Controller", "Select " + String(page));
+
         switch (page)
         {
         case pages_list::PAGE_LIST_OSCIL:
+        {
             clear();
             setCurrentPage(new OscilPage(_mainBoard));
+        }
+        break;
+
+        case pages_list::PAGE_LIST_VOLT:
+            clear();
+            setCurrentPage(new VoltmeterPage(_mainBoard));
             break;
         }
     }
@@ -110,12 +120,16 @@ public:
     void setCurrentPage(InterfacePageVirtual *page)
     {
         _currentPage = page;
+        delayMicroseconds(1000); // Ждем пока инициализируется следующая страница, иначе вызывает искючение
         _startClear = false;
+        logi::p("iController", "Start clear flag = flase");
     }
 
     void clear()
     {
         _startClear = true;
+        if (_currentPage != nullptr)
+            _currentPage->onClose();
         delete _currentPage;
         _currentPage = nullptr;
     }

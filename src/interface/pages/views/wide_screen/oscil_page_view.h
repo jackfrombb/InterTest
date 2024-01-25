@@ -15,9 +15,7 @@ private:
     uint16_t _smapleChangeMultipler = 1;
 
     uint8_t _selectedMeasuresMode = 0; // 0 - Пик ту пик, 1 - среднее, 2 - герцы
-
-    // display_position *_bottomMenuPosition; // Указатель на позицию меню, для анимации перемещения
-    // bool _showBottomMenuTrigger = true;    // Триггер для отображения меню
+    
     int _defaultBottomMenuPosition; // Изначальное, нормальное положение меню
 
     ulong _lastButtonPressTime;
@@ -207,7 +205,7 @@ public:
                 break;
 
             case control_event_type::PRESS_BACK:
-                
+
                 return false;
 
             case control_event_type::PRESS_LEFT:

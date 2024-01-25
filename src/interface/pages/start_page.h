@@ -1,4 +1,5 @@
 #pragma once
+
 #include "page_virtual.h"
 #include "interface/pages/views/wide_screen/start_page_view.h" //TODO: Временное решение. Убрать перед добавлением SlimScreen
 
@@ -16,6 +17,7 @@ public:
     ~StartPage()
     {
         delete pageView;
+        pageView = nullptr;
     }
 
     PageView *getPageView() override

@@ -1,25 +1,32 @@
 #pragma once
+
 #include "page_virtual.h"
-#include "board_virtual.h"
 #include "interface/pages/views/wide_screen/voltmeter_page_view.h"
 
 class VoltmeterPage : public InterfacePageVirtual
 {
 private:
-    VoltemeterPageView* pageView;
+    VoltemeterPageView *_pageView;
 
 public:
     VoltmeterPage(MainBoard *mainBoard) : InterfacePageVirtual(mainBoard->getDisplay())
     {
-        pageView = new VoltemeterPageView(mainBoard->getDisplay());
+        _pageView = new VoltemeterPageView(mainBoard->getDisplay());
     }
 
-    ~VoltmeterPage(){
-        delete pageView;
+    ~VoltmeterPage()
+    {
+        delete _pageView;
+        _pageView = nullptr;
     }
 
-    
-    virtual PageView *getPageView() {
-        return pageView;
+    PageView *getPageView() override
+    {
+        return _pageView;
+    }
+
+    bool onControlEvent(control_event_type eventType) override
+    {
+        return _pageView->onControlEvent(eventType);
     }
 };

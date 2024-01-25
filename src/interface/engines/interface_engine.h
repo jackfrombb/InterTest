@@ -36,36 +36,39 @@ protected:
 
     virtual void drawElement(ElementVirtual *el)
     {
-        switch (el->getElementType())
-        {
-        case el_type::EL_TYPE_BUTTON:
-            drawButton((ElTextButton *)el);
-            break;
+        if (el != nullptr)
+            switch (el->getElementType())
+            {
+            case el_type::EL_TYPE_BUTTON:
+                drawButton((ElTextButton *)el);
+                break;
 
-        case el_type::EL_TYPE_WAVEFORM:
-            drawWaveform((ElWaveform *)el);
-            break;
+            case el_type::EL_TYPE_WAVEFORM:
+                drawWaveform((ElWaveform *)el);
+                break;
 
-        case el_type::EL_TYPE_TEXT:
-            drawText((ElText *)el);
-            break;
+            case el_type::EL_TYPE_TEXT:
+                drawText((ElText *)el);
+                break;
 
-        case el_type::EL_TYPE_PROGRESS_BAR:
-            drawProgressBar((ElProgressBar *)el);
-            break;
+            case el_type::EL_TYPE_PROGRESS_BAR:
+                drawProgressBar((ElProgressBar *)el);
+                break;
 
-        case el_type::EL_TYPE_GROUP:
-            drawGroup((ElGroup *)el);
-            break;
+            case el_type::EL_TYPE_GROUP:
+                drawGroup((ElGroup *)el);
+                break;
 
-        case el_type::EL_TYPE_CENTERED_GROUP:
-            drawCenteredGroup((ElCenteredGroup *)el);
-            break;
+            case el_type::EL_TYPE_CENTERED_GROUP:
+                drawCenteredGroup((ElCenteredGroup *)el);
+                break;
 
             case el_type::EL_TYPE_LINE:
-            drawLine((ElLine*) el);
-            break;
-        }
+                drawLine((ElLine *)el);
+                break;
+            }
+        else
+            logi::p("EngineVirtual", "Try to draw empty element");
     }
 
 private:

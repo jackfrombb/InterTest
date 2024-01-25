@@ -2,6 +2,7 @@
 
 #include "interface/pages/views/page_view.h"
 #include "interface/pages/page_virtual.h"
+#include "app_data.h"
 
 #define TEST_ANIM_ENABLE
 
@@ -119,6 +120,12 @@ public:
     {
         _onPageSelected = onPageSelected;
 
+        if (AppData::exist("focusPage"))
+        {
+            _focusPage = (pages_list)AppData::getInt("focusPage", 0);
+            logi::p("StartPageView", "focusPage val exist: " + String(_focusPage));
+        }
+
         _initPoints();
 
         addElement(&_current)->addElement(&_next)->addElement(&_prev);
@@ -163,5 +170,11 @@ public:
         _next.nextAnimStep();
         _prev.nextAnimStep();
         _current.nextAnimStep();
+    }
+
+    void onClose() override
+    {
+        AppData::saveInt("focusPage", _focusPage);
+        AppData::flush();
     }
 };

@@ -37,4 +37,8 @@ public:
     void onDraw() override
     {
     }
+
+    virtual void onClose()
+    {
+    }
 };

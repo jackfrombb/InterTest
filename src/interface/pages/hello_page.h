@@ -19,8 +19,8 @@ public:
 
     ~HelloPage()
     {
-        Serial.println("Hello page: delted");
         delete _pageView;
+        _pageView = nullptr;
     }
 
     PageView* getPageView() override{

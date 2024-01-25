@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 
+#include "app_data.h"
+
 // Переключение железа здесь
 #include "configuration.h"
 #include "logi.h"
@@ -113,6 +115,8 @@ void setup()
                       "\nCores: " + String(ESP.getChipCores()) +
                       "\nCore Freq: " + String(ESP.getCpuFreqMHz()) +
                       "\nHeap: " + String(ESP.getHeapSize()));
+
+  AppData::begin();
 
 #ifdef BUZZ
   Serial.println("Buzzer");

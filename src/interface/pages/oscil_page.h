@@ -29,11 +29,12 @@ public:
 
     ~OscilPage() override
     {
-        logi::p("OscilPage", "Destroed");
-
         delete _oscil;
         delete _voltmeter;
         delete _pageView;
+        _pageView = nullptr;
+        _oscil = nullptr;
+        _voltmeter = nullptr;
     }
 
     bool onControlEvent(control_event_type eventType) override
