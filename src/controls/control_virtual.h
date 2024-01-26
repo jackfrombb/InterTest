@@ -29,7 +29,7 @@ public:
     ControlVirtual()
     {
     }
-    ~ControlVirtual()
+    virtual ~ControlVirtual()
     {
         removeControlHandler();
     }

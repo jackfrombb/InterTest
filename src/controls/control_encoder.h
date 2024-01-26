@@ -3,6 +3,8 @@
 #include "control_virtual.h"
 #include "esp32-hal-gpio.h"
 #include "EncButton.h"
+#include "logi.h"
+#include "hard_timer.h"
 
 #ifdef S2MINI
 // Энкодер

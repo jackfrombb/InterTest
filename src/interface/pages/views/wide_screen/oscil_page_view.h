@@ -15,7 +15,7 @@ private:
     uint16_t _smapleChangeMultipler = 1;
 
     uint8_t _selectedMeasuresMode = 0; // 0 - Пик ту пик, 1 - среднее, 2 - герцы
-    
+
     int _defaultBottomMenuPosition; // Изначальное, нормальное положение меню
 
     ulong _lastButtonPressTime;

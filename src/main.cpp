@@ -49,6 +49,11 @@
 #include "controls/control_encoder.h"
 ControlVirtual *control = new ControlEncoder();
 #elif defined(KEYPAD)
+// Не реализовано, нет панели с кнопками
+#elif defined(CONTROL_IR)
+// Для тестов
+#include "controls/control_ir.h"
+ControlVirtual *control = new ControlIr();
 #endif
 
 // Определение АЦП в зависимости от платы
@@ -56,8 +61,8 @@ ControlVirtual *control = new ControlEncoder();
 init_adc_info adcInfo = {
     .unit = ADC_UNIT_1,
     .chanelAdc1 = ADC1_CHANNEL_0,
-    .atten = ADC_ATTEN_11db,
-    .width = ADC_WIDTH_13Bit,
+    .atten = ADC_ATTEN_DB_11,
+    .width = ADC_WIDTH_BIT_13,
 };
 
 #elif defined(WROOM32)
@@ -83,6 +88,7 @@ DisplayVirtual *display = new Display128x64_U8g2();
 MainBoard mainBoard(adcInfo, display, control);
 
 #ifdef U8G2_ENGINE
+#include "interface/engines/interface_engine_u8g2.h"
 InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(&mainBoard);
 #elif defined(ADAFRUIT_ENGINE)
 // In process
@@ -91,15 +97,19 @@ InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(&mainBoard);
 InterfaceController interfaceController(&mainBoard, interfaceEngine);
 
 // Частота генерации
-int pwmF = 160000;
+int pwmF = 1000;
 
-SignalGenerator sigGen(GPIO_NUM_4);
+SignalGenerator sigGen(GPIO_NUM_17);
 
 void setup()
 {
   Serial.begin(115200);
+  Serial.setDebugOutput(true);
+
   logi::p("Main", "Start");
 
+  display->init();
+  Serial.println("Display init OK");
   delay(100);
 
   mainBoard.init();

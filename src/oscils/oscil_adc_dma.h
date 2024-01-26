@@ -1,17 +1,20 @@
 #pragma once
 
+#define GET_UNIT(x) ((x >> 3) & 0x1)
+
 #include <Arduino.h>
 #include "board_virtual.h"
 #include "oscil_virtual.h"
 #include "hard_timer.h"
 #include "freertos/FreeRTOS.h"
+#include "sdkconfig.h"
 #include <string.h>
 #include <stdio.h>
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 #include "esp_log.h"
 #include "driver/adc.h"
-#include "driver/adc_common.h"
+#include "logi.h"
 
 // Количество каналов АЦП
 #define ADC_CHANNEL_NUM 1
@@ -24,7 +27,7 @@
 // Частота преобразований АЦП в Гц
 #define ADC_FREQUENCY 98000
 // Максимальный размер пула памяти для DMA в байтах
-#define ADC_POOL_SIZE 4096
+#define ADC_POOL_SIZE 1024
 // Размер одного результата преобразования АЦП в байтах
 #define ADC_RESULT_SIZE 2
 
@@ -32,15 +35,12 @@
 class OscilAdcDma : public OscilVirtual
 {
 private:
-    // Массив каналов АЦП
-    adc_channel_t adc_channels[ADC_CHANNEL_NUM] = {ADC_CHANNEL_0};
-
     // Маска каналов АЦП
     uint16_t adc_channel_mask = BIT(0);
 
     // Буферы для хранения результатов АЦП
     uint8_t adc_buffer[ADC_BUFFER_SIZE];                        // Буфер для байтов замеров
-    volatile uint16_t adc_buffer_out[ADC_OUT_BUFFER_SIZE] = {}; // Буфер для полуения показаний от 0-4096
+    uint16_t adc_buffer_out[ADC_OUT_BUFFER_SIZE] = {}; // Буфер для полуения показаний от 0-4096
 
     // Для отображения семплов в секунду
     int _sampleRate;
@@ -77,13 +77,6 @@ private:
                 // Ждем, пока пул памяти заполнится
                 adc_digi_read_bytes(oscil->adc_buffer, ADC_BUFFER_SIZE, &read_len, ADC_MAX_DELAY);
 
-                // if (read_len == ADC_BUFFER_SIZE)
-                // {
-                //     for(int i = 0; i<ADC_OUT_BUFFER_SIZE; i ++){
-                //         oscil->adc_buffer_out[i] = (oscil->adc_buffer[(i<<1)+1]|oscil->adc_buffer[i<<1]);
-                //     }
-                // }
-
                 for (int i = 0; i < read_len; i += 2)
                 {
                     // Совмещаем байты для получения показаний
@@ -96,9 +89,84 @@ private:
         }
     }
 
-    void _initAdc()
+    static void continuous_adc_init(uint16_t adc1_chan_mask, adc_channel_t *channel, uint8_t channel_num)
     {
 
+        adc_digi_init_config_t adc_dma_config = {
+            .max_store_buf_size = 6 * 512,
+            .conv_num_each_intr = 512,
+            .adc1_chan_mask = adc1_chan_mask,
+            .adc2_chan_mask = 0,
+        };
+
+        ESP_ERROR_CHECK(adc_digi_initialize(&adc_dma_config));
+
+        adc_digi_configuration_t dig_cfg = {
+            .conv_limit_en = false,
+            .conv_limit_num = 250,
+            .sample_freq_hz = 83333,
+            //.sample_freq_hz =  1000,
+            .conv_mode = ADC_CONV_SINGLE_UNIT_1,
+            .format = ADC_DIGI_OUTPUT_FORMAT_TYPE1,
+        };
+
+        adc_digi_pattern_config_t adc_pattern[SOC_ADC_PATT_LEN_MAX] = {0};
+        dig_cfg.pattern_num = channel_num;
+
+        for (int i = 0; i < channel_num; i++)
+        {
+            uint8_t unit = GET_UNIT(channel[i]);
+            uint8_t ch = channel[i] & 0x7;
+            adc_pattern[i].atten = ADC_ATTEN_DB_11;
+            adc_pattern[i].channel = ch;
+            adc_pattern[i].unit = unit;
+            adc_pattern[i].bit_width = SOC_ADC_DIGI_MAX_BITWIDTH; // 11 data bits limit
+        }
+        dig_cfg.adc_pattern = adc_pattern;
+        ESP_ERROR_CHECK(adc_digi_controller_configure(&dig_cfg));
+    }
+
+    esp_err_t _initAdcS2()
+    {
+        adc_config = adc_digi_init_config_t{
+            .max_store_buf_size = 512 * 6,
+            .conv_num_each_intr = 512,
+            .adc1_chan_mask = adc_channel_mask,
+            .adc2_chan_mask = 0,
+        };
+
+        logi::err("OscilAdcDma  digi init", adc_digi_initialize(&adc_config));
+
+        con = adc_digi_configuration_t{
+            .conv_limit_en = false,
+            .conv_limit_num = 0,
+            .sample_freq_hz = (uint32_t) _sampleRate,
+            .conv_mode = ADC_CONV_SINGLE_UNIT_1,
+            .format = ADC_DIGI_OUTPUT_FORMAT_TYPE1,
+        };
+
+        adc_digi_pattern_config_t adc_pat_arr[SOC_ADC_PATT_LEN_MAX] = {
+            adc_digi_pattern_config_t{
+                .atten = (uint8_t)ADC_ATTEN_DB_11,
+                .channel = (uint8_t)(((uint8_t)(_mainBoard->getAdcInfo().chanelAdc1)) & 0x7),
+                .unit = (uint8_t)ADC_UNIT_1,
+                .bit_width = (uint8_t)SOC_ADC_DIGI_MAX_BITWIDTH,
+            }};
+
+        con.pattern_num = 1;
+        con.adc_pattern = adc_pat_arr;
+
+        auto ret = adc_digi_controller_configure(&con);
+        if (logi::err("OsiclAdcDma controller conf", ret))
+        {
+            return adc_digi_start();
+        }
+
+        return ret;
+    }
+
+    void _initAdc()
+    {
         adc_patern = {
             .atten = (unsigned char)_mainBoard->getAdcInfo().atten,
             .channel = (unsigned char)_mainBoard->getAdcInfo().chanelAdc1,
@@ -125,22 +193,27 @@ private:
         // Создаем дескриптор АЦП
         adc_digi_initialize(&adc_config);
 
-        adc_digi_controller_configure(&con);
+        Serial.println("adc digi inited");
+
+        ESP_ERROR_CHECK(adc_digi_controller_configure(&con));
+
+        Serial.println("adc digi config");
 
         // Запускаем преобразования АЦП
         adc_digi_start();
+        Serial.println("adc digi start");
     }
 
     void _startThread()
     {
         xTaskCreatePinnedToCore(
-            readSignal,      // Function to implement the task
-            "readSignal",    // Name of the task
-            4084,            // Stack size in bytes
-            this,            // Task input parameter
-            1000,            // Priority of the task
+            readSignal,             // Function to implement the task
+            "readSignal",           // Name of the task
+            4084,                   // Stack size in bytes
+            this,                   // Task input parameter
+            1000,                   // Priority of the task
             &_workingThreadHandler, // Task handle.
-            0                // Core where the task should run
+            0                       // Core where the task should run
         );
     }
 
@@ -149,7 +222,9 @@ public:
     {
         _sampleRate = sampleRate;
     }
-    ~OscilAdcDma() = default;
+    ~OscilAdcDma(){
+        deinit();
+    }
 
     void readNext() override
     {
@@ -157,7 +232,7 @@ public:
     }
 
     ulong getRealSampleTime() override { return 0; }
-    uint16_t *getBuffer() override { return (uint16_t*) adc_buffer_out; }
+    uint16_t *getBuffer() override { return adc_buffer_out; }
     bool isBufferReady() override
     {
         return _bufferReady;
@@ -166,18 +241,26 @@ public:
     esp_err_t init() override
     {
         _mainBoard->adc1Init();
-        _initAdc();
-        _startThread();
-        return ESP_OK;
+        //_initAdc();
+        auto ret = _initAdcS2();
+        if (logi::err("OscilAdcDma", ret))
+        {
+            Serial.println("Oscil adc inited");
+            _startThread();
+            Serial.println("thread  started");
+        }
+        return ret;
     }
 
     void deinit() override
     {
-        adc_digi_stop();
+        logi::err("AsdDmaOscil stop", adc_digi_stop());
+        logi::err("AsdDmaOscil deinit", adc_digi_deinitialize());
         vTaskDelete(_workingThreadHandler);
     }
 
-    bool isOnPause(){
+    bool isOnPause()
+    {
         return _pause;
     }
 
@@ -196,10 +279,12 @@ public:
     {
         _pause = true;
         _sampleRate = tickTime;
-        con.sample_freq_hz = _sampleRate;
-        adc_digi_stop();
-        adc_digi_controller_configure(&con);
-        adc_digi_start();
+        deinit();
+        init();
+        //con.sample_freq_hz = _sampleRate;
+        //adc_digi_stop();
+        //adc_digi_controller_configure(&con);
+        //adc_digi_start();
         _pause = false;
     }
 

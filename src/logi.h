@@ -62,12 +62,13 @@ public:
         }
     }
 
-    static void err(String sender, esp_err_t val)
+    static bool err(String sender, esp_err_t val)
     {
         switch (val)
         {
         case ESP_OK:
             // p(sender, "Init OK");
+            return true;
             break;
 
         case ESP_FAIL:
@@ -144,6 +145,8 @@ public:
             err(sender, "Starting number of Memory Protection API error codes");
             break;
         }
+
+        return false;
     }
 
 

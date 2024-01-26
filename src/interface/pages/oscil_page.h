@@ -10,25 +10,31 @@ class OscilPage : public InterfacePageVirtual
 {
 private:
     OscilVirtual *_oscil;
-    Voltmetr* _voltmeter;
+    Voltmetr *_voltmeter;
     OscilPageView *_pageView;
     MainBoard *_mainBoard;
-    uint16_t* voltBuffer;
+    uint16_t *voltBuffer;
 
 public:
     explicit OscilPage(MainBoard *mainBoard) : InterfacePageVirtual(mainBoard->getDisplay())
-    {      
-         _mainBoard = mainBoard;
-        _oscil = new OscilI2s(mainBoard, 168000);// new OscilAdcDma(mainBoard, 20000);// new OscilAdc(mainBoard, 5500); //new OscilI2s(mainBoard, 1000);
+    {
+        _mainBoard = mainBoard;
+#ifdef WROOM32
+        _oscil = new OscilI2s(mainBoard, 168000); // new OscilAdcDma(mainBoard, 20000);// new OscilAdc(mainBoard, 5500); //new OscilI2s(mainBoard, 1000);
+#elif defined(S2MINI)                             // Только стандартные esp32 поддерживают adc через I2s
+            _oscil = new OscilAdcDma(mainBoard, 80000); // new OscilAdc(mainBoard, 5500); //new OscilI2s(mainBoard, 1000);
+#endif
         _voltmeter = new Voltmetr(_mainBoard);
         _voltmeter->setOscil(_oscil);
+
         _pageView = new OscilPageView(mainBoard->getDisplay(), _oscil, _voltmeter);
-    
+
         initOscil();
     }
 
     ~OscilPage() override
     {
+        
         delete _oscil;
         delete _voltmeter;
         delete _pageView;

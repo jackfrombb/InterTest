@@ -76,8 +76,6 @@ public:
 
     virtual void init()
     {
-        Serial.println("Display init");
-        _display->init();
     }
 
     esp_adc_cal_characteristics_t *getAdcChars()
@@ -102,9 +100,9 @@ public:
 
     uint32_t rawToVoltage(uint32_t reading)
     {
-        //if (getAdcChars() != nullptr)
+        if (getAdcChars() != nullptr)
             return esp_adc_cal_raw_to_voltage(reading, getAdcChars()); // reading * 3.3 / 4096.0; // esp_adc_cal_raw_to_voltage(reading, getAdcChars());
-        //else
-        //    return reading * 3.2 / 4096.0;
+        else
+           return reading * 3.2 / 4096.0;
     }
 };

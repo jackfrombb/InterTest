@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include <U8g2lib.h>
 #include "display_helper.h"
 #include "display_virtual.h"
 #include "interface/engines/interface_engine_u8g2.h"
@@ -7,7 +8,6 @@
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
 #endif
-#include <U8g2lib.h>
 
 #ifdef S2MINI
 // Nokia PCD8544 display
@@ -44,7 +44,6 @@ public:
     {
         _u8g2 = new U8G2_PCD8544_84X48_F_4W_SW_SPI(U8G2_R0, /* clock=*/GPIO_NUM_19, /* data=*/GPIO_NUM_18,
                                                    /* cs=*/GPIO_NUM_17, /* dc=*/GPIO_NUM_5, /* reset=*/GPIO_NUM_16);
-
     }
 
     ~Nokia5110_U8g2()

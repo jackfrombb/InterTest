@@ -5,6 +5,9 @@
 #include "freertos/FreeRTOS.h"
 #include "logi.h"
 #include "helpers.h"
+#include "I2S.h"
+#include "driver/i2s.h"
+#include "driver/adc.h"
 
 #define OSCIL_I2S_NUM I2S_NUM_0
 #define OSCIL_I2S_BUFFER_LENGTH 512

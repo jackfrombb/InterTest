@@ -1,6 +1,7 @@
 #pragma once
-#include "interface_engine.h"
 #include <U8g2lib.h>
+
+#include "interface_engine.h"
 #include "displays/display_virtual.h"
 #include "board_virtual.h"
 #include "oscils/sync.h"
@@ -27,26 +28,26 @@ private:
     /// @brief Отрисовать ориентиры и надписи (буферезируется)
     void _drawDotBack(ElWaveform *waveform)
     {
-        static bool buffered = false; // Флаг буферизации фона
+        // static bool buffered = false; // Флаг буферизации фона
 
-        if (buffered)
-        {
-            uint8_t *buf = _u8g2->getBufferPtr();
-            // Размер буфера равен 8 * u8g2.getBufferTileHeight () * u8g2.getBufferTileWidth ().
-            memcpy(buf, _displayBuffer, bufferSize);
-            return;
-        }
+        // if (buffered)
+        // {
+        //     uint8_t *buf = _u8g2->getBufferPtr();
+        //     // Размер буфера равен 8 * u8g2.getBufferTileHeight () * u8g2.getBufferTileWidth ().
+        //     memcpy(buf, _displayBuffer, bufferSize);
+        //     return;
+        // }
 
         _u8g2->setFont(u8g2_font_4x6_tr);
 
         uint16_t width = waveform->getArea().getWidth();
         uint16_t height = waveform->getArea().getHeight();
 
-        uint8_t heightPixelInSection = height / waveform->getHeightSectionsCount();
-        uint8_t widthPixelsCount = width / waveform->getWidthSectionsCount();
+        uint8_t widthPixelsCount = (float)width / waveform->getWidthSectionsCount();
+        uint8_t heightPixelInSection = (float)height / waveform->getHeightSectionsCount();
 
         // Serial.println("Draw init OK");
-        int voltSectionTitle = (int)waveform->getMaxMeasureValue() - 1;
+        int voltSectionTitle = (int) waveform->getMaxMeasureValue() - 1;
 
         for (uint16_t v = 0; v <= height; v += heightPixelInSection)
         {
@@ -69,8 +70,8 @@ private:
             }
         }
 
-        memcpy(_displayBuffer, _u8g2->getBufferPtr(), bufferSize);
-        buffered = true;
+        // memcpy(_displayBuffer, _u8g2->getBufferPtr(), bufferSize);
+        // buffered = true;
     }
 
     /// @brief Отрисовать график
