@@ -43,7 +43,7 @@ public:
         _interruptTime = micros() - _prevInterTime;
 
         // Измерение
-        uint32_t reading = adc1_get_raw(_mainBoard->getAdcInfo().chanelAdc1); // adc1_get_raw(ADC1_CHANNEL_2);
+        uint32_t reading = _mainBoard->readAdc_Single(); //adc1_get_raw(_mainBoard->getAdcInfo().chanelAdc1); // adc1_get_raw(ADC1_CHANNEL_2);
 
         _buffer[_lastPos] = reading;
 
@@ -65,11 +65,6 @@ public:
         auto *oscil = (OscilAdc *)args;
         oscil->writeToBuffer();
         return false;
-    }
-
-    ulong getRealSampleTime() override
-    {
-        return _interruptTime;
     }
 
     uint32_t getMeasuresInSecond() override{
@@ -101,7 +96,7 @@ public:
 
     esp_err_t init() override
     {
-        _mainBoard->adc1Init();
+        _mainBoard->initAdc_SingleRead();
 
         oscilTimer = HardTimer(timerInterrupt, TIMER_GROUP_0, TIMER_1, _measureTime, 2);
         oscilTimer.setArgs(this);

@@ -28,50 +28,55 @@ private:
     /// @brief Отрисовать ориентиры и надписи (буферезируется)
     void _drawDotBack(ElWaveform *waveform)
     {
-        // static bool buffered = false; // Флаг буферизации фона
+        static bool buffered = false; // Флаг буферизации фона
 
-        // if (buffered)
-        // {
-        //     uint8_t *buf = _u8g2->getBufferPtr();
-        //     // Размер буфера равен 8 * u8g2.getBufferTileHeight () * u8g2.getBufferTileWidth ().
-        //     memcpy(buf, _displayBuffer, bufferSize);
-        //     return;
-        // }
+        if (buffered)
+        {
+            uint8_t *buf = _u8g2->getBufferPtr();
+            // Размер буфера равен 8 * u8g2.getBufferTileHeight () * u8g2.getBufferTileWidth ().
+            memcpy(buf, _displayBuffer, bufferSize);
+            return;
+        }
 
         _u8g2->setFont(u8g2_font_4x6_tr);
 
         uint16_t width = waveform->getArea().getWidth();
         uint16_t height = waveform->getArea().getHeight();
 
+        // Это два вспомогательных пикселя, которые помогают оценить расположение
+        _u8g2->drawPixel(width - 1, height - 1);
+        _u8g2->drawPixel(0, 0);
+
         uint8_t widthPixelsCount = (float)width / waveform->getWidthSectionsCount();
-        uint8_t heightPixelInSection = (float)height / waveform->getHeightSectionsCount();
+        uint8_t heightPixelInSection = (float)height / waveform->getMaxMeasureValue();
 
         // Serial.println("Draw init OK");
-        int voltSectionTitle = (int) waveform->getMaxMeasureValue() - 1;
+        int voltSectionTitle = 0; // (int) waveform->getMaxMeasureValue();
 
-        for (uint16_t v = 0; v <= height; v += heightPixelInSection)
+        for (uint16_t v = height; v > 0; v -= heightPixelInSection)
         {
+            logi::p("Engine", "Strart row " + String(v));
+
             for (uint16_t x = 0; x <= width; x += widthPixelsCount)
             {
                 int titlePos = width - widthPixelsCount;
 
-                if (x >= titlePos && voltSectionTitle > 0)
+                if (x >= titlePos)
                 {
                     String title = String(voltSectionTitle);
                     int xPos = titlePos;
-                    int y = (int)(v + (_u8g2->getMaxCharHeight() * 1.5));
+                    int y = (int)(v + (_u8g2->getMaxCharHeight() * .5));
 
                     _u8g2->drawUTF8(xPos, y, title.c_str());
-
-                    voltSectionTitle -= 1;
                 }
 
                 _u8g2->drawPixel(x, v);
             }
+            voltSectionTitle += 1;
         }
 
-        // memcpy(_displayBuffer, _u8g2->getBufferPtr(), bufferSize);
-        // buffered = true;
+        memcpy(_displayBuffer, _u8g2->getBufferPtr(), bufferSize);
+        buffered = true;
     }
 
     /// @brief Отрисовать график
@@ -84,6 +89,8 @@ private:
         uint16_t height = waveform->getArea().getHeight();
 
         int bias = measures.bias > measures.bufferSize - (width + 1) ? 0 : measures.bias - 1; // SyncBuffer::findSignalOffset(waveform->getPoints(), waveform->getPointsLength());
+        int vBias = 0;
+
         bias = max(bias, 0);
         //  Преобразованный предел
         const int maxMeasureValNormalized = (int)(waveform->getMaxMeasureValue() * 1000);
@@ -97,12 +104,12 @@ private:
 
             if (x == width + bias)
             {
-                _u8g2->drawPixel(x - bias, val);
+                _u8g2->drawPixel(x - bias, val + vBias);
             }
             else
             {
                 byte val2 = map(next, 0, maxMeasureValNormalized, height - 1, 0);
-                _u8g2->drawLine(x - bias, val, (x - bias) + 1, val2);
+                _u8g2->drawLine(x - bias, val + vBias, (x - bias) + 1, val2 + vBias);
             }
         }
     }
@@ -167,7 +174,7 @@ public:
 
         _u8g2 = (U8G2 *)_display->getLibrary();
 
-        //Выделяем место для хранения статичного буфера
+        // Выделяем место для хранения статичного буфера
         bufferSize = (unsigned int)(8 * _u8g2->getBufferTileHeight() * _u8g2->getBufferTileWidth());
         _displayBuffer = (uint8_t *)calloc(bufferSize, sizeof(uint8_t));
     }

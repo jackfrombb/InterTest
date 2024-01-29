@@ -82,31 +82,39 @@ public:
         uint16_t *buffer = _copyOscilBuffer;
 
         // Переменные для определения отклонения (периода)
-        int16_t period = 0;             // variable to store the period of the signal
+        int16_t period = 0;              // variable to store the period of the signal
         uint16_t last_value = buffer[0]; // variable to store the last value of the signal
         uint16_t threshold = 1000;       // threshold value for filtering out noise
         bool periodFound = false;
 
         // переменные для хранения минимальных и максимальных значений
         uint16_t max = 0.0;
+        uint16_t min = 0.0; // Постоянная состовляющая
         uint16_t mid = 0.0;
 
         for (int i = 0; i < _oscil->getBufferLength(); i++)
         {
-            //Преобразуем из попугаев в микровольты
+            // Serial.println("Raw: " + String(buffer[i]));
+
+            // Преобразуем из попугаев в микровольты
             auto val = _mainBoard->rawToVoltage(buffer[i]);
             _outBuffer[i] = val;
 
-            //Вычисляем среднее
-            mid = Voltmetr::midArifm2<uint16_t>(val, _oscil->getBufferLength() * 4); //Длину умножаем на 4, что бы значения поеньше скакали
+            // Вычисляем среднее
+            mid = Voltmetr::midArifm2<uint16_t>(val, _oscil->getBufferLength() * 4); // Длину умножаем на 4, что бы значения поеньше скакали
 
-            //Вычисляем максимальное
+            // Вычисляем максимальное
             if (val > max)
             {
                 max = val;
             }
 
-            //Поиск отклонения для синхронизации
+            if (val < min)
+            {
+                min = val;
+            }
+
+            // Поиск отклонения для синхронизации
             if (!periodFound)
             {
                 if (buffer[i] > last_value && buffer[i] > threshold)
@@ -116,6 +124,11 @@ public:
                 }
                 last_value = buffer[i];
             }
+        }
+
+        for (int i = 0; i < _oscil->getBufferLength(); i++)
+        {
+            buffer[i] -= min;
         }
 
         lastMax = max;

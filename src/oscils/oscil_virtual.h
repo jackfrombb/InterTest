@@ -33,8 +33,6 @@ public:
         bool _bufferReady = false;
     }
 
-    virtual ulong getRealSampleTime() { return 0; }
-
     virtual uint16_t *getBuffer() = 0;
 
     virtual bool isBufferReady()

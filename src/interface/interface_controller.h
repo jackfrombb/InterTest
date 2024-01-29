@@ -119,10 +119,14 @@ public:
 
     void setCurrentPage(InterfacePageVirtual *page)
     {
+        if (page == nullptr)
+        {
+            logi::err("iController", "SELECT NULL PAGE");
+        }
         _currentPage = page;
         delayMicroseconds(1000); // Ждем пока инициализируется следующая страница, иначе вызывает искючение
         _startClear = false;
-        logi::p("iController", "Start clear flag = flase");
+        logi::p("iController", "End clear. Page == nullptr : " + String(_currentPage == nullptr));
     }
 
     void clear()

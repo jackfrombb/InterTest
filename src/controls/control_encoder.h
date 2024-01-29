@@ -68,10 +68,12 @@ private:
             if (_enc->encHolding())
             {
                 _handler(_enc->dir() > 0 ? LONG_PRESS_RIGHT : LONG_PRESS_LEFT, _args);
+                logi::p("Control encoder", _enc->dir() > 0? "long left" : "long Right");
             }
             else
             {
                 _handler(_enc->dir() > 0 ? PRESS_RIGHT : PRESS_LEFT, _args);
+                logi::p("Control encoder", _enc->dir() > 0? "left" : "Right");
             }
             break;
         }

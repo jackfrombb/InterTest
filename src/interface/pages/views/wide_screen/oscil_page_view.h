@@ -98,7 +98,6 @@ private:
                 .y = _display->getResolution().height}};
 
         _waveform.setArea(size);
-
         _waveform.setPointsSource([this]
                                   { return _voltmeter->getMeasures(); });
     }
