@@ -16,7 +16,7 @@
 // Размер буфера для хранения результатов АЦП (должен быть больше экрана, для синхронизации периодических сигналов)
 #define ADC_BUFFER_SIZE 512
 
-/// @brief Снятие осцилограммы с помощью esp32 АЦП и DMA
+/// @brief Общая логика снятия осцилограммы с АЦП в continue режиме
 class OscilAdcDma : public OscilVirtual
 {
 private:
@@ -35,6 +35,8 @@ private:
     const TickType_t xFrequency = 50;
     // Флаг паузы (пропуска заполнения буфера)
     bool _pause = false;
+    bool _deinit = false;
+    bool _canDeletethread = false;
 
     /// @brief Считывание
     /// @param pvParameters
@@ -97,17 +99,17 @@ public:
     esp_err_t init() override
     {
         auto ret = _mainBoard->initAdc_Continue(ADC_BUFFER_SIZE, _sampleRate);
-
         if (logi::err("OscilAdcDma", ret))
         {
             _startThread();
-            Serial.println("Thread  started");
+            // Serial.println("Thread  started");
         }
-        return ret;
+        return ESP_OK;
     }
 
     void deinit() override
     {
+        _pause = true;
         _mainBoard->deinitAdc_Continue();
         vTaskDelete(_workingThreadHandler);
     }
@@ -125,15 +127,13 @@ public:
 
     uint32_t getMeasuresInSecond() override
     {
-        return _sampleRate;
+        return _mainBoard->getSampleRate();
     }
 
     void setMeasuresInSecond(uint32_t tickTime) override
     {
         _pause = true;
-        _sampleRate = tickTime;
-        deinit();
-        init();
+        _mainBoard->changeSampleRate(tickTime);
         _pause = false;
     }
 

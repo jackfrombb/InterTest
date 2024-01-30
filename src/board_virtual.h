@@ -74,8 +74,20 @@ public:
         return ESP_OK;
     }
 
+    virtual esp_err_t changeSampleRate(uint sampleRate)
+    {
+        _sampleRate = sampleRate;
+        return ESP_OK;
+    }
+
+    virtual uint getSampleRate()
+    {
+        return _sampleRate;
+    }
+
     virtual uint32_t rawToVoltage(uint16_t reading)
     {
+        //Тут по сути заглушка, этот метод переопределяется в классах плат
         // if (getAdcChars() != nullptr)
         //   return esp_adc_cal_raw_to_voltage(reading, getAdcChars()); // reading * 3.3 / 4096.0; // esp_adc_cal_raw_to_voltage(reading, getAdcChars());
         // else

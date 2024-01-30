@@ -1,5 +1,5 @@
 /*
-Author: JackFromBB - jack@boringbar.ru / 
+Author: JackFromBB - jack@boringbar.ru /
 Placement from: https://github.com/jackfrombb/
 The library for ESP32 under Arduino Environment
 */
@@ -14,8 +14,9 @@ struct hard_timer_info
     timer_idx_t num;
 };
 
-typedef struct {
-    void* args;
+typedef struct
+{
+    void *args;
 } timer_args;
 
 class HardTimer
@@ -25,10 +26,10 @@ private:
     int _tickTime;
     uint32_t _divider;
     timer_isr_t _handlerFunc;
-    void* _args;
+    void *_args;
 
     static hard_timer_info initTimer(timer_group_t group, timer_idx_t num,
-                              int tickTime, uint32_t divider, timer_isr_t isr_handler, void* args)
+                                     int tickTime, uint32_t divider, timer_isr_t isr_handler, void *args)
     {
         const timer_config_t config = {
             .alarm_en = TIMER_ALARM_EN,
@@ -46,21 +47,21 @@ private:
         timer_enable_intr(group, num);
         timer_start(group, num);
 
-            return hard_timer_info {
-                .group = group,
-                .num = num,
-            };
+        return hard_timer_info{
+            .group = group,
+            .num = num,
+        };
     }
 
     bool _isOnPause;
 
 public:
-    HardTimer(){
-
+    HardTimer()
+    {
     }
-     
-    HardTimer(bool(handlerFunc)(void* args) , timer_group_t group,
-               timer_idx_t num, int tickTime, uint32_t divider)
+
+    HardTimer(bool(handlerFunc)(void *args), timer_group_t group,
+              timer_idx_t num, int tickTime, uint32_t divider)
     {
         _isOnPause = true;
         _timer_info = {.group = group, .num = num};
@@ -69,20 +70,36 @@ public:
         _handlerFunc = handlerFunc;
     }
 
-    ~HardTimer() {
+    ~HardTimer()
+    {
     }
 
-    hard_timer_info init(){
+    hard_timer_info init(bool(handlerFunc)(void *args), timer_group_t group, timer_idx_t num, int tickTime, uint32_t divider)
+    {
+        
+        _isOnPause = true;
+        _timer_info = {.group = group, .num = num};
+        _tickTime = tickTime;
+        _divider = divider;
+        _handlerFunc = handlerFunc;
+        
+        return init();
+    }
+
+    hard_timer_info init()
+    {
         _timer_info = initTimer(_timer_info.group, _timer_info.num, _tickTime, _divider, _handlerFunc, _args);
         _isOnPause = false;
         return _timer_info;
     }
 
-    void setArgs(void* args) {
+    void setArgs(void *args)
+    {
         _args = args;
     }
 
-    bool isOnPause(){
+    bool isOnPause()
+    {
         return _isOnPause;
     }
 
@@ -96,27 +113,31 @@ public:
         else
             timer_start(_timer_info.group, _timer_info.num);
 
-            return _isOnPause;
+        return _isOnPause;
     }
 
-    void start(){
+    void start()
+    {
         timer_start(_timer_info.group, _timer_info.num);
     }
 
-    void pause(){
+    void pause()
+    {
         timer_pause(_timer_info.group, _timer_info.num);
     }
 
-    void deinit(){
+    void deinit()
+    {
         timer_deinit(_timer_info.group, _timer_info.num);
     }
 
     /// @brief Получить время срабатывания
     /// @param  Время срабатывания (не преобразованное)
-    u_int64_t getTickTime(){
+    u_int64_t getTickTime()
+    {
         u_int64_t rValue;
-         timer_get_alarm_value(_timer_info.group, _timer_info.num, &rValue);
-         return rValue;
+        timer_get_alarm_value(_timer_info.group, _timer_info.num, &rValue);
+        return rValue;
     }
 
     void setNewTickTime(uint32_t t_time)

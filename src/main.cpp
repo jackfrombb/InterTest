@@ -87,7 +87,6 @@ InterfaceController interfaceController(mainBoard, interfaceEngine);
 // Частота генерации
 int pwmF = 70000;
 
-
 SignalGenerator sigGen(mainBoard->getPwmPin());
 
 void setup()
@@ -144,7 +143,9 @@ void setup()
   delay(300);
 
   // Временный костыль для проверки АЦП
-  sigGen.startMeandrLedc(pwmF, 0.5);
+  //sigGen.startMeandrLedc(pwmF, 0.5);
+  //sigGen.startMenadrDac(pwmF, .5);
+  sigGen.startWaveDac(pwmF);
 
   *progress = 0.8;
   delay(100);

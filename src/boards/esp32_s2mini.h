@@ -32,7 +32,7 @@ protected:
     };
 
     // Для отображения семплов в секунду
-    int _sampleRate;
+    uint16_t _outBufferSize = 512;
 
     // Буферы для хранения результатов АЦП
     uint8_t adc_buffer[ADC_BUFFER_SIZE] = {0};      // Буфер для байтов замеров
@@ -107,6 +107,7 @@ public:
         // initAdc_SingleRead();
 
         _sampleRate = sampleRate;
+        _outBufferSize = bufferSize;
         _bufferSize = bufferSize * 2;
 
         buffer8bit = (uint8_t *)calloc(_bufferSize, sizeof(uint8_t));
@@ -171,10 +172,10 @@ public:
 
             if (_check_valid_data(p))
             {
-                buffer[i >> 1] = p->type1.data; //(uint16_t)oscil->adc_buffer[i];
+                buffer[i >> 1] = p->type1.data;
             }
         }
-
+        // Старый способ, подходил для wroom32u
         // for (int i = 0; i < *readLenght; i += ADC_RESULT_SIZE)
         // {
         //     //  Совмещаем байты для получения показаний
@@ -188,6 +189,13 @@ public:
     {
         logi::err("Esp32Board - adc digi stop", adc_digi_stop());
         return logi::err("Esp32Board - adc digi deinit", adc_digi_deinitialize());
+    }
+
+    esp_err_t changeSampleRate(uint sampleRate)
+    {
+        deinitAdc_Continue();
+        Esp32Virtual::changeSampleRate(sampleRate);
+        return initAdc_Continue(_outBufferSize, sampleRate);
     }
 
     virtual uint16_t getPwmPin() {

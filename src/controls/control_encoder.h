@@ -2,7 +2,7 @@
 #include "configuration.h"
 #include "control_virtual.h"
 #include "esp32-hal-gpio.h"
-#include "EncButton.h"
+#include <EncButton.h>
 #include "logi.h"
 #include "hard_timer.h"
 
@@ -54,13 +54,11 @@ private:
         case EB_CLICKS:
             if (_enc->getClicks() == 1)
             {
-                logi::p("Control encoder", "One click");
                 _handler(PRESS_OK, _args);
             }
             else if (_enc->getClicks() == 2)
             {
                 bool isHandled = _handler(control_event_type::PRESS_BACK, _args);
-                logi::p("Control encoder", "Two clicks " + String(isHandled));
             }
             break;
 
@@ -68,12 +66,10 @@ private:
             if (_enc->encHolding())
             {
                 _handler(_enc->dir() > 0 ? LONG_PRESS_RIGHT : LONG_PRESS_LEFT, _args);
-                logi::p("Control encoder", _enc->dir() > 0? "long left" : "long Right");
             }
             else
             {
                 _handler(_enc->dir() > 0 ? PRESS_RIGHT : PRESS_LEFT, _args);
-                logi::p("Control encoder", _enc->dir() > 0? "left" : "Right");
             }
             break;
         }
@@ -96,8 +92,6 @@ public:
     {
         pinMode(ENC_VCC, OUTPUT);
         digitalWrite(ENC_VCC, 1);
-
-        //_enc->attach(_encEvent, this);
 
         _encoderTimer->setArgs(this);
         _encoderTimer->init();
