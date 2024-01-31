@@ -42,7 +42,7 @@ private:
 
     uint8_t _pin;                                // Пин вывода, для поддержки аналоговых сигналов должен быть dac выводом
     signal_type _currentMode = SIGNAL_TYPE_NONE; // Тип генерируемого сигнала
-    uint32_t _pwmFreq = 1000;                    // ledc max 150khz = 150000, dac wave min/max = 
+    uint32_t _pwmFreq = 1000;                    // ledc max 150khz = 150000, dac wave min/max =
     float _duty = 0.5;                           // 0.0-1.0 = 0-100%
     TaskHandle_t _workingThreadHandler;
 
@@ -72,25 +72,48 @@ private:
     {
         auto gen = (SignalGenerator *)pvParameters;
 
+        // Инициализируем ЦАП
+        dac_output_enable(DAC_CHANNEL_1);
+
         while (true)
         {
             switch (gen->_currentMode)
             {
             case signal_type::SIGNAL_TYPE_MEANDR_DAC:
+                // Проблема этого подхода, это то что невозможно не блокируя поток достаточно сколько то точно
+                // выводить сигнал. Решение это выводить через i2s, в dma стиле, порционно через буфер
+                
                 // Выводим максимальное напряжение на ЦАП
-                dac_output_voltage(DAC_CHANNEL_1, DAC_OFFSET + DAC_AMP);
+                dac_output_voltage(DAC_CHANNEL_1, 255);
                 // Ждем длительность импульса
                 delayMicroseconds(gen->pulse);
                 // Выводим минимальное напряжение на ЦАП
-                dac_output_voltage(DAC_CHANNEL_1, DAC_OFFSET + DAC_MIN);
+                dac_output_voltage(DAC_CHANNEL_1, 0);
                 // Ждем остаток периода
                 delayMicroseconds(gen->period - gen->pulse);
+                vTaskDelay(1); 
                 break;
 
             default:
-                vTaskDelay(1000);
+                vTaskDelay(100);
             }
         }
+    }
+
+    // функция для перевода микросекунд в xTicksToDelay
+    TickType_t microseconds_to_ticks(uint32_t delay_us)
+    {
+        // получение периода тика в миллисекундах
+        uint32_t tick_period_ms = portTICK_PERIOD_MS;
+
+        // перевод периода тика в микросекунды
+        uint32_t tick_period_us = tick_period_ms * 1000;
+
+        // деление задержки в микросекундах на период тика в микросекундах
+        TickType_t xTicksToDelay = delay_us / tick_period_us;
+
+        // возвращение результата в тиках
+        return xTicksToDelay;
     }
 
     void _stopThread()
@@ -146,15 +169,12 @@ public:
         // Вычисляем период меандра в микросекундах
         period = 1000000 / _pwmFreq;
 
-        // Инициализируем ЦАП
-        dac_output_enable(DAC_CHANNEL_1);
-
         if (!_isThreadStarted)
         {
             _startThread();
         }
     }
-    
+
     /// @brief Вывести синус сигнал на вывод DAC1
     /// @param frq Range: 130(130Hz) ~ 55000(100KHz)
     void startWaveDac(uint32_t frq)

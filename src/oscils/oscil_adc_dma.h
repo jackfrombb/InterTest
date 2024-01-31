@@ -40,13 +40,13 @@ private:
 
     /// @brief Считывание
     /// @param pvParameters
-    static IRAM_ATTR void readSignal(void *pvParameters)
+    static void readSignal(void *pvParameters)
     {
         OscilAdcDma *oscil = (OscilAdcDma *)pvParameters;
         oscil->xLastWakeTime = xTaskGetTickCount();
 
         // Читаем данные из пула памяти в буфер
-        uint16_t read_len = 0;
+        size_t read_len = 0;
 
         while (true)
         {
@@ -55,6 +55,8 @@ private:
                 oscil->_bufferBussy = true;
                 oscil->_mainBoard->readAdc_Continue(oscil->adc_buffer_out, &read_len);
                 oscil->_bufferBussy = false;
+
+                //Serial.print(String(read_len));
             }
 
             vTaskDelayUntil(&oscil->xLastWakeTime, oscil->xFrequency);
@@ -102,7 +104,6 @@ public:
         if (logi::err("OscilAdcDma", ret))
         {
             _startThread();
-            // Serial.println("Thread  started");
         }
         return ESP_OK;
     }

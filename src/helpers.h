@@ -15,6 +15,19 @@ T rangeV2(T input, T min, T max)
   return input < min ? min : (input > max ? max : input);
 }
 
+#include <stdexcept>
+#include "driver/timer.h"
+
+
+/// @brief Рассчитать время запуска для непрерывного считывания
+/// @param frequencyHz 
+/// @return 
+float calculateNextCycleTime(uint frequencyHz) {
+    float nextCycleTime = 1000000.0 / frequencyHz;
+    return nextCycleTime;
+}
+
+
 static void copy(int *src, int *dst, int len)
 {
   memcpy(dst, src, sizeof(src[0]) * len);

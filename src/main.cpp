@@ -69,10 +69,10 @@ DisplayVirtual *display = new Display128x64_U8g2();
 
 #ifdef S2MINI
 #include "boards/esp32_s2mini.h"
-MainBoard* mainBoard = new Esp32S2Mini(display, control);
+MainBoard *mainBoard = new Esp32S2Mini(display, control);
 #elif defined(WROOM32)
 #include "boards/esp32_wroom32.h"
-MainBoard* mainBoard = new Esp32Wroom32(display, control);
+MainBoard *mainBoard = new Esp32Wroom32(display, control);
 #endif
 
 #ifdef U8G2_ENGINE
@@ -85,15 +85,16 @@ InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(mainBoard);
 InterfaceController interfaceController(mainBoard, interfaceEngine);
 
 // Частота генерации
-int pwmF = 70000;
+int pwmF = 150000;
 
 SignalGenerator sigGen(mainBoard->getPwmPin());
 
+// #include "ai_samples/dac_i2s_4_4_6__timer.h"
 void setup()
 {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
-  
+
   // Просто смотрю на конфигурацию в теории
   // spi_bus_config_t spi_config = {
   //   .data0_io_num = GPIO_NUM_0,
@@ -143,9 +144,15 @@ void setup()
   delay(300);
 
   // Временный костыль для проверки АЦП
-  //sigGen.startMeandrLedc(pwmF, 0.5);
-  //sigGen.startMenadrDac(pwmF, .5);
-  sigGen.startWaveDac(pwmF);
+  sigGen.startMeandrLedc(pwmF, 0.5);
+  // sigGen.startMenadrDac(pwmF, .5);
+  // sigGen.startWaveDac(pwmF);
+  // создание буфера для хранения сэмплов
+  // buffer = (uint8_t *)malloc(DMA_BUF_LEN);
+  // // инициализация I2S драйвера
+  // i2s_init();
+  // // инициализация таймера
+  // timer_init();
 
   *progress = 0.8;
   delay(100);

@@ -35,8 +35,8 @@ protected:
     uint16_t _outBufferSize = 512;
 
     // Буферы для хранения результатов АЦП
-    uint8_t adc_buffer[ADC_BUFFER_SIZE] = {0};      // Буфер для байтов замеров
-    uint16_t adc_buffer_out[ADC_BUFFER_SIZE] = {0}; // Буфер для полуения показаний от 0-4096
+    //uint8_t adc_buffer[ADC_BUFFER_SIZE] = {0};      // Буфер для байтов замеров
+    //uint16_t adc_buffer_out[ADC_BUFFER_SIZE] = {0}; // Буфер для полуения показаний от 0-4096
 
     // Параметры АЦП
     // adc_digi_pattern_config_t adc_patern;
@@ -53,43 +53,6 @@ private:
             return false;
         }
         return true;
-    }
-
-    // Как пример из инета, не для использования
-    static void _continuous_adc_init(uint16_t adc1_chan_mask, adc_channel_t *channel, uint8_t channel_num)
-    {
-        adc_digi_init_config_t adc_dma_config = {
-            .max_store_buf_size = 6 * 512,
-            .conv_num_each_intr = 512,
-            .adc1_chan_mask = adc1_chan_mask,
-            .adc2_chan_mask = 0,
-        };
-
-        ESP_ERROR_CHECK(adc_digi_initialize(&adc_dma_config));
-
-        adc_digi_configuration_t dig_cfg = {
-            .conv_limit_en = false,
-            .conv_limit_num = 250,
-            .sample_freq_hz = 83333,
-            //.sample_freq_hz =  1000,
-            .conv_mode = ADC_CONV_SINGLE_UNIT_1,
-            .format = ADC_DIGI_OUTPUT_FORMAT_TYPE1,
-        };
-
-        adc_digi_pattern_config_t adc_pattern[SOC_ADC_PATT_LEN_MAX] = {0};
-        dig_cfg.pattern_num = channel_num;
-
-        for (int i = 0; i < channel_num; i++)
-        {
-            uint8_t unit = GET_UNIT(channel[i]);
-            uint8_t ch = channel[i] & 0x7;
-            adc_pattern[i].atten = ADC_ATTEN_DB_11;
-            adc_pattern[i].channel = ch;
-            adc_pattern[i].unit = unit;
-            adc_pattern[i].bit_width = SOC_ADC_DIGI_MAX_BITWIDTH; // 11 data bits limit
-        }
-        dig_cfg.adc_pattern = adc_pattern;
-        ESP_ERROR_CHECK(adc_digi_controller_configure(&dig_cfg));
     }
 
 public:
@@ -162,9 +125,9 @@ public:
         return ret;
     }
 
-    esp_err_t readAdc_Continue(uint16_t *buffer, uint16_t *readLenght) override
+    esp_err_t readAdc_Continue(uint16_t *buffer, size_t *readLenght) override
     {
-        auto retErr = adc_digi_read_bytes(buffer8bit, _bufferSize, (size_t *)readLenght, ADC_MAX_DELAY);
+        auto retErr = adc_digi_read_bytes(buffer8bit, _bufferSize, readLenght, ADC_MAX_DELAY);
 
         for (int i = 0; i < *readLenght; i += ADC_RESULT_SIZE)
         {

@@ -47,7 +47,7 @@ public:
         return 0;
     }
 
-    virtual esp_err_t readAdc_Continue(uint16_t *buffer, uint16_t *readLenght)
+    virtual esp_err_t readAdc_Continue(uint16_t *buffer, size_t *readLenght)
     {
         return 0;
     }
