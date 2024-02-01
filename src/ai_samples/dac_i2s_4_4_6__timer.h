@@ -2,16 +2,20 @@
 #include "driver/dac.h"
 #include "driver/timer.h"
 #include "logi.h"
+/**
+ * @brief Не хочет запускаться вместе с DMA ADC
+ * не работает с I2S ADC ,поскольку adc и dac сидят на I2S0
+ */
 
 #define SAMPLE_RATE 44100                                            // частота дискретизации в Гц
 #define SAMPLE_BITS i2s_bits_per_sample_t::I2S_BITS_PER_SAMPLE_16BIT // разрядность сэмпла в битах
 #define CHANNELS 1                                                   // количество каналов
 #define I2S_NUM i2s_port_t::I2S_NUM_0                                // номер I2S порта
 #define DMA_BUF_COUNT 2                                              // количество DMA буферов
-#define DMA_BUF_LEN 256                                             // длина DMA буфера в сэмплах
+#define DMA_BUF_LEN 64                                             // длина DMA буфера в сэмплах
 #define MEANDER_FREQ 1000                                            // частота меандра в Гц
 #define MEANDER_AMP 127                                              // амплитуда меандра в диапазоне от 0 до 127
-#define TIMER_GROUP TIMER_GROUP_0                                    // номер группы таймеров
+#define TIMER_GROUP TIMER_GROUP_1                                    // номер группы таймеров
 #define TIMER_NUM TIMER_0                                            // номер таймера в группе
 #define TIMER_DIVIDER 80                                             // делитель таймера
 #define TIMER_SCALE (TIMER_BASE_CLK / TIMER_DIVIDER)                 // масштаб таймера
@@ -48,10 +52,18 @@ void i2s_init()
 
     };
 
+    i2s_pin_config_t pins = i2s_pin_config_t {
+        .mck_io_num = I2S_PIN_NO_CHANGE,
+        .bck_io_num = I2S_PIN_NO_CHANGE,
+        .ws_io_num = I2S_PIN_NO_CHANGE,
+        .data_out_num = DAC1,
+        .data_in_num = I2S_PIN_NO_CHANGE,
+    };
+
     // установка I2S драйвера
     i2s_driver_install(I2S_NUM, &i2s_config, 0, NULL);
     // установка пинов I2S
-    i2s_set_pin(I2S_NUM, NULL);
+    i2s_set_pin(I2S_NUM, &pins);
     // включение каналов DAC
     i2s_set_dac_mode(I2S_DAC_CHANNEL_RIGHT_EN);
     i2s_set_sample_rates(I2S_NUM, 22050); // set sample rates
@@ -70,7 +82,7 @@ void timer_init()
         "workThreadDac", // Name of the task
         1024,            // Stack size in bytes
         NULL,            // Task input parameter
-        1100,            // Priority of the task
+        900,            // Priority of the task
         NULL,            // Task handle.
         0                // Core where the task should run
     );

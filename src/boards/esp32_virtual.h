@@ -6,8 +6,6 @@
 #include "displays/display_virtual.h"
 #include "controls/control_virtual.h"
 
-#define GET_UNIT(x) ((x >> 3) & 0x1)
-
 /// @brief Информация о конфигурации АЦП
 typedef struct
 {
@@ -86,9 +84,9 @@ public:
 
     uint32_t rawToVoltage(uint16_t reading) override
     {
-        if (getAdcChars() != nullptr)
-            return esp_adc_cal_raw_to_voltage(reading, getAdcChars()); // reading * 3.3 / 4096.0; // esp_adc_cal_raw_to_voltage(reading, getAdcChars());
-        else
-            return (uint32_t)((float)reading * (3.2 / 4095)) * 1000;
+        // if (getAdcChars() != nullptr)
+        //     return esp_adc_cal_raw_to_voltage(reading, getAdcChars()); // reading * 3.3 / 4096.0; // esp_adc_cal_raw_to_voltage(reading, getAdcChars());
+        // else
+        return (uint32_t)(((float)reading * (3.2 / 4095.0)) * 1000);
     }
 };

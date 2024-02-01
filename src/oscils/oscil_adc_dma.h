@@ -20,6 +20,8 @@
 class OscilAdcDma : public OscilVirtual
 {
 private:
+    AdcVirtual *_adc = nullptr;
+
     uint _sampleRate = 1000;
 
     // Буферы для хранения результатов АЦП
@@ -28,22 +30,26 @@ private:
 
     // Для управления потоком по получению данных с ацп
     TaskHandle_t _workingThreadHandler;
+
     // Последнее время запуска (для синхронизации считываний по времени)
     TickType_t xLastWakeTime;
+
     // xFrequency - луше если кратно выводу кадров на экран (50)
     // Чем меньше считываний в буфер тем удобнее смотреть сигнал (без синхронизации), но выглядит тормознутее
     const TickType_t xFrequency = 50;
+
     // Флаг паузы (пропуска заполнения буфера)
     bool _pause = false;
     bool _deinit = false;
-    bool _canDeletethread = false;
+    bool _taskIsRuning = false;
 
     /// @brief Считывание
     /// @param pvParameters
-    static void readSignal(void *pvParameters)
+    static IRAM_ATTR void readSignal(void *pvParameters)
     {
         OscilAdcDma *oscil = (OscilAdcDma *)pvParameters;
         oscil->xLastWakeTime = xTaskGetTickCount();
+        oscil->_taskIsRuning = true;
 
         // Читаем данные из пула памяти в буфер
         size_t read_len = 0;
@@ -53,10 +59,10 @@ private:
             if (!oscil->_pause && !oscil->_bufferBussy)
             {
                 oscil->_bufferBussy = true;
-                oscil->_mainBoard->readAdc_Continue(oscil->adc_buffer_out, &read_len);
+                oscil->_adc->readData(oscil->adc_buffer_out, &read_len);
                 oscil->_bufferBussy = false;
 
-                //Serial.print(String(read_len));
+                // Serial.print(String(read_len));
             }
 
             vTaskDelayUntil(&oscil->xLastWakeTime, oscil->xFrequency);
@@ -68,7 +74,7 @@ private:
         xTaskCreatePinnedToCore(
             readSignal,             // Function to implement the task
             "readSignal",           // Name of the task
-            4084,                   // Stack size in bytes
+            2048,                   // Stack size in bytes
             this,                   // Task input parameter
             1000,                   // Priority of the task
             &_workingThreadHandler, // Task handle.
@@ -80,10 +86,12 @@ public:
     OscilAdcDma(MainBoard *mainBoard, int sampleRate) : OscilVirtual(mainBoard)
     {
         _sampleRate = sampleRate;
+        _adc = mainBoard->getAdcContinue();
     }
     ~OscilAdcDma()
     {
         deinit();
+        _mainBoard->removeAdcContinue();
     }
 
     void readNext() override
@@ -100,7 +108,7 @@ public:
 
     esp_err_t init() override
     {
-        auto ret = _mainBoard->initAdc_Continue(ADC_BUFFER_SIZE, _sampleRate);
+        auto ret = _adc->init(ADC_BUFFER_SIZE, _sampleRate);
         if (logi::err("OscilAdcDma", ret))
         {
             _startThread();
@@ -111,8 +119,11 @@ public:
     void deinit() override
     {
         _pause = true;
-        _mainBoard->deinitAdc_Continue();
-        vTaskDelete(_workingThreadHandler);
+        _adc->deinit();
+        if (_taskIsRuning)
+        {
+            vTaskDelete(_workingThreadHandler);
+        }
     }
 
     bool isOnPause()
@@ -128,13 +139,13 @@ public:
 
     uint32_t getMeasuresInSecond() override
     {
-        return _mainBoard->getSampleRate();
+        return _adc->getSampleRate();
     }
 
     void setMeasuresInSecond(uint32_t tickTime) override
     {
         _pause = true;
-        _mainBoard->changeSampleRate(tickTime);
+        _adc->changeSampleRate(tickTime);
         _pause = false;
     }
 

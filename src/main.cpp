@@ -67,6 +67,7 @@ DisplayVirtual *display = new Nokia5110_U8g2();
 DisplayVirtual *display = new Display128x64_U8g2();
 #endif
 
+//Определение платы
 #ifdef S2MINI
 #include "boards/esp32_s2mini.h"
 MainBoard *mainBoard = new Esp32S2Mini(display, control);
@@ -85,11 +86,12 @@ InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(mainBoard);
 InterfaceController interfaceController(mainBoard, interfaceEngine);
 
 // Частота генерации
-int pwmF = 150000;
+int pwmF = 15000;
 
 SignalGenerator sigGen(mainBoard->getPwmPin());
 
 // #include "ai_samples/dac_i2s_4_4_6__timer.h"
+
 void setup()
 {
   Serial.begin(115200);
@@ -144,9 +146,10 @@ void setup()
   delay(300);
 
   // Временный костыль для проверки АЦП
-  sigGen.startMeandrLedc(pwmF, 0.5);
+  // sigGen.startMeandrLedc(pwmF, 0.5);
   // sigGen.startMenadrDac(pwmF, .5);
-  // sigGen.startWaveDac(pwmF);
+  sigGen.startWaveDac(pwmF);
+
   // создание буфера для хранения сэмплов
   // buffer = (uint8_t *)malloc(DMA_BUF_LEN);
   // // инициализация I2S драйвера
