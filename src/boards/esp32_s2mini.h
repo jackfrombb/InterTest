@@ -1,5 +1,6 @@
 #pragma once
 
+#include "controllers/esp32_adc_dma.h"
 #include "esp32_virtual.h"
 #include "logi.h"
 
@@ -35,8 +36,8 @@ protected:
     uint16_t _outBufferSize = 512;
 
     // Буферы для хранения результатов АЦП
-    //uint8_t adc_buffer[ADC_BUFFER_SIZE] = {0};      // Буфер для байтов замеров
-    //uint16_t adc_buffer_out[ADC_BUFFER_SIZE] = {0}; // Буфер для полуения показаний от 0-4096
+    // uint8_t adc_buffer[ADC_BUFFER_SIZE] = {0};      // Буфер для байтов замеров
+    // uint16_t adc_buffer_out[ADC_BUFFER_SIZE] = {0}; // Буфер для полуения показаний от 0-4096
 
     // Параметры АЦП
     // adc_digi_pattern_config_t adc_patern;
@@ -56,7 +57,7 @@ private:
     }
 
 public:
-    Esp32S2Mini(DisplayVirtual *display, ControlVirtual *control, InterfaceEngineVirtual* iEngine) : Esp32Virtual(display, control, iEngine)
+    Esp32S2Mini(DisplayVirtual *display, ControlVirtual *control, InterfaceEngineVirtual *iEngine) : Esp32Virtual(display, control, iEngine)
     {
     }
 
@@ -65,103 +66,18 @@ public:
         return _adcInfo;
     }
 
-    esp_err_t initAdc_Continue(uint16_t bufferSize, uint sampleRate)
+    AdcVirtual *getAdcContinue() override
     {
-        // initAdc_SingleRead();
-
-        _sampleRate = sampleRate;
-        _outBufferSize = bufferSize;
-        _bufferSize = bufferSize * 2;
-
-        buffer8bit = (uint8_t *)calloc(_bufferSize, sizeof(uint8_t));
-
-        adc_config = adc_digi_init_config_t{
-            .max_store_buf_size = (uint32_t)(_bufferSize),
-            .conv_num_each_intr = (uint32_t)_bufferSize,
-            .adc1_chan_mask = adc1_channel_mask,
-            .adc2_chan_mask = adc2_channel_mask,
-        };
-
-        Serial.println("Init OK");
-
-        logi::err("Esp32Board - initAdcDigi", adc_digi_initialize(&adc_config));
-
-        con = adc_digi_configuration_t{
-            .conv_limit_en = false,
-            .conv_limit_num = 250,
-            .sample_freq_hz = (uint32_t)_sampleRate,
-            .conv_mode = ADC_CONV_SINGLE_UNIT_1,
-            .format = ADC_DIGI_OUTPUT_FORMAT_TYPE1,
-        };
-
-        uint32_t pattern_num = 1;
-
-        adc_digi_pattern_config_t adc_pattern[SOC_ADC_PATT_LEN_MAX] = {0};
-        con.pattern_num = pattern_num;
-
-        for (int i = 0; i < pattern_num; i++)
+        if (_adc == nullptr)
         {
-            uint8_t unit = GET_UNIT(channel[i]);
-            uint8_t ch = channel[i] & 0x7;
-            adc_pattern[i].atten = ADC_ATTEN_DB_11;
-            adc_pattern[i].channel = ch;
-            adc_pattern[i].unit = unit;
-            adc_pattern[i].bit_width = SOC_ADC_DIGI_MAX_BITWIDTH;
-
-            ESP_LOGI("esp32s2", "adc_pattern[%d].atten is :%x", i, adc_pattern[i].atten);
-            ESP_LOGI("esp32s2", "adc_pattern[%d].channel is :%x", i, adc_pattern[i].channel);
-            ESP_LOGI("esp32s2", "adc_pattern[%d].unit is :%x", i, adc_pattern[i].unit);
+            _adc = new Esp32AdcDma(false, _adcInfo.chanelAdc1);
         }
 
-        con.adc_pattern = adc_pattern;
-
-        auto ret = adc_digi_controller_configure(&con);
-        if (logi::err("Esp32Board - controller configure", ret))
-        {
-            Serial.println("Configure OK");
-            return adc_digi_start();
-        }
-
-        return ret;
+        return _adc;
     }
 
-    esp_err_t readAdc_Continue(uint16_t *buffer, size_t *readLenght) override
+    virtual uint16_t getPwmPin()
     {
-        auto retErr = adc_digi_read_bytes(buffer8bit, _bufferSize, readLenght, ADC_MAX_DELAY);
-
-        for (int i = 0; i < *readLenght; i += ADC_RESULT_SIZE)
-        {
-            adc_digi_output_data_t *p = (adc_digi_output_data_t *)&buffer8bit[i];
-
-            if (_check_valid_data(p))
-            {
-                buffer[i >> 1] = p->type1.data;
-            }
-        }
-        // Старый способ, подходил для wroom32u
-        // for (int i = 0; i < *readLenght; i += ADC_RESULT_SIZE)
-        // {
-        //     //  Совмещаем байты для получения показаний
-        //     buffer[(int)(i >> 1)] = buffer8bit[i] << 8 | buffer8bit[i + 1];
-        // }
-
-        return ESP_OK;
-    }
-
-    esp_err_t deinitAdc_Continue() override
-    {
-        logi::err("Esp32Board - adc digi stop", adc_digi_stop());
-        return logi::err("Esp32Board - adc digi deinit", adc_digi_deinitialize());
-    }
-
-    esp_err_t changeSampleRate(uint sampleRate)
-    {
-        deinitAdc_Continue();
-        Esp32Virtual::changeSampleRate(sampleRate);
-        return initAdc_Continue(_outBufferSize, sampleRate);
-    }
-
-    virtual uint16_t getPwmPin() {
         return GPIO_NUM_17;
     }
 };

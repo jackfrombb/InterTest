@@ -65,7 +65,7 @@ public:
         switch (eventType)
         {
 
-            // Смотрю на смещения буфера TODO: вернуть все как было
+            // Смотрю на смещения буфера 
         // case control_event_type::PRESS_LEFT:
         //     bias -= 1;
         //     break;
