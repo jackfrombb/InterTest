@@ -5,11 +5,12 @@
 /// @brief Размер текста
 typedef enum
 {
+    EL_VOLTMETER_VALUE_LARGE,
     EL_TEXT_SIZE_SUPER_LARGE,
     EL_TEXT_SIZE_LARGE,
     EL_TEXT_SIZE_MIDDLE,
     EL_TEXT_SIZE_SMALL,
-    EL_TEXT_SIZE_SUPER_SMALL
+    EL_TEXT_SIZE_SUPER_SMALL,
 } el_text_size;
 
 /// @brief Выравнивание текста

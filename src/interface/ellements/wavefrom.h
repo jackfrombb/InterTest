@@ -3,7 +3,6 @@
 #include <Arduino.h>
 #include "ellement_virtual.h"
 #include "displays/display_structs.h"
-#include "oscils/oscil_virtual.h"
 
 using namespace std;
 
@@ -15,6 +14,8 @@ private:
     uint8_t _sectionCountW = 8;
     uint8_t _sectionCountH = 4;
     float _maxMeasureValue = 4.0;
+    bool _drawDots;
+    bool _drawBackGround;
     function<adc_measures_t()> _getMeasuresFunc = nullptr;
 
 public:
@@ -25,11 +26,17 @@ public:
     void setPointsSource(function<adc_measures_t()> getMeasuresFunc)
     {
         _getMeasuresFunc = getMeasuresFunc;
+        _drawDots = AppData::getBool("waveformDots", false);
+        _drawBackGround = true;
     }
 
     void setPoints(adc_measures_t measures)
     {
         _measures = measures;
+    }
+
+    adc_measures_t* getMeasuresPtr(){
+        return &_measures;
     }
 
     adc_measures_t getMeasures()
@@ -39,6 +46,27 @@ public:
             return _getMeasuresFunc();
         }
         return _measures;
+    }
+
+    bool isNeedDrawBackground(){
+        return _drawBackGround;
+    }
+
+    bool isNeedDrawBackDots()
+    {
+        return _drawDots;
+    }
+
+    ElWaveform *setNeedDrawBackDots(bool isNeed)
+    {
+        _drawDots = isNeed;
+        return this;
+    }
+
+    ElWaveform *setNeedDrawBackground(bool isNeed)
+    {
+        _drawBackGround = isNeed;
+        return this;
     }
 
     uint32_t getPointsLength()

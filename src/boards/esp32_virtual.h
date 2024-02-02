@@ -31,7 +31,7 @@ protected:
     adc_calibration_type _calibrationType;
 
 public:
-    Esp32Virtual(DisplayVirtual *display, ControlVirtual *control) : MainBoard(display, control)
+    Esp32Virtual(DisplayVirtual *display, ControlVirtual *control, InterfaceEngineVirtual* iEngine) : MainBoard(display, control, iEngine)
     {
     }
 

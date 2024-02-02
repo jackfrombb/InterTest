@@ -4,7 +4,7 @@
 #include "logi.h"
 #include "helpers.h"
 
-#define ADC_I2S_MODE
+#define ADC_I2S_MODE // i2s для wroom32 показывает меньше шумов и вообще лучше работает по ощущениям
 //#define ADC_DMA_MODE
 
 
@@ -27,7 +27,7 @@ private:
     };
 
 public:
-    Esp32Wroom32(DisplayVirtual *display, ControlVirtual *control) : Esp32Virtual(display, control)
+    Esp32Wroom32(DisplayVirtual *display, ControlVirtual *control, InterfaceEngineVirtual* iEngine) : Esp32Virtual(display, control, iEngine)
     {
     }
 

@@ -5,7 +5,8 @@
 class InterfaceEngineVirtual
 {
 protected:
-    InterfaceEngineVirtual() {}
+    InterfaceEngineVirtual() = default;
+    virtual ~InterfaceEngineVirtual() = default;
 
     virtual void _onStartDraw() {}
     virtual void _onEndDraw() {}
@@ -81,4 +82,7 @@ public:
         drawGroup(group);
         _onEndDraw();
     }
+
+    virtual uint8_t getMaxTextWidth(el_text_size textSize) = 0;
+    virtual uint8_t getMaxTextHeight(el_text_size textSize) = 0;
 };

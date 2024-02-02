@@ -7,16 +7,24 @@
 // Переключение железа здесь
 #include "configuration.h"
 #include "logi.h"
-#include "driver/spi_master.h"
 
 // Вспомогательные методы общие
 #include "helpers.h"
 // Вспомогательные структуры дисплея
 #include "displays/display_structs.h"
 
-// esp32 библиотеки для работы ADC
-#include "driver/adc.h"
-#include "esp_adc_cal.h"
+/// @brief Структура для передачи данных измерений в интерфейс
+// Пока не придумал где её хранить, что бы избежать "взаимных зависимостей", потому лежит здесь
+typedef struct
+{
+  uint16_t *buffer;    // Буфер значений (заполняет ацп в логике осцилографа)
+  uint16_t bufferSize; // Размер буфера
+  uint16_t middle;     // Среднее значение высчитывает вольтметр
+  uint16_t max;        // Максимальное
+  uint16_t min;        // Минимальное
+  int16_t bias;        // Смещение для синхронизации периодических сигналов
+  uint16_t readedSize; // Размер считанного в ацп
+} adc_measures_t;
 
 // Логика осцилографа
 #include "oscils/oscils_list.h"
@@ -36,6 +44,7 @@
 
 #include "interface/ellements/ellements_list.h"
 #include "interface/engines/interface_engine.h"
+#include "displays/display_virtual.h"
 #include "interface/interface_controller.h"
 #include "displays/display_helper.h"
 #include "controls/control_virtual.h"
@@ -67,26 +76,27 @@ DisplayVirtual *display = new Nokia5110_U8g2();
 DisplayVirtual *display = new Display128x64_U8g2();
 #endif
 
-//Определение платы
-#ifdef S2MINI
-#include "boards/esp32_s2mini.h"
-MainBoard *mainBoard = new Esp32S2Mini(display, control);
-#elif defined(WROOM32)
-#include "boards/esp32_wroom32.h"
-MainBoard *mainBoard = new Esp32Wroom32(display, control);
-#endif
-
+// Определение двигателя отрисовки
 #ifdef U8G2_ENGINE
 #include "interface/engines/interface_engine_u8g2.h"
-InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(mainBoard);
+InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(display);
 #elif defined(ADAFRUIT_ENGINE)
 // In process
+#endif
+
+// Определение платы
+#ifdef S2MINI
+#include "boards/esp32_s2mini.h"
+MainBoard *mainBoard = new Esp32S2Mini(display, control, interfaceEngine);
+#elif defined(WROOM32)
+#include "boards/esp32_wroom32.h"
+MainBoard *mainBoard = new Esp32Wroom32(display, control, interfaceEngine);
 #endif
 
 InterfaceController interfaceController(mainBoard, interfaceEngine);
 
 // Частота генерации
-int pwmF = 15000;
+int pwmF = 40000;
 
 SignalGenerator sigGen(mainBoard->getPwmPin());
 
@@ -146,10 +156,9 @@ void setup()
   delay(300);
 
   // Временный костыль для проверки АЦП
-  // sigGen.startMeandrLedc(pwmF, 0.5);
+  sigGen.startMeandrLedc(pwmF, 0.5);
   // sigGen.startMenadrDac(pwmF, .5);
-  sigGen.startWaveDac(pwmF);
-
+  // sigGen.startWaveDac(pwmF);
   // создание буфера для хранения сэмплов
   // buffer = (uint8_t *)malloc(DMA_BUF_LEN);
   // // инициализация I2S драйвера

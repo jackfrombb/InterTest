@@ -37,7 +37,8 @@ private:
                 controller->_currentPage != nullptr &&
                 controller->_currentPage->getPageView() != nullptr)
             {
-                controller->_interfaceEngine->drawPage(controller->_currentPage->getPageView());
+                controller->_currentPage->onDraw();                                              // Оповещаем контроллер страницы для подготовки данных
+                controller->_interfaceEngine->drawPage(controller->_currentPage->getPageView()); // Отображаем данные
             }
             controller->_drawInProcess = false;
             xTaskDelayUntil(&xLastWakeTime, xFrequency);

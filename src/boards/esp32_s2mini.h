@@ -56,7 +56,7 @@ private:
     }
 
 public:
-    Esp32S2Mini(DisplayVirtual *display, ControlVirtual *control) : Esp32Virtual(display, control)
+    Esp32S2Mini(DisplayVirtual *display, ControlVirtual *control, InterfaceEngineVirtual* iEngine) : Esp32Virtual(display, control, iEngine)
     {
     }
 

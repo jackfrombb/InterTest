@@ -31,7 +31,6 @@ public:
     }
     ~Esp32AdcI2s()
     {
-        
     }
 
     int8_t init(uint16_t bufferSize, uint sampleRate) override
@@ -44,9 +43,9 @@ public:
             .channel_format = I2S_CHANNEL_FMT_ALL_LEFT,
             .communication_format = i2s_comm_format_t::I2S_COMM_FORMAT_STAND_I2S,
             .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
-            .dma_buf_count = 4,  // number of DMA buffers
-            .dma_buf_len = 1024, // number of samples (in bytes)
-            .use_apll = false,   // no Audio PLL
+            .dma_buf_count = 4,        // number of DMA buffers
+            .dma_buf_len = bufferSize, // number of samples (in bytes)
+            .use_apll = false,         // no Audio PLL
             .tx_desc_auto_clear = false,
             .fixed_mclk = 0};
 
@@ -68,7 +67,10 @@ public:
 
     int8_t deinit() override
     {
-        logi::err("Esp32Board", i2s_adc_disable(OSCIL_I2S_NUM));
+        if (logi::err("Esp32Board", i2s_adc_disable(OSCIL_I2S_NUM)))
+        {
+            Serial.println("Disable i2s adc ok");
+        }
         return i2s_driver_uninstall(OSCIL_I2S_NUM);
     }
 
@@ -81,6 +83,10 @@ public:
 
     int8_t readData(uint16_t *buffer, size_t *readedLength) override
     {
-        return i2s_read(OSCIL_I2S_NUM, buffer, sizeof(uint16_t) * _bufferSize, readedLength, portMAX_DELAY);
+        auto err = i2s_read(OSCIL_I2S_NUM, buffer, _bufferSize, readedLength, portMAX_DELAY);
+        // delayMicroseconds(1000);
+        *readedLength = *readedLength >> 1; // Не знаю почему, но он заполняет весь массив,
+                                            // если делить кол-во считанных байт на 2
+        return err;
     }
 };

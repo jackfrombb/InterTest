@@ -27,6 +27,7 @@ private:
     // Буферы для хранения результатов АЦП
     uint8_t adc_buffer[ADC_BUFFER_SIZE] = {0};      // Буфер для байтов замеров
     uint16_t adc_buffer_out[ADC_BUFFER_SIZE] = {0}; // Буфер для полуения показаний от 0-4096
+    uint32_t read_len = 0;                          // Размер прочитаных байт
 
     // Для управления потоком по получению данных с ацп
     TaskHandle_t _workingThreadHandler;
@@ -36,12 +37,11 @@ private:
 
     // xFrequency - луше если кратно выводу кадров на экран (50)
     // Чем меньше считываний в буфер тем удобнее смотреть сигнал (без синхронизации), но выглядит тормознутее
-    const TickType_t xFrequency = 50;
+    const TickType_t xFrequency = 100;
 
     // Флаг паузы (пропуска заполнения буфера)
-    bool _pause = false;
-    bool _deinit = false;
-    bool _taskIsRuning = false;
+    bool _pause = false; // Флаг паузы
+    // bool _taskIsRuning = false; //Флаг запуска задачи считывания с ацп
 
     /// @brief Считывание
     /// @param pvParameters
@@ -49,9 +49,8 @@ private:
     {
         OscilAdcDma *oscil = (OscilAdcDma *)pvParameters;
         oscil->xLastWakeTime = xTaskGetTickCount();
-        oscil->_taskIsRuning = true;
+        // oscil->_taskIsRuning = true;
 
-        // Читаем данные из пула памяти в буфер
         size_t read_len = 0;
 
         while (true)
@@ -60,9 +59,10 @@ private:
             {
                 oscil->_bufferBussy = true;
                 oscil->_adc->readData(oscil->adc_buffer_out, &read_len);
+                oscil->read_len = (uint32_t) read_len;
                 oscil->_bufferBussy = false;
 
-                // Serial.print(String(read_len));
+                //Serial.println(String(oscil->read_len));
             }
 
             vTaskDelayUntil(&oscil->xLastWakeTime, oscil->xFrequency);
@@ -74,7 +74,7 @@ private:
         xTaskCreatePinnedToCore(
             readSignal,             // Function to implement the task
             "readSignal",           // Name of the task
-            2048,                   // Stack size in bytes
+            4096,                   // Stack size in bytes
             this,                   // Task input parameter
             1000,                   // Priority of the task
             &_workingThreadHandler, // Task handle.
@@ -88,7 +88,7 @@ public:
         _sampleRate = sampleRate;
         _adc = mainBoard->getAdcContinue();
     }
-    ~OscilAdcDma()
+    ~OscilAdcDma() override
     {
         deinit();
         _mainBoard->removeAdcContinue();
@@ -100,6 +100,8 @@ public:
     }
 
     uint16_t *getBuffer() override { return adc_buffer_out; }
+
+    uint16_t getReadedLength() { return read_len; }
 
     bool isBufferReady() override
     {
@@ -120,10 +122,7 @@ public:
     {
         _pause = true;
         _adc->deinit();
-        if (_taskIsRuning)
-        {
-            vTaskDelete(_workingThreadHandler);
-        }
+        vTaskDelete(_workingThreadHandler);
     }
 
     bool isOnPause()
@@ -145,8 +144,13 @@ public:
     void setMeasuresInSecond(uint32_t tickTime) override
     {
         _pause = true;
-        _adc->changeSampleRate(tickTime);
+        auto err = _adc->changeSampleRate(tickTime);
         _pause = false;
+
+        if (logi::err("OscilContinue", err)) // Если успешно то сохраняем семплрейт
+        {
+            AppData::saveUInt("lastSampleData", tickTime);
+        }
     }
 
     uint16_t getBufferLength() override

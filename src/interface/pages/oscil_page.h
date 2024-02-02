@@ -19,11 +19,9 @@ public:
     explicit OscilPage(MainBoard *mainBoard) : InterfacePageVirtual(mainBoard->getDisplay())
     {
         _mainBoard = mainBoard;
-// #ifdef WROOM32
-//         _oscil = new OscilI2s(mainBoard, 168000); // new OscilAdcDma(mainBoard, 20000);// new OscilAdc(mainBoard, 5500); //new OscilI2s(mainBoard, 1000);
-// #elif defined(S2MINI)                             // Только стандартные esp32 поддерживают adc через I2s
-            _oscil = new OscilAdcDma(mainBoard, 80000); // new OscilAdc(mainBoard, 5500); //new OscilI2s(mainBoard, 1000);
-// #endif
+
+        uint lastSampleRate = AppData::getUint("lastSampleData", 80000);
+        _oscil = new OscilAdcDma(mainBoard, lastSampleRate);
         _voltmeter = new Voltmetr(_mainBoard);
         _voltmeter->setOscil(_oscil);
 
@@ -34,7 +32,7 @@ public:
 
     ~OscilPage() override
     {
-        
+
         delete _oscil;
         delete _voltmeter;
         delete _pageView;

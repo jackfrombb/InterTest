@@ -2,15 +2,6 @@
 #include <Arduino.h>
 #include "board_virtual.h"
 
-typedef struct
-{
-    uint16_t* buffer;
-    uint16_t bufferSize;
-    uint16_t middle;
-    uint16_t max;
-    int16_t bias;
-} adc_measures_t;
-
 class OscilVirtual
 {
 protected:
@@ -51,6 +42,8 @@ public:
     virtual uint32_t getMeasuresInSecond() { return 0; };
 
     virtual void setMeasuresInSecond(uint32_t tickTime) {}
+
+    virtual uint16_t getReadedLength() { return 0; }
 
     virtual uint16_t getBufferLength() = 0;
 

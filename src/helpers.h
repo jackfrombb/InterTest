@@ -71,7 +71,7 @@ int16_t invertBytes(int val)
 template <typename T>
 uint16_t getMaxNumPosition(T num)
 {
-  return floor(log10(num)) + 1;
+  return (uint16_t) floor((T)log10(num)) + 1;
 }
 
 // Обычное среднее

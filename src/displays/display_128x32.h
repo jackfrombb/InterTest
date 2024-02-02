@@ -40,6 +40,7 @@ public:
 
         _u8g2->begin();
         _u8g2->enableUTF8Print();
+        _u8g2->setContrast(100);
         logi::p("Display 128x64", "Display init ok");
     }
 

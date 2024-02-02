@@ -1,13 +1,12 @@
 #pragma once
 
 // esp32 библиотеки для работы ADC
-#include "driver/adc.h"
-#include "esp_adc_cal.h"
-#include "driver/i2s.h"
 #include "module_virtual.h"
 #include "displays/display_virtual.h"
 #include "controls/control_virtual.h"
 #include "controllers/adc_virtual.h"
+#include "interface/engines/interface_engine.h"
+
 
 /// @brief Основная плата устройства
 class MainBoard : public ModuleVirtual
@@ -15,6 +14,7 @@ class MainBoard : public ModuleVirtual
 protected:
     DisplayVirtual *_display;
     ControlVirtual *_control;
+    InterfaceEngineVirtual *_interfaceEngine;
 
     uint _sampleRate;
     uint16_t _bufferSize;
@@ -23,10 +23,11 @@ protected:
 
 private:
 public:
-    MainBoard(DisplayVirtual *display, ControlVirtual *control)
+    MainBoard(DisplayVirtual *display, ControlVirtual *control, InterfaceEngineVirtual *iEngine)
     {
         _display = display;
         _control = control;
+        _interfaceEngine = iEngine;
     }
 
     virtual ~MainBoard() = default;
@@ -43,6 +44,11 @@ public:
     ControlVirtual *getControl()
     {
         return _control;
+    }
+
+    InterfaceEngineVirtual *getInterfaceEngine()
+    {
+        return _interfaceEngine;
     }
 
     virtual AdcVirtual *getAdcContinue()

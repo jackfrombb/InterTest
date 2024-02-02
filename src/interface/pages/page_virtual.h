@@ -59,4 +59,8 @@ public:
     {
         getPageView()->onClose();
     }
+
+    virtual void onDraw()
+    {
+    }
 };

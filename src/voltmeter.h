@@ -92,7 +92,7 @@ public:
         uint16_t min = 0.0; // Постоянная состовляющая
         uint16_t mid = 0.0;
 
-        for (int i = 0; i < _oscil->getBufferLength(); i++)
+        for (int i = 0; i < _oscil->getReadedLength(); i++)
         {
             // Serial.println("Raw: " + String(buffer[i]));
 
@@ -101,7 +101,7 @@ public:
             _outBuffer[i] = val;
 
             // Вычисляем среднее
-            mid = Voltmetr::midArifm2<uint16_t>(val, _oscil->getBufferLength() * 4); // Длину умножаем на 4, что бы значения поеньше скакали
+            mid = Voltmetr::midArifm2<uint16_t>(val, _oscil->getReadedLength()); // Длину умножаем на 4, что бы значения поеньше скакали
 
             // Вычисляем максимальное
             if (val > max)
@@ -126,11 +126,6 @@ public:
             }
         }
 
-        for (int i = 0; i < _oscil->getBufferLength(); i++)
-        {
-            buffer[i] -= min;
-        }
-
         lastMax = max;
         lastMid = mid;
 
@@ -139,7 +134,9 @@ public:
             .bufferSize = _oscil->getBufferLength(),
             .middle = mid,
             .max = max,
+            .min = min,
             .bias = period,
+            .readedSize = _oscil->getReadedLength(),
         };
     }
 };

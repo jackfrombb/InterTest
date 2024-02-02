@@ -2,8 +2,6 @@
 #include <U8g2lib.h>
 
 #include "interface_engine.h"
-#include "displays/display_virtual.h"
-#include "board_virtual.h"
 #include "oscils/sync.h"
 
 #define PAGE_TAG "Engine_U8G2"
@@ -19,7 +17,6 @@ class InterfaceEngine_U8g2 : public InterfaceEngineVirtual
 private:
     U8G2 *_u8g2;
     DisplayVirtual *_display;
-    MainBoard *_mainBoard;
 
     // Буфер для заднего фона
     uint8_t *_displayBuffer;
@@ -61,7 +58,7 @@ private:
             {
                 int titlePos = width - widthPixelsCount;
 
-                if (x >= titlePos)
+                if (x >= titlePos && voltSectionTitle != 0)
                 {
                     String title = String(voltSectionTitle);
                     int xPos = titlePos;
@@ -70,7 +67,8 @@ private:
                     _u8g2->drawUTF8(xPos, y, title.c_str());
                 }
 
-                _u8g2->drawPixel(x, v);
+                if (waveform->isNeedDrawBackDots())
+                    _u8g2->drawPixel(x, v);
             }
             voltSectionTitle += 1;
         }
@@ -88,10 +86,9 @@ private:
         uint16_t width = waveform->getArea().getWidth();
         uint16_t height = waveform->getArea().getHeight();
 
-        int bias = measures.bias > measures.bufferSize - (width + 1) ? 0 : measures.bias - 1; // SyncBuffer::findSignalOffset(waveform->getPoints(), waveform->getPointsLength());
+        uint bias = measures.bias > measures.readedSize - width ? 0 : measures.bias; // SyncBuffer::findSignalOffset(waveform->getPoints(), waveform->getPointsLength());
         int vBias = 0;
 
-        bias = max(bias, 0);
         //  Преобразованный предел
         const int maxMeasureValNormalized = (int)(waveform->getMaxMeasureValue() * 1000);
 
@@ -114,31 +111,40 @@ private:
         }
     }
 
-    void _setTextSize(el_text_size size)
+    const uint8_t *_getFontForSize(el_text_size size)
     {
-        static el_text_size currentFont;
-
-        // if (currentFont == size)
-        //     return;
-
+        const uint8_t *ret = nullptr;
         switch (size)
         {
+        case EL_VOLTMETER_VALUE_LARGE:
+            ret = u8g2_font_12x6LED_mn;
+            break;
         case EL_TEXT_SIZE_SUPER_LARGE:
-            _u8g2->setFont(u8g2_font_10x20_t_cyrillic);
+            ret = u8g2_font_10x20_t_cyrillic;
             break;
         case EL_TEXT_SIZE_LARGE:
-            _u8g2->setFont(u8g2_font_8x13_t_cyrillic);
+            ret = u8g2_font_8x13_t_cyrillic;
             break;
         case EL_TEXT_SIZE_MIDDLE:
-            _u8g2->setFont(u8g2_font_6x12_t_cyrillic);
+            ret = u8g2_font_6x12_t_cyrillic;
             break;
         case EL_TEXT_SIZE_SMALL:
-            _u8g2->setFont(u8g2_font_5x7_t_cyrillic);
+            ret = u8g2_font_5x7_t_cyrillic;
             break;
         case EL_TEXT_SIZE_SUPER_SMALL:
-            _u8g2->setFont(u8g2_font_4x6_t_cyrillic);
+            ret = u8g2_font_4x6_t_cyrillic;
             break;
         }
+
+        return ret;
+    }
+
+    el_text_size currentFont;
+    void _setTextSize(el_text_size size)
+    {
+        // if (currentFont == size)
+        //     return;
+        _u8g2->setFont(_getFontForSize(size));
 
         currentFont = size;
     }
@@ -163,11 +169,9 @@ protected:
 
 private:
 public:
-    explicit InterfaceEngine_U8g2(MainBoard *mainBoard)
+    explicit InterfaceEngine_U8g2(DisplayVirtual *display)
     {
-        _mainBoard = mainBoard;
-
-        _display = mainBoard->getDisplay();
+        _display = display;
 
         if (_display->getDisplayLibraryType() != display_library::DISPLAY_LIB_U8G2)
             throw "The library type is incorrect. It should be U8g2";
@@ -184,9 +188,24 @@ public:
         free(_displayBuffer);
     }
 
+    uint8_t getMaxTextWidth(el_text_size textSize) override
+    {
+        auto font = _getFontForSize(textSize);
+        font += 9; // Число взято из метода https://github.com/olikraus/u8g2/blob/master/csrc/u8g2_font.c#L131
+        return u8x8_pgm_read(font);
+    }
+
+    uint8_t getMaxTextHeight(el_text_size textSize) override
+    {
+        auto font = _getFontForSize(textSize);
+        font += 10; // Число взято из метода https://github.com/olikraus/u8g2/blob/master/csrc/u8g2_font.c#L131
+        return u8x8_pgm_read(font);
+    }
+
     void drawCenteredGroup(ElCenteredGroup *group) override
     {
-        _u8g2->drawRFrame(group->getX(), group->getY(), group->getWidth(), group->getHeight(), 2);
+        if (group->isNeedDrawFrameAround())
+            _u8g2->drawRFrame(group->getX(), group->getY(), group->getWidth(), group->getHeight(), 2);
 
         if (group->getElementsCount() == 0)
         {
@@ -232,7 +251,8 @@ public:
 
     void drawWaveform(ElWaveform *waveform) override
     {
-        _drawDotBack(waveform);
+        if (waveform->isNeedDrawBackground())
+            _drawDotBack(waveform);
         _drawWaveform(waveform);
     }
 

@@ -59,11 +59,17 @@ public:
     AppData::get()->preferences.putInt(key, value);
   }
 
-  static bool exist(const char *key){
+  static void saveUInt(const char *key, uint value)
+  {
+    AppData::get()->preferences.putUInt(key, value);
+  }
+
+  static bool exist(const char *key)
+  {
     return get()->preferences.isKey(key);
   }
 
-  static int getUint(const char *key, uint32_t defaultVal = 0)
+  static uint getUint(const char *key, uint32_t defaultVal = 0)
   {
     return AppData::get()->preferences.getUInt(key, defaultVal);
   }
@@ -78,10 +84,22 @@ public:
     AppData::get()->preferences.putString(key, value);
   }
 
-  static String getString(const char *key)
+  static String getString(const char *key, String defValue = "")
   {
-    return AppData::get()->preferences.getString(key);
+    return AppData::get()->preferences.getString(key, defValue);
   }
+  
+  static void saveBool(const char *key, bool value)
+  {
+    AppData::get()->preferences.putBool(key, value);
+  }
+
+  static bool getBool(const char *key, bool defValue = false)
+  {
+    return AppData::get()->preferences.getBool(key, defValue);
+  }
+
+
 };
 
 AppData *AppData::_instance = nullptr;

@@ -24,11 +24,11 @@
 #include "soc/syscon_periph.h"
 
 // Количество каналов АЦП
-#define ADC_CHANNEL_NUM 1
+// #define ADC_CHANNEL_NUM 1
 // Количество преобразований АЦП в одном цикле
-#define ADC_CONVERSIONS 256
+// #define ADC_CONVERSIONS 256
 // Максимальный размер пула памяти для DMA в байтах
-#define ADC_POOL_SIZE 1024
+// #define ADC_POOL_SIZE 1024
 // Размер одного результата преобразования АЦП в байтах
 #define ADC_RESULT_SIZE 2
 
@@ -59,7 +59,7 @@ public:
         _buffer8bit = (uint8_t *)calloc(_internalBuferSize, sizeof(uint8_t));
 
         adc_digi_init_config_t adc_config = adc_digi_init_config_t{
-            .max_store_buf_size = (uint32_t)_internalBuferSize,
+            .max_store_buf_size = (uint32_t)_internalBuferSize * 2,
             .conv_num_each_intr = (uint32_t)_bufferSize,
             .adc1_chan_mask = _adc1_channel_mask,
             .adc2_chan_mask = _adc2_channel_mask,
@@ -103,7 +103,7 @@ public:
 
         if (logi::err("Esp32_adc_dma - controller configure", ret))
         {
-            logi::p("Esp32_adc_dma", "Configure OK");
+            Serial.println("Err val: " + String(ret));
             return adc_digi_start();
         }
 
@@ -136,6 +136,7 @@ public:
                 buffer[i >> 1] = p->type1.data;
             }
         }
+        *readedLength = *readedLength >> 1; // Делим колво байт на 2 что бы сходились последующие расчеты
 
         return retErr;
     }

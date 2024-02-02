@@ -36,12 +36,11 @@ typedef struct
 class DisplayVirtual : public ModuleVirtual
 {
 protected:
+
 private:
 public:
-    DisplayVirtual(/* args */)
-    = default;
-    ~DisplayVirtual()
-    = default;
+    DisplayVirtual(/* args */) = default;
+    ~DisplayVirtual() = default;
 
     /// @brief Получить тип подключения дисплея
     /// @return DISPLAY_TYPE_UNKNOWN, DIPLAY_TYPE_SPI, DISPLAY_TYPE_I2C
@@ -61,13 +60,15 @@ public:
 
     /// @brief Получить библиотеку дисплея
     /// @return Основной класс библиотеки, в зависимости от типа
-    virtual void* getLibrary() = 0;
+    virtual void *getLibrary() = 0;
 
-    virtual uint16_t getWidth(){
+    virtual uint16_t getWidth()
+    {
         return getResolution().width;
     }
 
-    virtual uint16_t getHeight(){
+    virtual uint16_t getHeight()
+    {
         return getResolution().height;
     }
 };
