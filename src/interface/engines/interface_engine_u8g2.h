@@ -340,6 +340,8 @@ public:
         _displayBuffer = (uint8_t *)calloc(bufferSize, sizeof(uint8_t));
     }
 
+    
+
     ~InterfaceEngine_U8g2()
     {
         free(_displayBuffer);

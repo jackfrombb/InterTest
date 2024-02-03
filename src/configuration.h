@@ -16,21 +16,21 @@ defines для изменения конфигурации железа
 //#define EXCLUDE_HARDTIMER_ 1
 
 //Выбор платы
-//#define WROOM32
-#define S2MINI
+#define WROOM32
+//#define S2MINI
 
 //Выбор способа упрвления
-//#define ENCODER
+#define ENCODER
 //#define KEYPAD // НЕ РЕАЛИЗОВАНО
-#define CONTROL_IR //приемник 1838. NEC. Подключаю по туториалу https://kit.alexgyver.ru/tutorials/ir-remote/
+//#define CONTROL_IR //приемник 1838. NEC. Подключаю по туториалу https://kit.alexgyver.ru/tutorials/ir-remote/
 
 //Доп функции
 //#define BUZZ_
 
 // Nokia PCD8544 display
-//#define NOKIA5110_
+#define NOKIA5110_
 //дисплей 0.96 OLED I2C
-#define OLED128x32_
+//#define OLED128x32_
 
 // Тип интерфейса
 #define WIDE_UI // Для экранов близких к квадрату

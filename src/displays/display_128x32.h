@@ -1,7 +1,8 @@
 #pragma once
+
 #include <Arduino.h>
 #include <U8g2lib.h>
-#include "u8g2_display_virtual.h"
+#include "u8g2_display_virtual.h" // Абстракция над всеми дисплеями библиотеки u8g2
 
 #ifdef U8X8_HAVE_HW_I2C
 #include <Wire.h>
@@ -28,7 +29,7 @@ public:
         _u8g2 = nullptr;
     }
 
-    void init()
+    void init() override
     {
         //logi::p("Display 128x64", "Display width: " + String(_u8g2->getWidth()));
 
@@ -37,8 +38,12 @@ public:
 
         _u8g2->begin();
         _u8g2->enableUTF8Print();
-        _u8g2->setContrast(100);
+        _u8g2->drawBox(0, 0, _u8g2->getWidth(), _u8g2->getHeight());
+        _u8g2->sendBuffer();
+
         logi::p("Display 128x64", "Display init ok");
+
+        U8g2DisplayVirtual::init(); // Там инициализация джвижка прорисовки
     }
 
     /// @brief Получить тип подключения дисплея

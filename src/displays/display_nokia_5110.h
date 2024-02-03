@@ -1,7 +1,6 @@
 #pragma once
 #include <Arduino.h>
 #include <U8g2lib.h>
-#include "display_helper.h"
 #include "u8g2_display_virtual.h"
 
 #ifdef U8X8_HAVE_HW_SPI
@@ -59,6 +58,8 @@ public:
 
         _u8g2->begin();
         _u8g2->enableUTF8Print();
+
+        U8g2DisplayVirtual::init();
     }
 
     /// @brief Получить тип подключения дисплея
