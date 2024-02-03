@@ -25,7 +25,7 @@ public:
         _voltmeter = new Voltmetr(_mainBoard);
         _voltmeter->setOscil(_oscil);
 
-        _pageView = new OscilPageView(mainBoard->getDisplay(), _oscil, _voltmeter);
+        _pageView = new OscilPageView(mainBoard->getDisplay(), mainBoard->getInterfaceEngine(), _oscil, _voltmeter);
 
         initOscil();
     }

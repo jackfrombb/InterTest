@@ -5,6 +5,8 @@
 class InterfaceEngineVirtual
 {
 protected:
+    bool inverImg = false;
+
     InterfaceEngineVirtual() = default;
     virtual ~InterfaceEngineVirtual() = default;
 
@@ -85,4 +87,10 @@ public:
 
     virtual uint8_t getMaxTextWidth(el_text_size textSize) = 0;
     virtual uint8_t getMaxTextHeight(el_text_size textSize) = 0;
+
+    /// @brief Инвертировать изображение в буфере
+    virtual void invertImg(bool invert)
+    {
+        inverImg = invert;
+    }
 };

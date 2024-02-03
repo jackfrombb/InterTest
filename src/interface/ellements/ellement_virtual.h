@@ -15,8 +15,10 @@ protected:
     display_position _area{};
     ElementVirtual *_parent = nullptr;
     el_vertical_align _vertAlign = el_vertical_align::EL_ALGN_TOP;
-    bool _isAnimationInProcess = false;
+    // function<uint16_t()> _calculatedPositionX = nullptr;
+    // function<uint16_t()> _calculatedPositionY = nullptr;
 
+    bool _isAnimationInProcess = false;
     display_position _flyToArea{};
     float _stepInFrameX = 1.0;
     float _stepInFrameY = 1.0;

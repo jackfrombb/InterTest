@@ -22,6 +22,89 @@ private:
     uint8_t *_displayBuffer;
     unsigned int bufferSize;
 
+    // Эксперимент с буфером дисплея - не использовать
+    //  Функция, которая затирает значения в буфере дисплея по координатам
+    //  Параметры: buffer - указатель на буфер дисплея, width - ширина дисплея в пикселях, height - высота дисплея в пикселях
+    //  x1, y1, x2, y2 - координаты прямоугольной области, которую нужно затереть
+    //  fill - заполнить true
+    static void voidArea(uint8_t *buffer, uint16_t width, uint16_t height,
+                         uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, bool fill)
+    {
+        uint pixelCount = width * height;
+        uint buffrLength = pixelCount >> 3;
+
+        uint16_t start = (y1 * width) + x1;
+        uint16_t end = (y2 * width) + x2;
+
+        // Определяем индексы начального и конечного байтов в массиве
+        uint16_t startByte = start >> 3;
+        uint16_t endByte = end >> 3;
+
+        // Определяем смещения начального и конечного битов в своих байтах
+        uint8_t startBit = start & (8 - 1);
+        uint8_t endBit = end & (8 - 1);
+
+        // Инициализируем счетчик единичных битов
+        uint count = 0;
+
+        // Перебираем байты в массиве от начального до конечного
+        for (int i = startByte; i <= endByte; i++)
+        {
+            // Создаем маску для выбора нужных битов в текущем байте
+            byte mask = 0xFF; // 11111111 в двоичном виде
+
+            // Если это начальный байт, то обнуляем старшие биты до начального бита
+            if (i == startByte)
+            {
+                mask >>= startBit; // Сдвигаем маску вправо на startBit позиций
+            }
+
+            // Если это конечный байт, то обнуляем младшие биты после конечного бита
+            if (i == endByte)
+            {
+                mask <<= (7 - endBit); // Сдвигаем маску влево на 7 - endBit позиций
+                mask >>= (7 - endBit); // Сдвигаем маску обратно вправо на 7 - endBit позиций
+            }
+
+            // Применяем маску к текущему байту и считаем количество единичных битов в результате
+            byte result = buffer[i] & mask; // Побитовое И между байтом и маской
+
+            // Меняем значения битов в текущем байте на value
+            if (fill == 0)
+            {
+                buffer[i] &= ~mask; // Побитовое И с инвертированной маской
+            }
+            else
+            {
+                buffer[i] |= mask; // Побитовое ИЛИ с маской
+            }
+
+            while (result > 0)
+            {
+                count += result & 1; // Прибавляем к счетчику младший бит результата
+                result >>= 1;        // Сдвигаем результат вправо на одну позицию
+            }
+        }
+
+        // Найти адреса байтов, стартовый и конечный, затереть значения бит
+    }
+
+    /// @brief Стереть область на экране (находящуюся за этим слоем)
+    /// @param u8g2 указатель на библиотеку
+    /// @param x1 горизонатльное положение левого верхнего угла
+    /// @param y1 вертикальное положение левого верхненго угла
+    /// @param x2 горизонтальное положение правого нижнего угла
+    /// @param y2 вертикальное положение правого нижнего угла
+    static void _eraseAreaOnDisplay(U8G2 *u8g2, int16_t x1, int16_t y1, int16_t x2, int16_t y2)
+    {
+        // Затираем значения в буфере дисплея, устанавливая их в 0
+        u8g2->setDrawColor(0);                   // Цвет рисования - черный
+        u8g2->drawBox(x1, y1, x2 - x1, y2 - y1); // Рисуем прямоугольник по координатам
+        u8g2->setDrawColor(1);                   // Возвращаем цвет рисования в белый
+
+        u8g2->getBufferTileWidth();
+    }
+
     /// @brief Отрисовать ориентиры и надписи (буферезируется)
     void _drawDotBack(ElWaveform *waveform)
     {
@@ -41,8 +124,8 @@ private:
         uint16_t height = waveform->getArea().getHeight();
 
         // Это два вспомогательных пикселя, которые помогают оценить расположение
-        _u8g2->drawPixel(width - 1, height - 1);
-        _u8g2->drawPixel(0, 0);
+        //_u8g2->drawPixel(width - 1, height - 1);
+        //_u8g2->drawPixel(0, 0);
 
         uint8_t widthPixelsCount = (float)width / waveform->getWidthSectionsCount();
         uint8_t heightPixelInSection = (float)height / waveform->getMaxMeasureValue();
@@ -92,7 +175,7 @@ private:
         //  Преобразованный предел
         const int maxMeasureValNormalized = (int)(waveform->getMaxMeasureValue() * 1000);
 
-        for (uint16_t x = bias; x <= width + bias; x++)
+        for (uint16_t x = bias; x < width + bias; x++)
         {
             uint32_t realVolt = measures.buffer[x]; //(int)_mainBoard->rawToVoltage(buf[x]);
             uint32_t next = x == width ? 0 : measures.buffer[x + 1];
@@ -109,6 +192,8 @@ private:
                 _u8g2->drawLine(x - bias, val + vBias, (x - bias) + 1, val2 + vBias);
             }
         }
+
+        // voidArea(_u8g2->getBufferPtr(), width, height, 10, 10, width - 10, height - 10, true);
     }
 
     const uint8_t *_getFontForSize(el_text_size size)
@@ -139,14 +224,82 @@ private:
         return ret;
     }
 
+    static u8g2_uint_t u8g2_string_width(u8g2_t *u8g2, const char *str)
+    {
+        uint16_t e;
+        u8g2_uint_t w, dx;
+#ifdef U8G2_BALANCED_STR_WIDTH_CALCULATION
+        int8_t initial_x_offset = -64;
+#endif
+
+        u8g2->font_decode.glyph_width = 0;
+        u8x8_utf8_init(u8g2_GetU8x8(u8g2));
+
+        /* reset the total width to zero, this will be expanded during calculation */
+        w = 0;
+        dx = 0;
+
+        // printf("str=<%s>\n", str);
+
+        for (;;)
+        {
+            e = u8g2->u8x8.next_cb(u8g2_GetU8x8(u8g2), (uint8_t)*str);
+            if (e == 0x0ffff)
+                break;
+            str++;
+            if (e != 0x0fffe)
+            {
+                
+                dx = u8g2_GetGlyphWidth(u8g2, e); /* delta x value of the glyph */
+#ifdef U8G2_BALANCED_STR_WIDTH_CALCULATION
+                if (initial_x_offset == -64)
+                    initial_x_offset = u8g2->glyph_x_offset;
+#endif
+                // printf("'%c' x=%d dx=%d w=%d io=%d ", e, u8g2->glyph_x_offset, dx, u8g2->font_decode.glyph_width, initial_x_offset);
+                w += dx;
+            }
+        }
+        // printf("\n");
+
+        /* adjust the last glyph, check for issue #16: do not adjust if width is 0 */
+        if (u8g2->font_decode.glyph_width != 0)
+        {
+            // printf("string width adjust dx=%d glyph_width=%d x-offset=%d\n", dx, u8g2->font_decode.glyph_width, u8g2->glyph_x_offset);
+            w -= dx;
+            w += u8g2->font_decode.glyph_width; /* the real pixel width of the glyph, sideeffect of GetGlyphWidth */
+            /* issue #46: we have to add the x offset also */
+            w += u8g2->glyph_x_offset; /* this value is set as a side effect of u8g2_GetGlyphWidth() */
+#ifdef U8G2_BALANCED_STR_WIDTH_CALCULATION
+            /* https://github.com/olikraus/u8g2/issues/1561 */
+            if (initial_x_offset > 0)
+                w += initial_x_offset;
+#endif
+        }
+        // printf("w=%d \n", w);
+
+        return w;
+    }
+
+    u8g2_uint_t _getUTF8Width(u8g2_t *u8g2, const char *str)
+    {
+        u8x8_char_cb charCb = u8x8_utf8_next;
+        return u8g2_string_width(u8g2, str);
+    }
     el_text_size currentFont;
     void _setTextSize(el_text_size size)
     {
         // if (currentFont == size)
         //     return;
         _u8g2->setFont(_getFontForSize(size));
-
         currentFont = size;
+    }
+
+    void _invertDisplayImage()
+    {
+        for (int i = 0; i < bufferSize; i++)
+        {
+            _u8g2->getBufferPtr()[i] = ~_u8g2->getBufferPtr()[i];
+        }
     }
 
 protected:
@@ -158,6 +311,10 @@ protected:
 
     void _onEndDraw() override
     {
+        if (inverImg)
+        {
+            _invertDisplayImage();
+        }
         _u8g2->nextPage();
     }
 
@@ -234,18 +391,16 @@ public:
 
     void drawButton(ElTextButton *button) override
     {
-        drawText(button);
 
-        int x = button->getParent()->getX() + button->getX();
-        int y = button->getParent()->getY() + button->getY();
-
+        drawText(button);                                          // Выводим текст
         if (button->isSelected() && button->getEditPosition() < 0) // если активна то рисуем рамку вокруг
         {
-            _u8g2->drawRFrame(x - 2,
-                              y - 2,
-                              _u8g2->getUTF8Width(button->getText().c_str()) + 4,
-                              _u8g2->getMaxCharHeight() + 4,
-                              2);
+            int16_t x = (button->getParent()->getX() + button->getX()) - 2;
+            int16_t y = (button->getParent()->getY() + button->getY()) - 2;
+            int16_t w = _u8g2->getUTF8Width(button->getText().c_str()) + 4;
+            int16_t h = _u8g2->getMaxCharHeight() + 4;
+            uint8_t r = 2;
+            _u8g2->drawRFrame(x, y, w, h, r);
         }
     }
 
@@ -262,12 +417,14 @@ public:
 
         String textTitle = text->getText();
 
-        int x = text->getX();
+        int16_t x = text->getX();
         int y = text->getY();
+        int w = _u8g2->getUTF8Width(textTitle.c_str());
+        int h = _u8g2->getMaxCharHeight();
 
         if (text->getAlignment() == el_text_align::EL_TEXT_ALIGN_CENTER)
         {
-            x = _getTextCenterX(textTitle, x, text->getWidth());
+            x += _getTextCenterX(textTitle, x + text->getParent()->getX(), text->getWidth());
         }
         else if (text->getAlignment() == el_text_align::EL_TEXT_ALIGN_RIGHT)
         {
@@ -282,17 +439,18 @@ public:
         uint16_t textX = x + text->getParent()->getX();
         uint16_t textY = y + _u8g2->getMaxCharHeight() + text->getParent()->getY();
 
+        //_eraseAreaOnDisplay(_u8g2, textX, textY, _u8g2->getUTF8Width(textTitle.c_str()), _u8g2->getMaxCharHeight());
         // Отрисовать текст (y эллемеента делаем по верхнему углу)
         _u8g2->drawUTF8(textX, textY, textTitle.c_str());
 
         if (text->getEditPosition() >= 0 && textTitle.length() > 0)
         {
-            uint8_t maxPosition = text->getText().length() - 1;
-            uint8_t pos = std::min<uint8_t>(maxPosition, text->getEditPosition());
-            String sub = textTitle.substring(0, pos);
-            String subText = (String)textTitle[pos];
-            uint8_t subWidth = _u8g2->getUTF8Width(subText.c_str());
-            uint16_t textWidth = _u8g2->getUTF8Width(sub.c_str());
+            uint8_t maxPosition = text->getText().length() - 1;                    // Кол-во символов
+            uint8_t pos = std::min<uint8_t>(maxPosition, text->getEditPosition()); // Находим положение подчеркнутого символа
+            String sub = textTitle.substring(0, pos);                              // Строка до подчеркнутого
+            String subText = (String)textTitle[pos];                               // Сам символ
+            uint8_t subWidth = _u8g2->getUTF8Width(subText.c_str());               // Ширина символа в пикс
+            uint16_t textWidth = _u8g2->getUTF8Width(sub.c_str());                 // Расстояние от начала текста до символа
 
             _u8g2->drawLine((textX + textWidth) - (subWidth + 2), textY + 2, textX + textWidth - 1, textY + 2);
         }

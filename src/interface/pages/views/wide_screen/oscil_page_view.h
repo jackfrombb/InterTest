@@ -10,6 +10,7 @@ private:
     ElCenteredGroup _bottomButtons;
     OscilVirtual *_oscil;
     Voltmetr *_voltmeter;
+    InterfaceEngineVirtual *_iEngine;
 
     bool _isOnSampleChangeMod = false;
     uint16_t _smapleChangeMultipler = 1;
@@ -147,10 +148,11 @@ public:
     ElTextButton _herz;
     ElTextButton _pause;
 
-    OscilPageView(DisplayVirtual *display, OscilVirtual *oscil, Voltmetr *voltmeter) : PageView(display)
+    OscilPageView(DisplayVirtual *display, InterfaceEngineVirtual *iEngine, OscilVirtual *oscil, Voltmetr *voltmeter) : PageView(display)
     {
         _oscil = oscil;
         _voltmeter = voltmeter;
+        _iEngine = iEngine;
 
         _initWaveform();
         _initWaitText();
@@ -159,8 +161,8 @@ public:
 
         addElement(&_waveform)
             ->addElement(&_waitText)
-            ->addElement(&_bottomButtons)
-            ->addElement(&oscilFreqText)
+            //->addElement(&_bottomButtons)
+            //->addElement(&oscilFreqText)
             ->addElement(&_volt)
             ->addElement(&_herz)
             ->addElement(&_pause) //

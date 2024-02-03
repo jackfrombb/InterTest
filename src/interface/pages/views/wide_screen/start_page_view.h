@@ -38,27 +38,28 @@ private:
         _current
             .setCalculatedText([this]
                                { return pages_list_getName(_focusPage); })
-            ->setX(0) // на весь экран
+            //->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER)
+            ->setX(10) // на весь экран
             ->setY(0)
-            ->setWidth(_display->getWidth())
+            ->setWidth(_display->getWidth()-10)
             ->setHeight(_display->getHeight())
             ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER) // Вертикально по центру
             ;
 
         _prev.setCalculatedText([this]
                                 { return pages_list_getName((pages_list)((int)_focusPage - 1)); })
-            ->setX(-(_display->getWidth()))
+            ->setX(-(_display->getWidth()+10))
             ->setY(0)
-            ->setWidth(_display->getWidth())
+            ->setWidth(_display->getWidth()-10)
             ->setHeight(_display->getHeight())
             ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER) //
             ;
 
         _next.setCalculatedText([this]
                                 { return pages_list_getName((pages_list)((int)_focusPage + 1)); })
-            ->setX(_display->getWidth())
+            ->setX(_display->getWidth()+10)
             ->setY(0)
-            ->setWidth(_display->getWidth())
+            ->setWidth(_display->getWidth()-10)
             ->setHeight(_display->getHeight())
             ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER) //
             ;
@@ -101,11 +102,11 @@ private:
 
         if (dir > 0)
         {
-            _next.flyTo(0, _next.getY(), frameTime - 1);
+            _next.flyTo(_curPosDef.getX(), _next.getY(), frameTime - 1);
         }
         else
         {
-            _prev.flyTo(0, _prev.getY(), frameTime - 1);
+            _prev.flyTo(_curPosDef.getX(), _prev.getY(), frameTime - 1);
         }
 
         _current.flyTo(_display->getWidth() * (dir * -1), _current.getY(), frameTime, onAniationEnd, &_curPosDef);
