@@ -3,7 +3,7 @@
 #include <cmath>
 #include "ellements_structs.h"
 #include "displays/display_structs.h"
-#include "controls/control_virtual.h"
+//#include "controls/control_virtual.h"
 #include "logi.h"
 
 using namespace std;

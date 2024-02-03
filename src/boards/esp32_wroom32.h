@@ -26,7 +26,7 @@ private:
     };
 
 public:
-    Esp32Wroom32(DisplayVirtual *display, ControlVirtual *control, InterfaceEngineVirtual *iEngine) : Esp32Virtual(display, control, iEngine)
+    Esp32Wroom32(DisplayVirtual *display, ControlVirtual *control) : Esp32Virtual(display, control)
     {
     }
 

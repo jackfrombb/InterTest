@@ -1,9 +1,9 @@
 #pragma once
 
 #include <Arduino.h>
-#include "board_virtual.h"
-#include "oscil_virtual.h"
-#include "hard_timer.h"
+//#include "board_virtual.h"
+//#include "oscil_virtual.h"
+//#include "hard_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "sdkconfig.h"
 #include <string.h>
@@ -11,7 +11,7 @@
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 #include "esp_log.h"
-#include "logi.h"
+//#include "logi.h"
 
 // Размер буфера для хранения результатов АЦП (должен быть больше экрана, для синхронизации периодических сигналов)
 #define ADC_BUFFER_SIZE 512

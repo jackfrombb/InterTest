@@ -1,17 +1,11 @@
-// ver: 0_0_j (номер релиза_любой номер комита_автор)
-
 #include <Arduino.h>
 
-#include "app_data.h"
+#include "app_data.h"      // Тут чтение и запись настроек в ПЗУ
+#include "configuration.h" // Переключение железа здесь
+#include "logi.h"          // Централизация логирования
 
-// Переключение железа здесь
-#include "configuration.h"
-#include "logi.h"
-
-// Вспомогательные методы общие
-#include "helpers.h"
-// Вспомогательные структуры дисплея
-#include "displays/display_structs.h"
+#include "helpers.h"                  // Вспомогательные методы общие (найти средне)
+#include "displays/display_structs.h" // Вспомогательные структуры дисплея (точка, область и пр)
 
 /// @brief Структура для передачи данных измерений в интерфейс
 // Пока не придумал где её хранить, что бы избежать "взаимных зависимостей", потому лежит здесь
@@ -26,32 +20,35 @@ typedef struct
   uint16_t readedSize; // Размер считанного в ацп
 } adc_measures_t;
 
-// Логика осцилографа
-#include "oscils/oscils_list.h"
-// Логика вольтметра
-#include "voltmeter.h"
-// Логика тамера прерываний
-#include "hard_timer.h"
-// Логика генератора сигналов
-#include "signal_generator.h"
+#include "module_virtual.h" // Абстракция для того что необходимо инициализировать перед использованием (перестал применять, но не удалил)
+
+#include "controls/control_virtual.h" // Абстракция управления
+
+#include "interface/ellements/ellements_structs.h" // Вспомогательные структуры граф элементов
+#include "interface/ellements/ellement_virtual.h"  // Абстракция граф элементов
+#include "interface/ellements/ellements_list.h"    // Список элементов
+
+#include "interface/engines/interface_engine.h" // Абстракция двигателя отрисовки
+#include "displays/display_virtual.h"           // Абстракция дисплея.  Cоздаёт двигатель отрисовки (InterfaceEngine)
+
+#include "controllers/adc_virtual.h" //Абстракция контроллера adc
+#include "board_virtual.h"           // Абстракция главной платы/контроллера
+#include "oscils/oscil_virtual.h"    // Абстракция над логикой осциографа
+#include "oscils/oscil_adc_dma.h"    // Логикой осциографа continue
+
+#include "interface/pages/views/page_view.h"      // Абстракция представления страницы граф. интерфейся
+#include "interface/pages/page_virtual.h"         // Абстракция над контроллера странички
+#include "interface/ellements/ellement_virtual.h" // Абстракция элемента графического дизайна
 
 // Определяем UI
 #ifdef WIDE_UI
-#include "interface/pages/views/wide_screen/wide_views_list.h"
+#include "interface/pages/views/wide_screen/wide_views_list.h" // Обычные дисплеи типа 128:64, 84:48
 #elif defined(SLIM_UI)
-#include "interface/pages/views/slim_screen/slim_views_list.h"
+#include "interface/pages/views/slim_screen/slim_views_list.h" // Узкие дисплеи типа 128:32
 #endif
 
-#include "interface/ellements/ellements_list.h"
-#include "interface/engines/interface_engine.h"
-#include "displays/display_virtual.h"
-#include "interface/interface_controller.h"
-#include "displays/display_helper.h"
-#include "controls/control_virtual.h"
-
-// Пищалка
 #ifdef BUZZ
-#include "buzzer.h"
+#include "buzzer.h" // Пищалка
 #endif
 
 #ifdef ENCODER
@@ -76,24 +73,24 @@ DisplayVirtual *display = new Nokia5110_U8g2();
 DisplayVirtual *display = new Display128x64_U8g2();
 #endif
 
-// Определение двигателя отрисовки
-#ifdef U8G2_ENGINE
-#include "interface/engines/interface_engine_u8g2.h"
-InterfaceEngineVirtual *interfaceEngine = new InterfaceEngine_U8g2(display);
-#elif defined(ADAFRUIT_ENGINE)
-// In process
-#endif
+#include "interface/pages/page_list.h" // Абстракция над контроллера странички
+#include "interface/interface_controller.h" // Управление страницами и отрисовкой
 
 // Определение платы
 #ifdef S2MINI
 #include "boards/esp32_s2mini.h"
-MainBoard *mainBoard = new Esp32S2Mini(display, control, interfaceEngine);
+MainBoard *mainBoard = new Esp32S2Mini(display, control);
 #elif defined(WROOM32)
 #include "boards/esp32_wroom32.h"
-MainBoard *mainBoard = new Esp32Wroom32(display, control, interfaceEngine);
+MainBoard *mainBoard = new Esp32Wroom32(display, control);
 #endif
 
-InterfaceController interfaceController(mainBoard, interfaceEngine);
+#include "hard_timer.h"         // Логика тамера прерываний
+#include "oscils/oscils_list.h" // Логика осцилографа
+#include "voltmeter.h"          // Логика вольтметра
+#include "signal_generator.h"   // Логика генератора сигналов
+
+InterfaceController interfaceController(mainBoard);
 
 // Частота генерации
 int pwmF = 40000;

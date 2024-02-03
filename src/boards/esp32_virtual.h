@@ -2,9 +2,9 @@
     Тут обозначены общие для esp32 моменты, структуры и перчисления, что бы не повторять и в классе каждой платы
 */
 
-#include "board_virtual.h"
-#include "displays/display_virtual.h"
-#include "controls/control_virtual.h"
+//#include "board_virtual.h"
+// #include "displays/display_virtual.h"
+//#include "controls/control_virtual.h"
 
 /// @brief Информация о конфигурации АЦП
 typedef struct
@@ -31,7 +31,7 @@ protected:
     adc_calibration_type _calibrationType;
 
 public:
-    Esp32Virtual(DisplayVirtual *display, ControlVirtual *control, InterfaceEngineVirtual* iEngine) : MainBoard(display, control, iEngine)
+    Esp32Virtual(DisplayVirtual *display, ControlVirtual *control) : MainBoard(display, control)
     {
     }
 

@@ -1,14 +1,11 @@
 #pragma once
-#include "interface/ellements/ellements_list.h"
-#include "interface/pages/page_virtual.h"
+//#include "interface/ellements/ellements_list.h"
+// #include "interface/pages/page_virtual.h"
 
 class InterfaceEngineVirtual
 {
 protected:
     bool inverImg = false;
-
-    InterfaceEngineVirtual() = default;
-    virtual ~InterfaceEngineVirtual() = default;
 
     virtual void _onStartDraw() {}
     virtual void _onEndDraw() {}
@@ -76,6 +73,9 @@ protected:
 
 private:
 public:
+    InterfaceEngineVirtual() = default;
+    virtual ~InterfaceEngineVirtual() {}
+
     /// @brief Отобразить страницу на экране
     /// @param page
     void drawPage(ElGroup *group)

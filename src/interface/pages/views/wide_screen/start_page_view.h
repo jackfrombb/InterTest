@@ -1,8 +1,8 @@
 #pragma once
 
-#include "interface/pages/views/page_view.h"
-#include "interface/pages/page_virtual.h"
-#include "app_data.h"
+//#include "interface/pages/views/page_view.h"
+//#include "interface/pages/page_virtual.h"
+//#include "app_data.h"
 
 #define TEST_ANIM_ENABLE
 

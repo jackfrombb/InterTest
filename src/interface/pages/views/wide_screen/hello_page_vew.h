@@ -1,5 +1,5 @@
 #pragma once
-#include "interface/pages/views/page_view.h"
+//#include "interface/pages/views/page_view.h"
 
 class HelloPageView : public PageView
 {

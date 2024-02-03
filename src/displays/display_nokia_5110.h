@@ -2,8 +2,7 @@
 #include <Arduino.h>
 #include <U8g2lib.h>
 #include "display_helper.h"
-#include "display_virtual.h"
-#include "interface/engines/interface_engine_u8g2.h"
+#include "u8g2_display_virtual.h"
 
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
@@ -34,11 +33,9 @@
 #endif
 
 /// @brief Старый дисплей от Nokia
-class Nokia5110_U8g2 : public DisplayVirtual
+class Nokia5110_U8g2 : public U8g2DisplayVirtual
 {
 private:
-    U8G2 *_u8g2;
-
 public:
     Nokia5110_U8g2()
     {
@@ -68,22 +65,7 @@ public:
     /// @return DIPLAY_TYPE_SPI
     display_type getType() override { return DISPLAY_TYPE_SPI; }
 
-    /// @brief Получить разрешение дисплея
-    /// @return Структура с width и height
-    display_resolution getResolution() override { return display_resolution{
-        .width = _u8g2->getWidth(),
-        .height = _u8g2->getHeight(),
-    }; }
-
     /// @brief Получить отличительную характеристику дисплея (для определения типа интерфейса)
     /// @return DISPLAY_INTERFACE_TYPE_WIDE
     display_interface_type getUserInterfaceType() override { return DISPLAY_INTERFACE_TYPE_WIDE; }
-
-    /// @brief Получить тип библиотеки использованный для подключения дисплея
-    /// @return DISPLAY_LIB_U8G2
-    display_library getDisplayLibraryType() override { return DISPLAY_LIB_U8G2; }
-
-    /// @brief Получить библиотеку дисплея
-    /// @return Основной класс библиотеки, в зависимости от типа
-    void *getLibrary() override { return _u8g2; }
 };

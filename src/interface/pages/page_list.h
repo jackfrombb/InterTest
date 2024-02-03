@@ -1,6 +1,6 @@
 #pragma once
 
-#include "page_virtual.h"   //Интерфейс для страниц
+//#include "page_virtual.h"   //Интерфейс для страниц
 
 #include "hello_page.h"     //Страница загрузки - отображается при включении
 #include "start_page.h"     //Стартовая страница - выбор функции

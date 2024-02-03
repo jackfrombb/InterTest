@@ -1,7 +1,7 @@
 #pragma once
 
-#include "page_virtual.h"
-#include "interface/pages/views/wide_screen/voltmeter_page_view.h"
+//#include "page_virtual.h"
+//#include "interface/pages/views/wide_screen/voltmeter_page_view.h"
 
 class VoltmeterPage : public InterfacePageVirtual
 {

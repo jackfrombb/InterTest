@@ -1,8 +1,8 @@
 #pragma once
-#include "interface/ellements/ellements_list.h"
-#include "interface/pages/page_virtual.h"
-#include "displays/display_helper.h"
-#include "displays/display_virtual.h"
+
+//#include "interface/ellements/ellements_list.h"
+//#include "interface/pages/page_virtual.h"
+//#include "views/wide_screen/hello_page_vew.h"
 
 
 class HelloPage : public InterfacePageVirtual

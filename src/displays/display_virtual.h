@@ -1,6 +1,5 @@
 #pragma once
 #include <Arduino.h>
-#include "module_virtual.h"
 
 /// @brief Тип подключения дисплея
 typedef enum
@@ -36,11 +35,16 @@ typedef struct
 class DisplayVirtual : public ModuleVirtual
 {
 protected:
+    InterfaceEngineVirtual *_interfaceEngine;
 
 private:
 public:
     DisplayVirtual(/* args */) = default;
-    ~DisplayVirtual() = default;
+    virtual ~DisplayVirtual()
+    {
+        delete _interfaceEngine;
+        _interfaceEngine = nullptr;
+    }
 
     /// @brief Получить тип подключения дисплея
     /// @return DISPLAY_TYPE_UNKNOWN, DIPLAY_TYPE_SPI, DISPLAY_TYPE_I2C
@@ -70,5 +74,19 @@ public:
     virtual uint16_t getHeight()
     {
         return getResolution().height;
+    }
+
+    virtual uint8_t getMaxTextWidth(el_text_size textSize)
+    {
+        return _interfaceEngine->getMaxTextWidth(textSize);
+    }
+    virtual uint8_t getMaxTextHeight(el_text_size textSize)
+    {
+        return _interfaceEngine->getMaxTextHeight(textSize);
+    }
+
+    virtual InterfaceEngineVirtual *getInterfaceEngine()
+    {
+        return _interfaceEngine;
     }
 };

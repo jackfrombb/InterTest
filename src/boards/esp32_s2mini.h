@@ -2,7 +2,7 @@
 
 #include "controllers/esp32_adc_dma.h"
 #include "esp32_virtual.h"
-#include "logi.h"
+//#include "logi.h"
 
 // Количество каналов АЦП
 #define ADC_CHANNEL_NUM 1
@@ -57,7 +57,7 @@ private:
     }
 
 public:
-    Esp32S2Mini(DisplayVirtual *display, ControlVirtual *control, InterfaceEngineVirtual *iEngine) : Esp32Virtual(display, control, iEngine)
+    Esp32S2Mini(DisplayVirtual *display, ControlVirtual *control) : Esp32Virtual(display, control)
     {
     }
 

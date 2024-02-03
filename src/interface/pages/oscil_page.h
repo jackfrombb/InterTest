@@ -1,10 +1,10 @@
 #pragma once
 
-#include "page_virtual.h"
-#include "oscils/oscils_list.h"
-#include "interface/ellements/ellements_list.h"
-#include "voltmeter.h"
-#include "views/wide_screen/oscil_page_view.h"
+//#include "page_virtual.h"
+//#include "oscils/oscils_list.h"
+//#include "interface/ellements/ellements_list.h"
+//#include "voltmeter.h"
+//#include "views/wide_screen/oscil_page_view.h"
 
 class OscilPage : public InterfacePageVirtual
 {

@@ -1,12 +1,10 @@
 #pragma once
 
 // esp32 библиотеки для работы ADC
-#include "module_virtual.h"
-#include "displays/display_virtual.h"
-#include "controls/control_virtual.h"
-#include "controllers/adc_virtual.h"
-#include "interface/engines/interface_engine.h"
-
+//#include "module_virtual.h"
+//#include "displays/display_virtual.h"
+//#include "controls/control_virtual.h"
+// #include "interface/engines/interface_engine.h"
 
 /// @brief Основная плата устройства
 class MainBoard : public ModuleVirtual
@@ -23,11 +21,11 @@ protected:
 
 private:
 public:
-    MainBoard(DisplayVirtual *display, ControlVirtual *control, InterfaceEngineVirtual *iEngine)
+    MainBoard(DisplayVirtual *display, ControlVirtual *control)
     {
         _display = display;
         _control = control;
-        _interfaceEngine = iEngine;
+        _interfaceEngine = display->getInterfaceEngine();
     }
 
     virtual ~MainBoard() = default;

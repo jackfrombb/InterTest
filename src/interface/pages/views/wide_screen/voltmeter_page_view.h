@@ -1,6 +1,7 @@
 #pragma once
 
-#include "interface/pages/views/page_view.h"
+//#include "interface/pages/views/page_view.h"
+//#include "displays/display_virtual.h"
 
 class VoltemeterPageView : public PageView
 {
@@ -28,7 +29,7 @@ public:
             .setNeedDrawBackground(false)
             ->setX(0)
             ->setWidth(display->getWidth())
-            ->setHeight(_display->getHeight() - ((_display->getHeight() >> 1) + 10)); // Из высоты экрана удаляем половину высоты экрана + чуть больше половины высоты текста
+            ->setHeight(display->getHeight() - ((display->getHeight() >> 1) + 10)); // Из высоты экрана удаляем половину высоты экрана + чуть больше половины высоты текста
 
         // Тип основного измерения
         _mainVoltTitleText

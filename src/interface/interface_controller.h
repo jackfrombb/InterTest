@@ -1,10 +1,10 @@
 #pragma once
 
-#include "interface/pages/page_virtual.h"
-#include "displays/display_virtual.h"
-#include "interface/engines/interface_engine.h"
-#include "interface/pages/page_list.h"
-#include "logi.h"
+//#include "interface/pages/page_virtual.h"
+//#include "displays/display_virtual.h"
+//#include "interface/engines/interface_engine.h"
+//#include "interface/pages/page_list.h"
+//#include "logi.h"
 
 class InterfaceController
 {
@@ -60,11 +60,11 @@ private:
     }
 
 public:
-    InterfaceController(MainBoard *mainBoard, InterfaceEngineVirtual *interfaceEngine)
+    InterfaceController(MainBoard *mainBoard)
     {
         _mainBoard = mainBoard;
         _display = mainBoard->getDisplay();
-        _interfaceEngine = interfaceEngine;
+        _interfaceEngine = _display->getInterfaceEngine();
 
         // Подключаем упарвление
         _mainBoard->getControl()->attachControlHandler(_controlEvent, this);

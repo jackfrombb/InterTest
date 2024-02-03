@@ -1,6 +1,6 @@
 #pragma once
 #include <Arduino.h>
-#include "board_virtual.h"
+//#include "board_virtual.h"
 
 class OscilVirtual
 {

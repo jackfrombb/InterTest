@@ -2,10 +2,10 @@
 
 #include <Arduino.h>
 #include <vector>
-#include "displays/display_virtual.h"
-#include "interface/ellements/ellement_virtual.h"
-#include "interface/pages/views/page_view.h"
-#include "controls/control_virtual.h"
+//#include "displays/display_virtual.h"
+//#include "interface/ellements/ellement_virtual.h"
+//#include "interface/pages/views/page_view.h"
+//#include "controls/control_virtual.h"
 
 typedef enum
 {

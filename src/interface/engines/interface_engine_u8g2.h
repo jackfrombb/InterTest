@@ -1,8 +1,8 @@
 #pragma once
 #include <U8g2lib.h>
 
-#include "interface_engine.h"
-#include "oscils/sync.h"
+//#include "interface_engine.h"
+//#include "oscils/sync.h"
 
 #define PAGE_TAG "Engine_U8G2"
 
