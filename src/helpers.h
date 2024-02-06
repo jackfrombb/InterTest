@@ -9,6 +9,8 @@ The library for ESP32 under Arduino Environment
 #include <Arduino.h>
 #include <cmath>
 
+#define BIT_TOGGLE(number, bitIndex) ((number) ^= 1UL << (bitIndex));
+
 template <typename T>
 T rangeV2(T input, T min, T max)
 {

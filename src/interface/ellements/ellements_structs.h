@@ -32,18 +32,20 @@ typedef enum
 /// @brief Тип эллемента
 typedef enum
 {
-    EL_TYPE_UNKNOWN,
-    EL_TYPE_BUTTON,
-    EL_TYPE_TEXT,
-    EL_TYPE_IMAGE,
-    EL_TYPE_WAVEFORM,
-    EL_TYPE_LINE,
-    EL_TYPE_POINT,
-    EL_TYPE_PROGRESS_BAR,
-    EL_TYPE_GROUP,
-    EL_TYPE_CENTERED_GROUP,
+    EL_TYPE_UNKNOWN,        // Пустой
+    EL_TYPE_BUTTON,         // Кнопка, по сути текствое поле которое можно выделить
+    EL_TYPE_TEXT,           // Текст
+    EL_TYPE_IMAGE,          // Картинка (не реализовано)
+    EL_TYPE_WAVEFORM,       // Отображение осциллограммы из буфера uint16_t значений
+    EL_TYPE_LINE,           // Линия
+    EL_TYPE_POINT,          // Точка, просто точка и точка.
+    EL_TYPE_PROGRESS_BAR,   // Визуальное отображение прогресса какого либо процесса
+    EL_TYPE_GROUP,          // Родительский контейнер, все эллементы отсчитывают свое положение от левого верхнего угла
+    EL_TYPE_CENTERED_GROUP, // Контейнер в котором все элементы расположены горизонтально, занимая ШИРИНА / кол-во эллементов пространство
+    EL_TYPE_DISPLAY_TEST,   // Для экспериментов и проверки дисплея
 } el_type;
 
+// Контейнер для хранения размеров чего либо
 typedef struct
 {
     uint16_t width;

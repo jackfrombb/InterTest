@@ -59,7 +59,7 @@ public:
         _u8g2->begin();
         _u8g2->enableUTF8Print();
 
-        U8g2DisplayVirtual::init();
+        U8g2DisplayVirtual::init(); // Там инициализация джвижка прорисовки
     }
 
     /// @brief Получить тип подключения дисплея

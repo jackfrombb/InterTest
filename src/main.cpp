@@ -69,7 +69,7 @@ ControlVirtual *control = new ControlIr();
 DisplayVirtual *display = new Nokia5110_U8g2();
 #elif defined(OLED128x32_)
 // дисплей 0.96 OLED I2C
-#include "displays/display_128x32.h"
+#include "displays/display_128x64.h"
 DisplayVirtual *display = new Display128x64_U8g2();
 #endif
 
@@ -102,7 +102,6 @@ SignalGenerator sigGen(mainBoard->getPwmPin());
 void setup()
 {
   Serial.begin(115200);
-  Serial.setDebugOutput(true);
 
   // Просто смотрю на конфигурацию в теории
   // spi_bus_config_t spi_config = {

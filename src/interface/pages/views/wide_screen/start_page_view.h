@@ -19,6 +19,8 @@ private:
     ElText _prev;
     ElText _next;
 
+    ElDisplayTest _displayTest;
+
     function<void(pages_list)> _onPageSelected;
 
 #ifdef TEST_ANIM_ENABLE
@@ -129,7 +131,9 @@ public:
 
         _initPoints();
 
-        addElement(&_current)->addElement(&_next)->addElement(&_prev);
+        _displayTest.setArea({.leftUp = {.x = 0, .y = 0}, .rightDown = {.x = _display->getWidth(), .y = _display->getHeight()}});
+
+        addElement(&_current)->addElement(&_next)->addElement(&_prev)->addElement(&_displayTest);
     }
 
     ~StartPageView() = default;

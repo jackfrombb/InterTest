@@ -7,3 +7,4 @@
 #include "el_group.h"
 #include "el_centered_group.h"
 #include "el_line.h"
+#include "el_display_test.h"

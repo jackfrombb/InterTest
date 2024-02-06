@@ -1,6 +1,6 @@
 #pragma once
-//#include "interface/ellements/ellements_list.h"
-// #include "interface/pages/page_virtual.h"
+// #include "interface/ellements/ellements_list.h"
+//  #include "interface/pages/page_virtual.h"
 
 class InterfaceEngineVirtual
 {
@@ -16,6 +16,7 @@ protected:
     virtual void drawText(ElText *text) = 0;
     virtual void drawCenteredGroup(ElCenteredGroup *group) = 0;
     virtual void drawLine(ElLine *line) = 0;
+    virtual void drawDisplayTest(ElDisplayTest *displayTest) {}
 
     virtual void drawGroup(ElGroup *group)
     {
@@ -66,6 +67,9 @@ protected:
             case el_type::EL_TYPE_LINE:
                 drawLine((ElLine *)el);
                 break;
+
+            case el_type::EL_TYPE_DISPLAY_TEST:
+                drawDisplayTest((ElDisplayTest *)el);
             }
         else
             logi::p("EngineVirtual", "Try to draw empty element");

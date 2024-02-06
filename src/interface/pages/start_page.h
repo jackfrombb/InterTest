@@ -1,7 +1,8 @@
 #pragma once
 
-#include "page_virtual.h"
-#include "interface/pages/views/wide_screen/start_page_view.h" //TODO: Временное решение. Убрать перед добавлением SlimScreen
+// Зависимости перенесены в main
+//#include "page_virtual.h"
+//#include "interface/pages/views/wide_screen/start_page_view.h"
 
 class StartPage : public InterfacePageVirtual
 {

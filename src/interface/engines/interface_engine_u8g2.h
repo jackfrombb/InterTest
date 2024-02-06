@@ -1,8 +1,8 @@
 #pragma once
 #include <U8g2lib.h>
 
-//#include "interface_engine.h"
-//#include "oscils/sync.h"
+// #include "interface_engine.h"
+// #include "oscils/sync.h"
 
 #define PAGE_TAG "Engine_U8G2"
 
@@ -249,7 +249,7 @@ private:
             str++;
             if (e != 0x0fffe)
             {
-                
+
                 dx = u8g2_GetGlyphWidth(u8g2, e); /* delta x value of the glyph */
 #ifdef U8G2_BALANCED_STR_WIDTH_CALCULATION
                 if (initial_x_offset == -64)
@@ -294,7 +294,7 @@ private:
         currentFont = size;
     }
 
-    void _invertDisplayImage()
+    void _invertDisplayImg()
     {
         for (int i = 0; i < bufferSize; i++)
         {
@@ -311,10 +311,10 @@ protected:
 
     void _onEndDraw() override
     {
-        if (inverImg)
-        {
-            _invertDisplayImage();
-        }
+        // if (inverImg)
+        // {
+        //     _invertDisplayImage();
+        // }
         _u8g2->nextPage();
     }
 
@@ -339,8 +339,6 @@ public:
         bufferSize = (unsigned int)(8 * _u8g2->getBufferTileHeight() * _u8g2->getBufferTileWidth());
         _displayBuffer = (uint8_t *)calloc(bufferSize, sizeof(uint8_t));
     }
-
-    
 
     ~InterfaceEngine_U8g2()
     {
@@ -469,5 +467,43 @@ public:
         progressLineWidth = max(progressLineWidth, 0);
         progressLineWidth = min(progressLineWidth, progressBar->getWidth() - 4);
         _u8g2->drawBox(progressBar->getX() + 2, progressBar->getY() + 2, progressLineWidth, (progressBar->getHeight() - 4));
+    }
+
+    void drawDisplayTest(ElDisplayTest *displayTest) override
+    {
+        // bool fill = true;
+        static uint16_t prevIndex = 0; 
+        static uint8_t prevMask = 0;
+        static uint8_t frameStop = 0;
+
+        uint8_t *buffer = _u8g2->getBufferPtr();
+
+        uint16_t width = displayTest->getWidth();
+        uint16_t height = displayTest->getHeight();
+
+        int16_t x1 = 10, y1 = 10, x2 = width - 10, y2 = height - 10;
+
+        uint pixelCount = width * height;
+        uint buffrLength = pixelCount >> 3;
+
+        uint8_t byte = bitRead(buffer[prevIndex], prevMask);
+        BIT_TOGGLE(buffer[prevIndex], prevMask);
+
+        if (frameStop > 10)
+        {
+            if (prevMask >= 7)
+            {
+                prevMask = 0;
+                prevIndex = range(prevIndex + 1, 0, buffrLength, true);
+            }
+            else
+            {
+                prevMask += 1;
+            }
+            Serial.println("Index=" + String(prevIndex) + ";Mask=" + String(prevMask));
+            frameStop = 0;
+        }
+        else
+            frameStop += 1;
     }
 };
