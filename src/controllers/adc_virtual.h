@@ -25,7 +25,7 @@ public:
     virtual int8_t init(uint16_t bufferSize, uint sampleRate)
     {
         _bufferSize = bufferSize;
-        _sampleRate = sampleRate;
+        _sampleRate = range(sampleRate, getMinAdcSampleRate(), getMaxAdcSampleRate());
         return 0;
     }
 
@@ -40,9 +40,18 @@ public:
         return 0;
     }
 
-    virtual uint getSampleRate(){
+    virtual uint getSampleRate()
+    {
         return _sampleRate;
     }
 
     virtual int8_t readData(uint16_t *buffer, size_t *readedLength) = 0;
+
+    /// @brief Получить максимальную скорость семплирования с ADC для платы
+    /// @return Скорость семплирования ADC
+    virtual uint getMaxAdcSampleRate() = 0;
+
+    /// @brief Получить минимальную скорость семплирования с ADC для платы
+    /// @return Скорость семплирования ADC
+    virtual uint16_t getMinAdcSampleRate() = 0;
 };

@@ -22,6 +22,24 @@ private:
     uint8_t *_displayBuffer;
     unsigned int bufferSize;
 
+    typedef struct
+    {
+        uint16_t byteIndex;
+        uint8_t bitIndex;
+    } pixel_position;
+
+    /// @brief Получить индекс пикселя в буфере для дисплея с вертикальными битами
+    /// @param x позиция по х
+    /// @param y позиция по у
+    /// @param width ширина дисплея
+    /// @return
+    static pixel_position getPxPos(uint16_t x, uint16_t y, uint16_t width)
+    {
+        uint8_t bit_index = y & 7;
+        uint16_t byte_index = ((y >> 3) * width) + x;
+        return pixel_position{.byteIndex = byte_index, .bitIndex = bit_index};
+    }
+
     // Эксперимент с буфером дисплея - не использовать
     //  Функция, которая затирает значения в буфере дисплея по координатам
     //  Параметры: buffer - указатель на буфер дисплея, width - ширина дисплея в пикселях, height - высота дисплея в пикселях
@@ -135,8 +153,6 @@ private:
 
         for (uint16_t v = height; v > 0; v -= heightPixelInSection)
         {
-            logi::p("Engine", "Strart row " + String(v));
-
             for (uint16_t x = 0; x <= width; x += widthPixelsCount)
             {
                 int titlePos = width - widthPixelsCount;
@@ -472,38 +488,50 @@ public:
     void drawDisplayTest(ElDisplayTest *displayTest) override
     {
         // bool fill = true;
-        static uint16_t prevIndex = 0; 
+        static uint16_t prevIndex = 0;
         static uint8_t prevMask = 0;
         static uint8_t frameStop = 0;
+        static uint16_t prevX = 0;
+        static uint16_t prevY = 0;
 
         uint8_t *buffer = _u8g2->getBufferPtr();
 
         uint16_t width = displayTest->getWidth();
         uint16_t height = displayTest->getHeight();
 
-        int16_t x1 = 10, y1 = 10, x2 = width - 10, y2 = height - 10;
+        getPxPos(prevX, prevY, width);
 
-        uint pixelCount = width * height;
-        uint buffrLength = pixelCount >> 3;
-
-        uint8_t byte = bitRead(buffer[prevIndex], prevMask);
-        BIT_TOGGLE(buffer[prevIndex], prevMask);
-
-        if (frameStop > 10)
+        prevX += 1;
+        if (prevX == width - 1)
         {
-            if (prevMask >= 7)
-            {
-                prevMask = 0;
-                prevIndex = range(prevIndex + 1, 0, buffrLength, true);
-            }
-            else
-            {
-                prevMask += 1;
-            }
-            Serial.println("Index=" + String(prevIndex) + ";Mask=" + String(prevMask));
-            frameStop = 0;
+            prevX = 0;
+            prevY = range(prevY + 1, 0, height - 1, true);
         }
-        else
-            frameStop += 1;
+
+        // int16_t x1 = 10, y1 = 10, x2 = width - 10, y2 = height - 10;
+
+        // uint pixelCount = width * height;
+        // uint buffrLength = pixelCount >> 3;
+
+        // uint8_t byte = bitRead(buffer[prevIndex], prevMask);
+        // BIT_TOGGLE(buffer[prevIndex], prevMask);
+
+        // if (frameStop > 10)
+        // {
+        //     getPxPos(buffer, width >> 1, height >> 1, width, height);
+        //     if (prevMask >= 7)
+        //     {
+        //         prevMask = 0;
+        //         prevIndex = range(prevIndex + 1, 0, buffrLength, true);
+        //     }
+        //     else
+        //     {
+        //         prevMask += 1;
+        //     }
+        //     Serial.println("Index=" + String(prevIndex) + ";Mask=" + String(prevMask));
+        //     frameStop = 0;
+        // }
+        // else
+        //     frameStop += 1;
     }
 };

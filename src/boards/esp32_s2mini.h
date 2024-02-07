@@ -2,7 +2,7 @@
 
 #include "controllers/esp32_adc_dma.h"
 #include "esp32_virtual.h"
-//#include "logi.h"
+// #include "logi.h"
 
 // Количество каналов АЦП
 #define ADC_CHANNEL_NUM 1
@@ -76,7 +76,7 @@ public:
         return _adc;
     }
 
-    virtual uint16_t getPwmPin()
+    uint16_t getPwmPin() override
     {
         return GPIO_NUM_17;
     }

@@ -1,9 +1,9 @@
 #pragma once
 
 // esp32 библиотеки для работы ADC
-//#include "module_virtual.h"
-//#include "displays/display_virtual.h"
-//#include "controls/control_virtual.h"
+// #include "module_virtual.h"
+// #include "displays/display_virtual.h"
+// #include "controls/control_virtual.h"
 // #include "interface/engines/interface_engine.h"
 
 /// @brief Основная плата устройства
@@ -89,11 +89,9 @@ public:
     virtual uint32_t rawToVoltage(uint16_t reading)
     {
         // Тут по сути заглушка, этот метод переопределяется в классах плат
-        //  if (getAdcChars() != nullptr)
-        //    return esp_adc_cal_raw_to_voltage(reading, getAdcChars()); // reading * 3.3 / 4096.0; // esp_adc_cal_raw_to_voltage(reading, getAdcChars());
-        //  else
         return (uint32_t)(((float)reading * (3.2 / 4095.0)) * 1000);
     }
 
     virtual uint16_t getPwmPin() = 0;
+
 };

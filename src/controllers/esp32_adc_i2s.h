@@ -89,4 +89,18 @@ public:
                                             // если делить кол-во считанных байт на 2
         return err;
     }
+
+    /// @brief Получить максимальную скорость семплирования с ADC для платы
+    /// @return Скорость семплирования ADC
+    uint getMaxAdcSampleRate() override
+    {
+        return 2000000; //  2mhz
+    }
+
+    /// @brief Получить минимальную скорость семплирования с ADC для платы
+    /// @return Скорость семплирования ADC
+    uint16_t getMinAdcSampleRate() override
+    {
+        return 20000; // Стандартно для adc i2s. Возможно сделаю переход на single read, тогда нижняя планка может стать 1
+    }
 };

@@ -4,6 +4,8 @@
 #include <limits>
 // Подключаем библиотеку для работы с ЦАП
 #include <driver/dac.h>
+#include <driver/ledc.h>
+#include <esp_intr_alloc.h>
 // Оболочка над стандартным таймером esp32
 #include "hard_timer.h"
 
@@ -82,7 +84,7 @@ private:
             case signal_type::SIGNAL_TYPE_MEANDR_DAC:
                 // Проблема этого подхода, это то что невозможно не блокируя поток достаточно сколько то точно
                 // выводить сигнал. Решение это выводить через i2s, в dma стиле, порционно через буфер
-                
+
                 // Выводим максимальное напряжение на ЦАП
                 dac_output_voltage(DAC_CHANNEL_1, 255);
                 // Ждем длительность импульса
@@ -91,7 +93,7 @@ private:
                 dac_output_voltage(DAC_CHANNEL_1, 0);
                 // Ждем остаток периода
                 delayMicroseconds(gen->period - gen->pulse);
-                vTaskDelay(1); 
+                vTaskDelay(1);
                 break;
 
             default:
@@ -145,14 +147,44 @@ public:
 
     ~SignalGenerator() = default;
 
+    static void testLedc(void *args)
+    {
+    }
+
+    ledc_isr_handle_t isrHandle; // Для управления прерыванием
+
     void startMeandrLedc(uint32_t frq, float duty)
     {
+        // ledc_isr_register(&testLedc, this, ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_HIGH, &isrHandle);
+
+        // ledc_timer_config_t ledc_timer = {
+        //     .speed_mode = ledc_mode_t::LEDC_SPEED_MODE_MAX,
+        //     .duty_resolution = ledc_timer_bit_t::LEDC_TIMER_1_BIT,
+        //     .timer_num = LEDC_TIMER_0,
+        //     .freq_hz = 100000, // Set output frequency at 5 kHz
+        //     .clk_cfg = ledc_clk_cfg_t::LEDC_USE_APB_CLK,
+        // };
+        // ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
+
+        // ledc_channel_config_t config = {
+        //     .gpio_num = _pin,
+        //     .speed_mode = ledc_mode_t::LEDC_SPEED_MODE_MAX,
+        //     .channel = ledc_channel_t::LEDC_CHANNEL_2,
+        //     .intr_type = ledc_intr_type_t::LEDC_INTR_MAX,
+        //     .timer_sel = ledc_timer_t::LEDC_TIMER_0,
+        //     .duty = 1,
+        // };
+
+        // ledc_channel_config(&config);
+
+        // ledc_set_freq(s);
+
         // Номер шим, частота, битность (определяет максимальное число скважности)
-        ledcSetup(GENERATOR_LEDC_PWM_NUM, frq, 8);
-        // Номер пина вывода, номер шим
+        ledcSetup(GENERATOR_LEDC_PWM_NUM, frq, 1);
+        // // Номер пина вывода, номер шим
         ledcAttachPin(_pin, GENERATOR_LEDC_PWM_NUM);
-        // Номер шим, скважность
-        ledcWrite(GENERATOR_LEDC_PWM_NUM, ((float)std::numeric_limits<uint8_t>::max()) * duty);
+        // // Номер шим, скважность
+        ledcWrite(GENERATOR_LEDC_PWM_NUM, 1);// ((float)std::numeric_limits<uint8_t>::max()) * duty);
 
         _currentMode = signal_type::SIGNAL_TYPE_MEANDR_LEDC;
         _pwmFreq = frq;

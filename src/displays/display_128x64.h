@@ -38,9 +38,7 @@ public:
 
         _u8g2->begin();
         _u8g2->enableUTF8Print();
-        _u8g2->drawBox(0, 0, _u8g2->getWidth(), _u8g2->getHeight());
-        _u8g2->sendBuffer();
-
+        
         logi::p("Display 128x64", "Display init ok");
 
         U8g2DisplayVirtual::init(); // Там инициализация джвижка прорисовки

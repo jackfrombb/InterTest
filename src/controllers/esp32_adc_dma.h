@@ -6,9 +6,11 @@
  * @brief Считывание показаний встроенных АЦП через DMA в continue режиме для плат esp32
  * на основе esp-idf 4.4.6 (макимально доступной на время написания).
  *
- * (Проверено: wroom32u, )
+ * (Проверено:
+ * wroom32u - обязательно conv_limit_en = true ,
+ * s2mini - conv_limit_en = false, но это ставит ограничение на макс smps в 83khz)
+ *
  * - В режиме DMA доступен только ADC1
- * - Для обычных eps32 (не s2 и пр.) флаг conv_lim_en в структуре adc_digi_configuration_t всегда должен быть true
  * - Если на любой плате не стоит conv_lim_en = true, то семплрейт ограничен: 611Hz ~ 83333Hz,
  * если false то возможный диапазон значительно больше, пока не знаю точных значений (для wroom32 мин: 20000Hz)
  * @version 0.1
@@ -139,6 +141,27 @@ public:
         *readedLength = *readedLength >> 1; // Делим колво байт на 2 что бы сходились последующие расчеты
 
         return retErr;
+    }
+
+    /// @brief Получить максимальную скорость семплирования с ADC для платы
+    /// @return Скорость семплирования ADC
+    uint getMaxAdcSampleRate() override
+    {
+        if (_enableConvLim)
+        {
+            return 1500000; // 1.5mhz
+        }
+        return 83333; // Стандартно для adc dma без ограничения по счтыванию
+    }
+
+    /// @brief Получить минимальную скорость семплирования с ADC для платы
+    /// @return Скорость семплирования ADC
+    virtual uint16_t getMinAdcSampleRate() override
+    {
+        if (_enableConvLim)
+            return 20000; // Обязательно для wroom32
+
+        return 633; // Стандартно для adc dma с conv_limit_en = false. Возможно сделаю переход на single read, тогда нижняя планка может стать 1
     }
 
 private:

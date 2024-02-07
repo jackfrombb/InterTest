@@ -1,9 +1,9 @@
 #pragma once
 
 #include <Arduino.h>
-//#include "board_virtual.h"
-//#include "oscil_virtual.h"
-//#include "hard_timer.h"
+// #include "board_virtual.h"
+// #include "oscil_virtual.h"
+// #include "hard_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "sdkconfig.h"
 #include <string.h>
@@ -11,7 +11,7 @@
 #include "freertos/task.h"
 #include "freertos/semphr.h"
 #include "esp_log.h"
-//#include "logi.h"
+// #include "logi.h"
 
 // Размер буфера для хранения результатов АЦП (должен быть больше экрана, для синхронизации периодических сигналов)
 #define ADC_BUFFER_SIZE 512
@@ -59,10 +59,10 @@ private:
             {
                 oscil->_bufferBussy = true;
                 oscil->_adc->readData(oscil->adc_buffer_out, &read_len);
-                oscil->read_len = (uint32_t) read_len;
+                oscil->read_len = (uint32_t)read_len;
                 oscil->_bufferBussy = false;
 
-                //Serial.println(String(oscil->read_len));
+                // Serial.println(String(oscil->read_len));
             }
 
             vTaskDelayUntil(&oscil->xLastWakeTime, oscil->xFrequency);
@@ -144,6 +144,7 @@ public:
     void setMeasuresInSecond(uint32_t tickTime) override
     {
         _pause = true;
+        tickTime = range(tickTime, _adc->getMinAdcSampleRate(), _adc->getMaxAdcSampleRate()); // Проверка, что значение входит дипазон допустимых
         auto err = _adc->changeSampleRate(tickTime);
         _pause = false;
 

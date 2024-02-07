@@ -93,7 +93,7 @@ MainBoard *mainBoard = new Esp32Wroom32(display, control);
 InterfaceController interfaceController(mainBoard);
 
 // Частота генерации
-int pwmF = 40000;
+int pwmF = 100000;
 
 SignalGenerator sigGen(mainBoard->getPwmPin());
 
