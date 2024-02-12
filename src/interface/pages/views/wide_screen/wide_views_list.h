@@ -6,4 +6,5 @@
 #include "voltmeter_page_view.h"
 #include "generator_page_view.h"
 #include "settings_page_view.h"
+#include "ohmmeter_page_view.h"
 

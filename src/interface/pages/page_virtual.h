@@ -48,7 +48,6 @@ public:
 
     virtual ~InterfacePageVirtual() = default;
 
-    virtual PageView *getPageView() = 0;
 
     virtual bool onControlEvent(control_event_type eventType)
     {
@@ -63,4 +62,6 @@ public:
     virtual void onDraw()
     {
     }
+    
+    virtual PageView *getPageView() = 0;
 };
