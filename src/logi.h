@@ -12,19 +12,25 @@ class logi
 protected:
     static logi *instance;
     static bool _printToSerialEnabled;
+    static Stream *_outStream;
 
 private:
     void _printToSerial(logi_msg_type type, String sender, String text)
     {
+        if (_outStream == nullptr)
+        {
+            _outStream = &Serial;
+        }
+
         switch (type)
         {
         case logi_msg_type::ERR:
-            Serial.println("ERROR - " + sender + ": " + text);
+            _outStream->println("ERROR - " + sender + ": " + text);
             break;
 
         case logi_msg_type::INFO:
         default:
-            Serial.println(sender + ": " + text);
+            _outStream->println(sender + ": " + text);
             break;
         }
     }
@@ -34,13 +40,14 @@ private:
         _printToSerialEnabled = true;
     }
 
-    logi(bool printToSerial)
+    logi(bool printToSerial, Stream *streamOut = nullptr)
     {
         _printToSerialEnabled = printToSerial;
+        _outStream = streamOut;
     }
 
 public:
-    static void settings(bool enablePrintToSerial)
+    static void settings(bool enablePrintToSerial, Stream *outStream)
     {
         _printToSerialEnabled = enablePrintToSerial;
     }
@@ -149,7 +156,6 @@ public:
         return false;
     }
 
-
     static void p(String sender, String text)
     {
         if (logi::get()->_printToSerialEnabled)
@@ -161,3 +167,4 @@ public:
 
 logi *logi::instance = 0;
 bool logi::_printToSerialEnabled = true;
+Stream *logi::_outStream = nullptr;

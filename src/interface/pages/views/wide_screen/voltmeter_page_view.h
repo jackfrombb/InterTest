@@ -1,7 +1,7 @@
 #pragma once
 
-//#include "interface/pages/views/page_view.h"
-//#include "displays/display_virtual.h"
+// #include "interface/pages/views/page_view.h"
+// #include "displays/display_virtual.h"
 
 class VoltemeterPageView : public PageView
 {
@@ -10,19 +10,28 @@ private:
 
     uint8_t _mainVlotType = 0; // 0 - maxVolt, 1- midVolt
 
-    ElText _mainVoltTitleText;
-    ElText _voltText;
+    ElText _titleForBigCenterText;
+    ElText _bigCenterText;
 
     ElWaveform _waveform;
 
     ElCenteredGroup _downInfoGroup;
-    ElText _secondVoltText;
-    ElText _sampleRateText;
+    ElText _smallLeftText;
+    ElText _smallRightText;
 
 public:
     VoltemeterPageView(DisplayVirtual *display, InterfaceEngineVirtual *iEngine) : PageView(display)
     {
         setMainVoltType(0);
+
+        // Общий контейнер для полей по низу экрана
+        _downInfoGroup
+            .setNeedDrawFrame(false)
+            ->addElement(&_smallLeftText)
+            ->addElement(&_smallRightText)
+            ->setWidth(display->getWidth())
+            ->setHeight(iEngine->getMaxTextHeight(el_text_size::EL_TEXT_SIZE_SMALL))
+            ->setY(_display->getHeight() - _downInfoGroup.getHeight());
 
         // Инциализируем осциллограмму вверху экрана
         _waveform
@@ -32,50 +41,48 @@ public:
             ->setHeight(display->getHeight() - ((display->getHeight() >> 1) + 10)); // Из высоты экрана удаляем половину высоты экрана + чуть больше половины высоты текста
 
         // Тип основного измерения
-        _mainVoltTitleText
+        _titleForBigCenterText
             .setX(0)
-            ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER);
+            ->setY(_waveform.getHeight() + // отступаем на высоту осцила и выставляем по середине текста справа
+                   ((_display->getMaxTextHeight(el_text_size::EL_VOLTMETER_VALUE_LARGE) >> 1) - (_display->getMaxTextHeight(_titleForBigCenterText.getTextSize()) >> 1)));
+        //->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER);
 
         // Инициализируем основное поле по центру экрана
-        _voltText
+        _bigCenterText
             .setText("_.__")
             ->setTextSize(el_text_size::EL_VOLTMETER_VALUE_LARGE)
-            ->setX(iEngine->getMaxTextWidth(el_text_size::EL_TEXT_SIZE_MIDDLE) * 4) // Отступаем на 4 символа
-            ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER);
+            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER)
+            ->setX(_display->getMaxTextWidth(_titleForBigCenterText.getTextSize()) * _titleForBigCenterText.getText().length()) // Отступаем надпись max по x
+            ->setY(_waveform.getHeight() + 1)
+            ->setWidth(_display->getWidth() - _bigCenterText.getX()) // Занимаем остальное место после x
+
+            //->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER)
+            ;
 
         // Второстепенные поля по низу экрана и по середине своей ширины (ширину устновит контейнер)
-        _secondVoltText.setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER);
-        _sampleRateText.setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER);
-
-        // Общий контейнер для полей по низу экрана
-        _downInfoGroup
-            .setNeedDrawFrame(false)
-            ->addElement(&_secondVoltText)
-            ->addElement(&_sampleRateText)
-            ->setWidth(display->getWidth())
-            ->setHeight(iEngine->getMaxTextHeight(el_text_size::EL_TEXT_SIZE_SMALL))
-            ->setY(_display->getHeight() - _downInfoGroup.getHeight());
+        _smallLeftText.setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER);
+        _smallRightText.setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER);
 
         addElement(&_waveform)
-            ->addElement(&_mainVoltTitleText)
-            ->addElement(&_voltText)
+            ->addElement(&_titleForBigCenterText)
+            ->addElement(&_bigCenterText)
             ->addElement(&_downInfoGroup);
     }
 
-    String *getSecondVoltTextPtr()
+    String *getSmallLeftTextPtr()
     {
-        return _secondVoltText.getTextPtr();
+        return _smallLeftText.getTextPtr();
     }
 
     String *getSampleRateTextPtr()
     {
-        return _sampleRateText.getTextPtr();
+        return _smallRightText.getTextPtr();
     }
 
     /// @brief Получить ссылку на основное поле вольтажа
-    String *getVoltPattern()
+    String *getBigCenterTextPattern()
     {
-        return _voltText.getTextPtr();
+        return _bigCenterText.getTextPtr();
     }
 
     /// @brief Получть ссылку для управления формой сигнала
@@ -92,11 +99,11 @@ public:
         {
         case 0:
         default:
-            _mainVoltTitleText.setText("max");
+            _titleForBigCenterText.setText("max");
             break;
 
         case 1:
-            _mainVoltTitleText.setText("mid:");
+            _titleForBigCenterText.setText("mid:");
             break;
         }
     }

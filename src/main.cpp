@@ -3,6 +3,7 @@
 #include "app_data.h"      // Тут чтение и запись настроек в ПЗУ
 #include "configuration.h" // Переключение железа здесь
 #include "logi.h"          // Централизация логирования
+#include "USB.h"
 
 #include "helpers.h"                  // Вспомогательные методы общие (найти средне)
 #include "displays/display_structs.h" // Вспомогательные структуры дисплея (точка, область и пр)
@@ -73,7 +74,7 @@ DisplayVirtual *display = new Nokia5110_U8g2();
 DisplayVirtual *display = new Display128x64_U8g2();
 #endif
 
-#include "interface/pages/page_list.h" // Абстракция над контроллера странички
+#include "interface/pages/page_list.h"      // Абстракция над контроллера странички
 #include "interface/interface_controller.h" // Управление страницами и отрисовкой
 
 // Определение платы
@@ -94,6 +95,7 @@ InterfaceController interfaceController(mainBoard);
 
 // Частота генерации
 int pwmF = 100000;
+//USBCDC usbSerial;
 
 SignalGenerator sigGen(mainBoard->getPwmPin());
 
@@ -102,6 +104,12 @@ SignalGenerator sigGen(mainBoard->getPwmPin());
 void setup()
 {
   Serial.begin(115200);
+  // while (!Serial)// Эта строка не дает загрузится устройству пока не запустится Serial костыль для отладки s2mini
+  // {
+  // }; 
+  // Serial.println("SERIAL: Setup complete");
+
+  // logi::settings(true, &usbSerial);
 
   // Просто смотрю на конфигурацию в теории
   // spi_bus_config_t spi_config = {

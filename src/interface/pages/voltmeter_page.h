@@ -1,7 +1,7 @@
 #pragma once
 
-//#include "page_virtual.h"
-//#include "interface/pages/views/wide_screen/voltmeter_page_view.h"
+// #include "page_virtual.h"
+// #include "interface/pages/views/wide_screen/voltmeter_page_view.h"
 
 class VoltmeterPage : public InterfacePageVirtual
 {
@@ -14,12 +14,11 @@ private:
     Voltmetr *_voltmeter = nullptr;
 
     // Вывод данных
-    String *_voltTextPtr = nullptr;
-    String *_secondVoltTextPtr = nullptr;
-    String *_samplerateTextPtr = nullptr;
-    adc_measures_t *_measuresWaveformPtr = nullptr;
+    String *_bigCenterTextPtr = nullptr;            // Главный центральный
+    String *_smallLeftTextPtr = nullptr;            // Слева маленький
+    String *_smallRightTextPtr = nullptr;           // Справа маленький
+    adc_measures_t *_measuresWaveformPtr = nullptr; // Измерения с adc
 
-    //uint bias = 0;
 
 public:
     VoltmeterPage(MainBoard *mainBoard) : InterfacePageVirtual(mainBoard->getDisplay())
@@ -38,10 +37,10 @@ public:
         _oscil->init();
 
         // Инициализируем поля данных
-        _voltTextPtr = _pageView->getVoltPattern();
+        _bigCenterTextPtr = _pageView->getBigCenterTextPattern();
         _measuresWaveformPtr = _pageView->getWaveformMeasuresPtr();
-        _secondVoltTextPtr = _pageView->getSecondVoltTextPtr();
-        _samplerateTextPtr = _pageView->getSampleRateTextPtr();
+        _smallLeftTextPtr = _pageView->getSmallLeftTextPtr();
+        _smallRightTextPtr = _pageView->getSampleRateTextPtr();
     }
 
     ~VoltmeterPage()
@@ -64,14 +63,13 @@ public:
     {
         switch (eventType)
         {
-
-            // Смотрю на смещения буфера 
-        // case control_event_type::PRESS_LEFT:
-        //     bias -= 1;
-        //     break;
-        // case control_event_type::PRESS_RIGHT:
-        //     bias = range(bias + 1, 0, _oscil->getBufferLength() - _display->getWidth());
-        //     break;
+            // Смотрю на смещения буфера
+            // case control_event_type::PRESS_LEFT:
+            //     bias -= 1;
+            //     break;
+            // case control_event_type::PRESS_RIGHT:
+            //     bias = range(bias + 1, 0, _oscil->getBufferLength() - _display->getWidth());
+            //     break;
 
         case control_event_type::PRESS_BACK:
             return false;
@@ -86,11 +84,12 @@ public:
     void onDraw() override
     {
         auto measures = _voltmeter->getMeasures();
-        //measures.bias = bias;
+        // measures.bias = bias;
 
         *_measuresWaveformPtr = measures;
-        *_voltTextPtr = String(((float)measures.max / 1000.0)); // Делим на 1000 что бы получить вольты
-        *_secondVoltTextPtr = "mid" + String(((float)measures.middle / 1000.0));
-        *_samplerateTextPtr = "min" + String(((float)measures.min / 1000.0));
+        *_bigCenterTextPtr = String(((float)measures.max / 1000.0)); // Делим на 1000 что бы получить вольты
+        *_smallLeftTextPtr = String(((float)measures.middle / 1000.0));
+        *_smallRightTextPtr = String(((float)measures.min / 1000.0));
+
     }
 };

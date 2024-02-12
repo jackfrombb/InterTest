@@ -8,6 +8,7 @@
 #include <esp_intr_alloc.h>
 // Оболочка над стандартным таймером esp32
 #include "hard_timer.h"
+#include <math.h>
 
 // Задаем смещение меандра в вольтах
 #define OFFSET 0
@@ -157,34 +158,44 @@ public:
     {
         // ledc_isr_register(&testLedc, this, ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_HIGH, &isrHandle);
 
-        // ledc_timer_config_t ledc_timer = {
-        //     .speed_mode = ledc_mode_t::LEDC_SPEED_MODE_MAX,
-        //     .duty_resolution = ledc_timer_bit_t::LEDC_TIMER_1_BIT,
-        //     .timer_num = LEDC_TIMER_0,
-        //     .freq_hz = 100000, // Set output frequency at 5 kHz
-        //     .clk_cfg = ledc_clk_cfg_t::LEDC_USE_APB_CLK,
-        // };
-        // ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
+        ledc_mode_t mode = ledc_mode_t::LEDC_LOW_SPEED_MODE;
+        ledc_timer_bit_t timer_bit = ledc_timer_bit_t::LEDC_TIMER_1_BIT;
+        ledc_timer_t timer = ledc_timer_t::LEDC_TIMER_3;
+        ledc_channel_t chanel = ledc_channel_t::LEDC_CHANNEL_2;
 
-        // ledc_channel_config_t config = {
-        //     .gpio_num = _pin,
-        //     .speed_mode = ledc_mode_t::LEDC_SPEED_MODE_MAX,
-        //     .channel = ledc_channel_t::LEDC_CHANNEL_2,
-        //     .intr_type = ledc_intr_type_t::LEDC_INTR_MAX,
-        //     .timer_sel = ledc_timer_t::LEDC_TIMER_0,
-        //     .duty = 1,
-        // };
+        ledc_timer_config_t ledc_timer = {
+            .speed_mode = mode,
+            .duty_resolution = timer_bit,
+            .timer_num = timer,
+            .freq_hz = frq, 
+            .clk_cfg = ledc_clk_cfg_t::LEDC_AUTO_CLK,
+        };
 
-        // ledc_channel_config(&config);
+        float maxDuty = 1;//pow(2.0, (float)ledc_timer.duty_resolution) - 1; //((2 ** 13) - 1) - взято из примера https://github.com/espressif/esp-idf/blob/v4.4.6/examples/peripherals/ledc/ledc_basic/main/ledc_basic_example_main.c
 
-        // ledc_set_freq(s);
+        ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
 
-        // Номер шим, частота, битность (определяет максимальное число скважности)
-        ledcSetup(GENERATOR_LEDC_PWM_NUM, frq, 1);
+        ledc_channel_config_t config = {
+            .gpio_num = _pin,
+            .speed_mode = mode,
+            .channel = chanel,
+            .intr_type = ledc_intr_type_t::LEDC_INTR_DISABLE,
+            .timer_sel = timer,
+            .duty = (uint32_t)(maxDuty),
+            .hpoint = 0,
+        };
+
+        ledc_channel_config(&config);
+
+        // ledc_set_duty(mode, chanel, maxDuty * duty);
+        // ledc_update_duty(mode, chanel);
+
+        // // Номер шим, частота, битность (определяет максимальное число скважности)
+        // ledcSetup(GENERATOR_LEDC_PWM_NUM, frq, 1);
         // // Номер пина вывода, номер шим
-        ledcAttachPin(_pin, GENERATOR_LEDC_PWM_NUM);
+        // ledcAttachPin(_pin, GENERATOR_LEDC_PWM_NUM);
         // // Номер шим, скважность
-        ledcWrite(GENERATOR_LEDC_PWM_NUM, 1);// ((float)std::numeric_limits<uint8_t>::max()) * duty);
+        // ledcWrite(GENERATOR_LEDC_PWM_NUM, 1);// ((float)std::numeric_limits<uint8_t>::max()) * duty);
 
         _currentMode = signal_type::SIGNAL_TYPE_MEANDR_LEDC;
         _pwmFreq = frq;

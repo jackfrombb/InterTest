@@ -1,10 +1,21 @@
+/**
+ * @file interface_controller.h
+ * @author JackFromBB (jack@boringbar.ru)
+ * @brief Управление отображаемыми страничками. Отрисовка интерфейса в отдельном потоке.
+ * @version 0.1
+ * @date 2024-02-12
+ *
+ * @copyright Copyright (c) 2024
+ *
+ */
+
 #pragma once
 
-//#include "interface/pages/page_virtual.h"
-//#include "displays/display_virtual.h"
-//#include "interface/engines/interface_engine.h"
-//#include "interface/pages/page_list.h"
-//#include "logi.h"
+// #include "interface/pages/page_virtual.h"
+// #include "displays/display_virtual.h"
+// #include "interface/engines/interface_engine.h"
+// #include "interface/pages/page_list.h"
+// #include "logi.h"
 
 class InterfaceController
 {
@@ -98,6 +109,8 @@ public:
         // setCurrentPage(new OscilPage(_mainBoard));
     }
 
+    /// @brief Событие перехода на другую страницу
+    /// @param page Выбранная страница
     void onPageSelected(pages_list page)
     {
         logi::p("Inerface_Controller", "Select " + String(page));
@@ -114,6 +127,16 @@ public:
         case pages_list::PAGE_LIST_VOLT:
             clear();
             setCurrentPage(new VoltmeterPage(_mainBoard));
+            break;
+
+        case pages_list::PAGE_GENERATOR:
+            clear();
+            setCurrentPage(new GeneratorPage(_mainBoard));
+            break;
+
+        case pages_list::PAGE_SETTINGS:
+            clear();
+            setCurrentPage(new SettingsPage(_mainBoard));
             break;
         }
     }

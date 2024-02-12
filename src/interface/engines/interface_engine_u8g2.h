@@ -218,7 +218,7 @@ private:
         switch (size)
         {
         case EL_VOLTMETER_VALUE_LARGE:
-            ret = u8g2_font_12x6LED_mn;
+            ret = u8g2_font_ncenB24_tn; //u8g2_font_osb41_tf
             break;
         case EL_TEXT_SIZE_SUPER_LARGE:
             ret = u8g2_font_10x20_t_cyrillic;
@@ -301,6 +301,7 @@ private:
         u8x8_char_cb charCb = u8x8_utf8_next;
         return u8g2_string_width(u8g2, str);
     }
+    
     el_text_size currentFont;
     void _setTextSize(el_text_size size)
     {
@@ -435,12 +436,13 @@ public:
 
         int16_t x = text->getX();
         int y = text->getY();
+
         int w = _u8g2->getUTF8Width(textTitle.c_str());
         int h = _u8g2->getMaxCharHeight();
 
         if (text->getAlignment() == el_text_align::EL_TEXT_ALIGN_CENTER)
         {
-            x += _getTextCenterX(textTitle, x + text->getParent()->getX(), text->getWidth());
+            x = _getTextCenterX(textTitle, x + text->getParent()->getX(), text->getWidth());
         }
         else if (text->getAlignment() == el_text_align::EL_TEXT_ALIGN_RIGHT)
         {
