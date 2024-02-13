@@ -8,3 +8,5 @@
 #include "el_centered_group.h"
 #include "el_line.h"
 #include "el_display_test.h"
+#include "el_battery.h"
+#include "el_scrollbar.h"

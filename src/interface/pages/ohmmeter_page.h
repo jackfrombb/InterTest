@@ -6,7 +6,7 @@ private:
     OhmmeterPageView *_pageView;
 
 public:
-    OhmmeterPage(MainBoard *mianBoard) : InterfacePageVirtual(mainBoard->getDisplay())
+    OhmmeterPage(MainBoard *mainBoard) : InterfacePageVirtual(mainBoard->getDisplay())
     {
         _pageView = new OhmmeterPageView(_display);
     }

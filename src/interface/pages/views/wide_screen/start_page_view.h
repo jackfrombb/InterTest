@@ -1,31 +1,45 @@
 #pragma once
 
-//#include "interface/pages/views/page_view.h"
-//#include "interface/pages/page_virtual.h"
-//#include "app_data.h"
+// #include "interface/pages/views/page_view.h"
+// #include "interface/pages/page_virtual.h"
+// #include "app_data.h"
 
 #define TEST_ANIM_ENABLE
 
 class StartPageView : public PageView
 {
 private:
+    // Выбранный на данный момент пункт (стандартно осцилограф, но в настройках сохраняется последний выбранный)
     pages_list _focusPage = pages_list::PAGE_LIST_OSCIL;
 
+    // Ссылка на текстовое поле текущего пункта
     String *_currentTitle;
+    // Ссылка на текстовое поле следующего пункта
     String *_nextTitle;
+    // Ссылка на текстовое поле предыдущего пункта
     String *_prevTitle;
 
+    // Текущий пункт
     ElText _current;
+    // Предыдущий пункт
     ElText _prev;
+    // Последующий пункт
     ElText _next;
+    // Поле отображающее текущую прокрутку
+    ElScrollBar _scrollBar;
 
+    // Просто тестовый элемент для проверки дисплея, удалю или перенесу по необходимости
     ElDisplayTest _displayTest;
 
+    // Событие выбора странички пользователем
     function<void(pages_list)> _onPageSelected;
 
 #ifdef TEST_ANIM_ENABLE
+    // Позиция по умолчанию для предыдущего пункта
     display_position _prevPosDef;
+    // Позиция по умолчанию для следующего пункта
     display_position _nexPosDef;
+    // Позиция по умолчанию для текущего пункта
     display_position _curPosDef;
 
     int8_t lastDir = 0;
@@ -33,6 +47,7 @@ private:
     void _scrollFocus(int8_t direction)
     {
         _focusPage = (pages_list)range(((int)_focusPage + (1 * direction)), 0, pages_list::pagesCount - 1);
+        _calculateScrollPosition();
     }
 
     void _initPoints()
@@ -43,25 +58,25 @@ private:
             //->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER)
             ->setX(10) // на весь экран
             ->setY(0)
-            ->setWidth(_display->getWidth()-10)
+            ->setWidth(_display->getWidth() - 10)
             ->setHeight(_display->getHeight())
             ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER) // Вертикально по центру
             ;
 
         _prev.setCalculatedText([this]
                                 { return pages_list_getName((pages_list)((int)_focusPage - 1)); })
-            ->setX(-(_display->getWidth()+10))
+            ->setX(-(_display->getWidth() + 10))
             ->setY(0)
-            ->setWidth(_display->getWidth()-10)
+            ->setWidth(_display->getWidth() - 10)
             ->setHeight(_display->getHeight())
             ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER) //
             ;
 
         _next.setCalculatedText([this]
                                 { return pages_list_getName((pages_list)((int)_focusPage + 1)); })
-            ->setX(_display->getWidth()+10)
+            ->setX(_display->getWidth() + 10)
             ->setY(0)
-            ->setWidth(_display->getWidth()-10)
+            ->setWidth(_display->getWidth() - 10)
             ->setHeight(_display->getHeight())
             ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER) //
             ;
@@ -75,6 +90,25 @@ private:
         _nexPosDef = _next.getArea();
         _curPosDef = _current.getArea();
 #endif
+    }
+
+    void _initScrollBar()
+    {
+        uint16_t scrollBarWidth = _display->getWidth() - (_display->getWidth() >> 2);
+        uint16_t scrollBarHeight = 6;
+
+        _scrollBar
+            .setX((_display->getWidth() - scrollBarWidth) >> 1)
+            ->setY(_display->getHeight() - (scrollBarHeight + 2))
+            ->setWidth(scrollBarWidth)
+            ->setHeight(scrollBarHeight);
+    }
+
+    void _calculateScrollPosition()
+    {
+        _scrollBar.setScrollPosition(_display->getWidth() * (pages_list::pagesCount - 1), // Общая ширина всех пунктов
+                                     _focusPage * _display->getWidth(),                   // Текущее положение по x
+                                     _display->getWidth());                               // Текущая отображаемая ширина
     }
 
 #ifdef TEST_ANIM_ENABLE
@@ -115,7 +149,6 @@ private:
 
         // logi::p("StartPageView", "_spinPoints dir: " + String(dir));
     }
-
 #endif
 
 public:
@@ -130,10 +163,16 @@ public:
         }
 
         _initPoints();
+        _initScrollBar();
+        _calculateScrollPosition();
 
         _displayTest.setArea({.leftUp = {.x = 0, .y = 0}, .rightDown = {.x = _display->getWidth(), .y = _display->getHeight()}});
 
-        addElement(&_current)->addElement(&_next)->addElement(&_prev)->addElement(&_displayTest);
+        addElement(&_current)
+            ->addElement(&_next)
+            ->addElement(&_prev)
+            ->addElement(&_scrollBar)
+            ->addElement(&_displayTest);
     }
 
     ~StartPageView() = default;

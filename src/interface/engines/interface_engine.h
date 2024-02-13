@@ -17,6 +17,8 @@ protected:
     virtual void drawCenteredGroup(ElCenteredGroup *group) = 0;
     virtual void drawLine(ElLine *line) = 0;
     virtual void drawDisplayTest(ElDisplayTest *displayTest) {}
+    virtual void drawBatteryIndicr(ElBattery *batteryIndcr) = 0;
+    virtual void drawScrollbar(ElScrollBar *scrollbar) = 0;
 
     virtual void drawGroup(ElGroup *group)
     {
@@ -70,6 +72,14 @@ protected:
 
             case el_type::EL_TYPE_DISPLAY_TEST:
                 drawDisplayTest((ElDisplayTest *)el);
+                break;
+            case el_type::EL_TYPE_BATTERY_INDCATOR:
+                drawBatteryIndicr((ElBattery *)el);
+                break;
+
+            case el_type::EL_TYPE_SCROLLBAR:
+                drawScrollbar((ElScrollBar *)el);
+                break;
             }
         else
             logi::p("EngineVirtual", "Try to draw empty element");

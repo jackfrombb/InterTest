@@ -218,7 +218,7 @@ private:
         switch (size)
         {
         case EL_VOLTMETER_VALUE_LARGE:
-            ret = u8g2_font_ncenB24_tn; //u8g2_font_osb41_tf
+            ret = u8g2_font_ncenB24_tn; // u8g2_font_osb41_tf
             break;
         case EL_TEXT_SIZE_SUPER_LARGE:
             ret = u8g2_font_10x20_t_cyrillic;
@@ -301,7 +301,7 @@ private:
         u8x8_char_cb charCb = u8x8_utf8_next;
         return u8g2_string_width(u8g2, str);
     }
-    
+
     el_text_size currentFont;
     void _setTextSize(el_text_size size)
     {
@@ -535,5 +535,38 @@ public:
         // }
         // else
         //     frameStop += 1;
+    }
+
+    /// @brief Отрисовка индикатора батарейки (тестовая версия)
+    /// @param batteryIndcr элемент
+    void drawBatteryIndicr(ElBattery *batteryIndcr) override
+    {
+        // Рисуем тело батарейки с отступом для пипки
+        _u8g2->drawRFrame(batteryIndcr->getX() - 4, batteryIndcr->getY(), batteryIndcr->getWidth(), batteryIndcr->getHeight(), 2);
+        // Рисуем пипку батарейки
+        _u8g2->drawFrame(batteryIndcr->getX(), batteryIndcr->getY() + (batteryIndcr->getHeight() >> 2), 4, batteryIndcr->getHeight() >> 1);
+
+        int progressLineWidth = (int)((float)(batteryIndcr->getWidth() - 4) * batteryIndcr->getProgress());
+
+        progressLineWidth = max(progressLineWidth, 0);
+        progressLineWidth = min(progressLineWidth, batteryIndcr->getWidth() - 4);
+        _u8g2->drawBox(batteryIndcr->getX() + 6, batteryIndcr->getY() + 2, progressLineWidth, (batteryIndcr->getHeight() - 4));
+    }
+
+    /// @brief Отрисовать индикатор прокрутки на страничке
+    /// @param scrollbar
+    void drawScrollbar(ElScrollBar *scrollbar) override
+    {
+        // logi::p("IEngine", "DispWidth " + String(scrollbar->getDisplayedWidth()));
+
+        int scrollWidth = (int)((float)(scrollbar->getWidth() - 4) * scrollbar->getDisplayedWidth());
+        _u8g2->drawRFrame(scrollbar->getX() + (scrollbar->getWidth() * scrollbar->getScrollPosition()),
+                          scrollbar->getY(),
+                          scrollWidth,
+                          scrollbar->getHeight(),
+                          2);
+        // Точки для отслеживания ширины
+        // _u8g2->drawPixel(scrollbar->getX(), scrollbar->getY() + (scrollbar->getHeight() >> 1));
+        // _u8g2->drawPixel(scrollbar->getX() + scrollbar->getWidth(), scrollbar->getY() + (scrollbar->getHeight() >> 1));
     }
 };
