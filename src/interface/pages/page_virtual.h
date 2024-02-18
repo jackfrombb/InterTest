@@ -22,15 +22,15 @@ String pages_list_getName(pages_list page)
     switch (page)
     {
     case pages_list::PAGE_LIST_OSCIL:
-        return "Oscilloscope";//"Осциллограф";
+        return LOC_OSCIL; //"Осциллограф";//"Oscilloscope";
     case pages_list::PAGE_LIST_VOLT:
-        return "Voltmeter";//"Вольтметр";
+        return LOC_VOLTMETER; // "Вольтметр";//"Voltmeter";
     case pages_list::PAGE_LIST_OHM:
-        return "Ohmmeter";//"Омметр";
+        return LOC_OHMMETER; // "Омметр";//"Ohmmeter";
     case pages_list::PAGE_GENERATOR:
-        return "Generator";//"Генератор";
+        return LOC_GENERATOR; // "Генератор";//"Generator";
     case pages_list::PAGE_SETTINGS:
-        return "Settings";//"Настройки";
+        return LOC_SETTING; //"Настройки";//"Settings";
     }
 
     return "Error_02";
@@ -48,7 +48,6 @@ public:
 
     virtual ~InterfacePageVirtual() = default;
 
-
     virtual bool onControlEvent(control_event_type eventType)
     {
         return getPageView()->onControlEvent(eventType);
@@ -62,6 +61,6 @@ public:
     virtual void onDraw()
     {
     }
-    
+
     virtual PageView *getPageView() = 0;
 };

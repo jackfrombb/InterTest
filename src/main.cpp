@@ -1,7 +1,16 @@
 #include <Arduino.h>
 
+// Переключение настроек здесь
+#include "configuration.h" 
+
+// Переключение языка интерфейса. Все языкозависимые переменные интерфейса определять там и дублировать для каждой локали
+#ifdef LOCALE_RU
+#include "interface/localisation/ru.h"
+#elif defined (LOCALE_EN)
+#include "interface/localisation/en.h"
+#endif
+
 #include "app_data.h"      // Тут чтение и запись настроек в ПЗУ
-#include "configuration.h" // Переключение железа здесь
 #include "logi.h"          // Централизация логирования
 #include "USB.h"
 
@@ -41,12 +50,13 @@ typedef struct
 #include "interface/pages/page_virtual.h"         // Абстракция над контроллера странички
 #include "interface/ellements/ellement_virtual.h" // Абстракция элемента графического дизайна
 
-// Определяем UI
-#ifdef WIDE_UI
-#include "interface/pages/views/wide_screen/wide_views_list.h" // Обычные дисплеи типа 128:64, 84:48
-#elif defined(SLIM_UI)
-#include "interface/pages/views/slim_screen/slim_views_list.h" // Узкие дисплеи типа 128:32
-#endif
+// Перенесено в класс дисплея, что бы упростить переключение железа в конфигурации
+// // Определяем UI
+// #ifdef WIDE_UI
+// #include "interface/pages/views/wide_screen/wide_views_list.h" // Обычные дисплеи типа 128:64, 84:48
+// #elif defined(SLIM_UI)
+// #include "interface/pages/views/slim_screen/slim_views_list.h" // Узкие дисплеи типа 128:32
+// #endif
 
 #ifdef BUZZ
 #include "buzzer.h" // Пищалка
