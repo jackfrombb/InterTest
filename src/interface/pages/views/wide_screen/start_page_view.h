@@ -9,10 +9,12 @@
 class StartPageView : public PageView
 {
 private:
+    const uint8_t style_PagePadding = 10; // Внешние отступы на страничке
+
     // Выбранный на данный момент пункт (стандартно осцилограф, но в настройках сохраняется последний выбранный)
     pages_list _focusPage = pages_list::PAGE_LIST_OSCIL;
 
-    // Ссылка на текстовое поле текущего пункта
+    // Ссылка на текстовое поле текущего пункта (для передачи в управление из представления в контроллер странички)
     String *_currentTitle;
     // Ссылка на текстовое поле следующего пункта
     String *_nextTitle;
@@ -55,28 +57,33 @@ private:
         _current
             .setCalculatedText([this]
                                { return pages_list_getName(_focusPage); })
-            //->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER)
-            ->setX(10) // на весь экран
+            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH)
+            ->utf8Patch()
+            ->setX(0) // на весь экран
             ->setY(0)
-            ->setWidth(_display->getWidth() - 10)
+            ->setWidth(_display->getWidth())
             ->setHeight(_display->getHeight())
             ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER) // Вертикально по центру
             ;
 
         _prev.setCalculatedText([this]
                                 { return pages_list_getName((pages_list)((int)_focusPage - 1)); })
-            ->setX(-(_display->getWidth() + 10))
+            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH)
+            ->utf8Patch()
+            ->setX(-(_display->getWidth()))
             ->setY(0)
-            ->setWidth(_display->getWidth() - 10)
+            ->setWidth(_display->getWidth())
             ->setHeight(_display->getHeight())
             ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER) //
             ;
 
         _next.setCalculatedText([this]
                                 { return pages_list_getName((pages_list)((int)_focusPage + 1)); })
-            ->setX(_display->getWidth() + 10)
+            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH)
+            ->utf8Patch()
+            ->setX(_display->getWidth())
             ->setY(0)
-            ->setWidth(_display->getWidth() - 10)
+            ->setWidth(_display->getWidth())
             ->setHeight(_display->getHeight())
             ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER) //
             ;
@@ -94,8 +101,8 @@ private:
 
     void _initScrollBar()
     {
-        uint16_t scrollBarWidth = _display->getWidth() - (_display->getWidth() >> 2);
-        uint16_t scrollBarHeight = 6;
+        uint16_t scrollBarWidth = _display->getWidth() - (style_PagePadding << 1);
+        uint16_t scrollBarHeight = 4;
 
         _scrollBar
             .setX((_display->getWidth() - scrollBarWidth) >> 1)
@@ -114,40 +121,44 @@ private:
 #ifdef TEST_ANIM_ENABLE
     void _spinPoints(int8_t dir)
     {
+        // Если анимация предыдущего перелистывания еще не закончилась,
+        //  то переводим фокус без анимации, что бы избежать заторможенности
         if ((_current.isAnimationInProcess() || _next.isAnimationInProcess() || _prev.isAnimationInProcess()))
         {
-            // Если анимация предыдущего перелистывания еще не закончилась,
-            //  то переводим фокус без анимации, что бы избежать заторможенности
             _scrollFocus(1 * dir);
             return;
         }
 
+        // Сохраняем направление перемотки (лево -1, право +1)
         lastDir = dir;
 
+        // Время анимации в кадрах
         int frameTime = 7;
 
+        // Лямбда функция - событие по завершению анимации
         auto onAniationEnd = [this](ElementVirtual *el, void *args)
         {
+            // Переводим фокус на выбранный пользователем
             _scrollFocus(1 * lastDir);
-            // logi::p("StartPageView", "animation ends focus on : " + String(_focusPage));
 
+            // Сбрасываем положения эл-тов на стартовые
             _prev.setArea(_prevPosDef);
             _next.setArea(_nexPosDef);
             _current.setArea(_curPosDef);
         };
 
+        // порядок старта анимации важен. 
+        // эл-нт, на котором висит событие завершения анимации, должен закончить её последним
         if (dir > 0)
         {
-            _next.flyTo(_curPosDef.getX(), _next.getY(), frameTime - 1);
+            _next.flyTo(_curPosDef.getX(), _next.getY(), frameTime);
         }
         else
         {
-            _prev.flyTo(_curPosDef.getX(), _prev.getY(), frameTime - 1);
+            _prev.flyTo(_curPosDef.getX(), _prev.getY(), frameTime);
         }
 
         _current.flyTo(_display->getWidth() * (dir * -1), _current.getY(), frameTime, onAniationEnd, &_curPosDef);
-
-        // logi::p("StartPageView", "_spinPoints dir: " + String(dir));
     }
 #endif
 

@@ -72,6 +72,10 @@ DisplayVirtual *display = new Nokia5110_U8g2();
 // дисплей 0.96 OLED I2C
 #include "displays/display_128x64.h"
 DisplayVirtual *display = new Display128x64_U8g2();
+#elif defined(ST7735_TFT_128x160_1_8)
+// подключение дисплея на контроллере ST7735 TFT 128x160 (1.8, red plate with sd)
+#include "displays/display_128_160_spi_1_8_color.h"
+DisplayVirtual *display = new Display128x160_1_8_Spi_Color();
 #endif
 
 #include "interface/pages/page_list.h"      // Абстракция над контроллера странички
@@ -95,7 +99,7 @@ InterfaceController interfaceController(mainBoard);
 
 // Частота генерации
 int pwmF = 100000;
-//USBCDC usbSerial;
+// USBCDC usbSerial;
 
 SignalGenerator sigGen(mainBoard->getPwmPin());
 
@@ -106,7 +110,7 @@ void setup()
   Serial.begin(115200);
   // while (!Serial)// Эта строка не дает загрузится устройству пока не запустится Serial костыль для отладки s2mini
   // {
-  // }; 
+  // };
   // Serial.println("SERIAL: Setup complete");
 
   // logi::settings(true, &usbSerial);
@@ -160,7 +164,7 @@ void setup()
   delay(300);
 
   // Временный костыль для проверки АЦП
-  sigGen.startMeandrLedc(pwmF, 0.5);
+  // sigGen.startMeandrLedc(pwmF, 0.5);
   // sigGen.startMenadrDac(pwmF, .5);
   // sigGen.startWaveDac(pwmF);
   // создание буфера для хранения сэмплов

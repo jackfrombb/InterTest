@@ -46,7 +46,7 @@ protected:
         _helloText.setPosition(0, y);
         _helloText.setWidth(_display->getWidth());
         _helloText.setHeight((uint32_t)(_display->getHeight()*0.5));
-        _helloText.setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER);
+        _helloText.setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT);
 
     }
 

@@ -36,14 +36,14 @@ typedef struct display_position
 
   void setX(int x)
   {
-    int diff = leftUp.x - x;
+    int diff = x - leftUp.x;
     leftUp.x = x;
     rightDown.x += diff;
   }
 
   void setY(int y)
   {
-    int diff = leftUp.y - y;
+    int diff = y - leftUp.y;
     leftUp.y = y;
     rightDown.y += diff;
   }
@@ -93,3 +93,10 @@ typedef struct display_position
   }
 
 } display_position;
+
+// Контейнер для хранения размеров чего либо
+typedef struct
+{
+  uint16_t width;
+  uint16_t height;
+} area_size;

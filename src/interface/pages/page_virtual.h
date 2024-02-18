@@ -22,15 +22,15 @@ String pages_list_getName(pages_list page)
     switch (page)
     {
     case pages_list::PAGE_LIST_OSCIL:
-        return "Осциллограф";
+        return "Oscilloscope";//"Осциллограф";
     case pages_list::PAGE_LIST_VOLT:
-        return "Вольтметр";
+        return "Voltmeter";//"Вольтметр";
     case pages_list::PAGE_LIST_OHM:
-        return "Омметр";
+        return "Ohmmeter";//"Омметр";
     case pages_list::PAGE_GENERATOR:
-        return "Генератор";
+        return "Generator";//"Генератор";
     case pages_list::PAGE_SETTINGS:
-        return "Настройки";
+        return "Settings";//"Настройки";
     }
 
     return "Error_02";

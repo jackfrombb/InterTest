@@ -51,4 +51,33 @@ public:
     /// @brief Получить отличительную характеристику дисплея (для определения типа интерфейса)
     /// @return DISPLAY_INTERFACE_TYPE_UNKNOWN,DISPLAY_INTERFACE_TYPE_WIDE,DISPLAY_INTERFACE_TYPE_SLIM,
     display_interface_type getUserInterfaceType() override { return DISPLAY_INTERFACE_TYPE_WIDE; }
+
+     const uint8_t *getFontForSize(el_text_size size) override
+    {
+        const uint8_t *ret = nullptr;
+        switch (size)
+        {
+        case EL_VOLTMETER_VALUE_LARGE:
+            ret = u8g2_font_ncenB24_tn; // u8g2_font_osb41_tf
+            break;
+        case EL_TEXT_SIZE_SUPER_LARGE:
+            ret = u8g2_font_10x20_t_cyrillic;
+            break;
+        case EL_TEXT_SIZE_LARGE:
+            ret = u8g2_font_8x13_t_cyrillic;
+            break;
+        case EL_TEXT_SIZE_MIDDLE:
+            ret = u8g2_font_6x12_t_cyrillic;
+            break;
+        case EL_TEXT_SIZE_SMALL:
+            ret = u8g2_font_5x7_t_cyrillic;
+            break;
+        case EL_TEXT_SIZE_SUPER_SMALL:
+            ret = u8g2_font_4x6_t_cyrillic;
+            break;
+        }
+
+        return ret;
+    }
+
 };

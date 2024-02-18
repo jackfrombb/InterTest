@@ -10,6 +10,7 @@ private:
     el_text_align _alignment = el_text_align::EL_TEXT_ALIGN_LEFT;
     std::function<String()> _calculateText = nullptr;
     int8_t _editPosition = -1;
+    bool _needUtf8Patch = false;
 
 public:
     ElText() = default;
@@ -64,7 +65,8 @@ public:
         return this;
     }
 
-    int8_t getEditPosition(){
+    int8_t getEditPosition()
+    {
         return _editPosition;
     }
 
@@ -88,6 +90,19 @@ public:
     {
         _alignment = alignment;
         return this;
+    }
+
+    /// @brief Костыль для подгона размеров текста содержащего кириллицу
+    /// Обязаетльно включать для текста где есть UTF8 символы (русские буквы к примеру)
+    ElText *utf8Patch()
+    {
+        _needUtf8Patch = true;
+        return this;
+    }
+
+    bool isNeedUtf8Patch()
+    {
+        return _needUtf8Patch;
     }
 
     el_type getElementType() override

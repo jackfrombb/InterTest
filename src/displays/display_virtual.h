@@ -13,6 +13,7 @@ typedef enum
 typedef enum
 {
     DISPLAY_LIB_UNKNOWN,
+    DISPLAY_LIB_ARDUINO_GFX,
     DISPLAY_LIB_U8G2,
 } display_library;
 
@@ -76,10 +77,13 @@ public:
         return getResolution().height;
     }
 
+    virtual const uint8_t *getFontForSize(el_text_size size) = 0;
+
     virtual uint8_t getMaxTextWidth(el_text_size textSize)
     {
         return _interfaceEngine->getMaxTextWidth(textSize);
     }
+
     virtual uint8_t getMaxTextHeight(el_text_size textSize)
     {
         return _interfaceEngine->getMaxTextHeight(textSize);

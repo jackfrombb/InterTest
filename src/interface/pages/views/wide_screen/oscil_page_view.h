@@ -26,7 +26,7 @@ private:
         oscilFreqText.setCalculatedText([this]()
                                         { return String(_oscil->getMeasuresInSecond()); })
             ->setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)
-            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER)
+            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
             ->setX(0)
             ->setY(_defaultBottomMenuPosition)
             ->setWidth(_display->getWidth())

@@ -10,3 +10,4 @@
 #include "el_display_test.h"
 #include "el_battery.h"
 #include "el_scrollbar.h"
+#include "el_recycler_group.h"

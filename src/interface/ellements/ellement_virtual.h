@@ -137,6 +137,14 @@ public:
         return _isAnimationInProcess;
     }
 
+
+    /// @brief Старт анимации перемещения с сохранением размеров
+    /// для работы этого метода, все элементы с анимацией должны вызывать .nextAnimStep() в событии прорисовки .onDraw()
+    /// @param x Конечная по x
+    /// @param y конечная по Y
+    /// @param frameTime колличество кадров, отведенных на анимацию (время анимации в кадрах)
+    /// @param onAnimationEnd событие по завершению анимации
+    /// @param animArgs аргументы для передачи в событие
     virtual void flyTo(int x, int y, uint16_t frameTime,
                        function<void(ElementVirtual *, void *)> onAnimationEnd = nullptr, void *animArgs = nullptr)
     {
@@ -146,8 +154,8 @@ public:
         _flyToArea.setWidth(getWidth());
         _flyToArea.setHeight(getHeight());
 
-        _stepInFrameX = (getX() - x) / frameTime;
-        _stepInFrameY = (getY() - y) / frameTime;
+        _stepInFrameX = (float)(getX() - x) / frameTime;
+        _stepInFrameY = (float)(getY() - y) / frameTime;
 
         _onAnimationEnd = onAnimationEnd;
         _animArgs = animArgs;
@@ -155,6 +163,7 @@ public:
         _isAnimationInProcess = true;
     }
 
+    /// @brief Просчитать положение для анимируемого объекта (вызывать в onDraw)
     virtual void nextAnimStep()
     {
         if (_isAnimationInProcess) // Если анимация не окончена
@@ -199,6 +208,8 @@ public:
 
     virtual void onDraw()
     {
+        // Стараюсь не использовать это событие для всех элементов, 
+        // что бы из бежать лишних проверок (например проверку на анимацию для статичных объектов)
     }
 
     virtual bool onControl(control_event_type type, void *args)

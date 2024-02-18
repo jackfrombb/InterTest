@@ -1,7 +1,9 @@
 /**
  * @file interface_controller.h
  * @author JackFromBB (jack@boringbar.ru)
- * @brief Управление отображаемыми страничками. Отрисовка интерфейса в отдельном потоке.
+ * @brief Управление страничками. Отрисовка интерфейса в отдельном потоке.
+ * По сути, является главным потоком из трёх (опрос контроля(кнопок, энкодера и пр.), отрисовка, измерение), 
+ * поскольку все данные запрашиваются и предназначены именно для потока отрисовки
  * @version 0.1
  * @date 2024-02-12
  *
@@ -17,6 +19,7 @@
 // #include "interface/pages/page_list.h"
 // #include "logi.h"
 
+/// @brief  Управление страничками. Отрисовка интерфейса в отдельном потоке.
 class InterfaceController
 {
 private:
@@ -87,6 +90,9 @@ public:
         vTaskDelete(_interfaceTaskHandler);
     }
 
+    /// @brief Показать страничку загрузки (самая начальная) 
+    /// Нужна для приветствия и отслеживания процесса загрузки
+    /// @return процесс загрузки (min:0.0; max:1.0)
     float *showHelloPage()
     {
         clear();
@@ -94,11 +100,13 @@ public:
         return ((HelloPage *)_currentPage)->getProgressPtr();
     }
 
+    /// @brief Точка входа в основной интерфейс
     void start()
     {
         showMainMenu();
     }
 
+    /// @brief Отобразить главное меню
     void showMainMenu()
     {
         clear();
@@ -141,6 +149,8 @@ public:
         }
     }
 
+    /// @brief Установить текущую страничку
+    /// @param page Класс страницы
     void setCurrentPage(InterfacePageVirtual *page)
     {
         if (page == nullptr)
@@ -148,11 +158,12 @@ public:
             logi::err("iController", "SELECT NULL PAGE");
         }
         _currentPage = page;
-        delayMicroseconds(1000); // Ждем пока инициализируется следующая страница, иначе вызывает искючение
+        delayMicroseconds(1000); // Ждем пока инициализируется следующая страница, иначе иногда бывает искючение
         _startClear = false;
         logi::p("iController", "End clear. Page == nullptr : " + String(_currentPage == nullptr));
     }
 
+    /// @brief Удалить текущую страничку с особождением ресурсов
     void clear()
     {
         _startClear = true;
@@ -162,6 +173,7 @@ public:
         _currentPage = nullptr;
     }
 
+    /// @brief Запуск процесса отрисовки
     void init()
     {
         // Прикрепить процесс к ядру

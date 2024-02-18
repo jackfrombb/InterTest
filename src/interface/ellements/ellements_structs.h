@@ -13,12 +13,17 @@ typedef enum
     EL_TEXT_SIZE_SUPER_SMALL,
 } el_text_size;
 
-/// @brief Выравнивание текста
+/// @brief Выравнивание текста по горизонтали
 typedef enum
 {
+    // По правому краю родителя
     EL_TEXT_ALIGN_RIGHT,
+    // По левому краю родителя
     EL_TEXT_ALIGN_LEFT,
-    EL_TEXT_ALIGN_CENTER,
+    // По центру родителя (элементу не обязательно задавать ширину)
+    EL_TEXT_ALIGN_CENTER_PARENT,
+    // По центру ширины элемента
+    EL_TEXT_ALIGN_CENTER_SELF_WIDTH,
 } el_text_align;
 
 /// @brief Выравнивание по вертикали
@@ -47,9 +52,4 @@ typedef enum
     EL_TYPE_SCROLLBAR,        // Индикатор прокрутки страницы
 } el_type;
 
-// Контейнер для хранения размеров чего либо
-typedef struct
-{
-    uint16_t width;
-    uint16_t height;
-} area_size;
+

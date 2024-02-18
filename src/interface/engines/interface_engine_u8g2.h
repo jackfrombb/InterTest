@@ -1,3 +1,23 @@
+/**
+ * @file interface_engine_u8g2.h
+ * @author JackFromBB (jack@boringbar.ru)
+ * @brief Класс для отрисовки интерфейса черезе библиотеку u8g2
+ *
+ * Заметки:
+ * - Устройство буфера на дисплеях, которые я подключал
+ *      Пиксели в массиве представлены битами (8 бит на байт) размер буфера = (высота * ширина) / 8
+ *      Байты массива расположены вертикально (получается y:0 и y:1 это первый байт и 0 и 1 бит соответственно, а x:0 и x:1 это первый и второй байт, 0 бит соответственно )
+ *
+ * - Некоторая информация о шрифте находится в первых битах массива со шрифтом.
+ *   С помощью этого можно узнавать размеры букв не применяя каждый раз шрифт.
+ *   подробнее в: https://github.com/olikraus/u8g2/blob/master/csrc/u8g2_font.c#L131
+ * @version 0.1
+ * @date 2024-02-16
+ *
+ * @copyright Copyright (c) 2024
+ *
+ */
+
 #pragma once
 #include <U8g2lib.h>
 
@@ -214,30 +234,8 @@ private:
 
     const uint8_t *_getFontForSize(el_text_size size)
     {
-        const uint8_t *ret = nullptr;
-        switch (size)
-        {
-        case EL_VOLTMETER_VALUE_LARGE:
-            ret = u8g2_font_ncenB24_tn; // u8g2_font_osb41_tf
-            break;
-        case EL_TEXT_SIZE_SUPER_LARGE:
-            ret = u8g2_font_10x20_t_cyrillic;
-            break;
-        case EL_TEXT_SIZE_LARGE:
-            ret = u8g2_font_8x13_t_cyrillic;
-            break;
-        case EL_TEXT_SIZE_MIDDLE:
-            ret = u8g2_font_6x12_t_cyrillic;
-            break;
-        case EL_TEXT_SIZE_SMALL:
-            ret = u8g2_font_5x7_t_cyrillic;
-            break;
-        case EL_TEXT_SIZE_SUPER_SMALL:
-            ret = u8g2_font_4x6_t_cyrillic;
-            break;
-        }
-
-        return ret;
+        // Перенес в класс дисплея, что бы подстравивать шрифты под размеры
+        return _display->getFontForSize(size);
     }
 
     static u8g2_uint_t u8g2_string_width(u8g2_t *u8g2, const char *str)
@@ -305,8 +303,10 @@ private:
     el_text_size currentFont;
     void _setTextSize(el_text_size size)
     {
-        // if (currentFont == size)
-        //     return;
+        // Если шрифт уже установлен, то пропускаем
+        if (currentFont == size)
+            return;
+
         _u8g2->setFont(_getFontForSize(size));
         currentFont = size;
     }
@@ -341,7 +341,6 @@ protected:
         return (int)(fromX + ((float)width * 0.5) - ((float)textWidth * 0.5));
     }
 
-private:
 public:
     explicit InterfaceEngine_U8g2(DisplayVirtual *display)
     {
@@ -397,6 +396,8 @@ public:
             el->setWidth(newWidth);
             el->setX(newWidth * i);
 
+            // logi::p("iEngine", "NewX: " + String(el->getX()) + " NewWidht: " + String(el->getWidth()));
+
             drawElement(el);
         }
     }
@@ -440,25 +441,35 @@ public:
         int w = _u8g2->getUTF8Width(textTitle.c_str());
         int h = _u8g2->getMaxCharHeight();
 
-        if (text->getAlignment() == el_text_align::EL_TEXT_ALIGN_CENTER)
+        // Горизонтальное выравнивание
+        switch (text->getAlignment())
         {
+        case el_text_align::EL_TEXT_ALIGN_CENTER_PARENT:
+            x = _getTextCenterX(textTitle, text->getParent()->getX(), text->getParent()->getWidth());
+            break;
+
+        case el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH:
             x = _getTextCenterX(textTitle, x + text->getParent()->getX(), text->getWidth());
-        }
-        else if (text->getAlignment() == el_text_align::EL_TEXT_ALIGN_RIGHT)
-        {
+            break;
+
+        case el_text_align::EL_TEXT_ALIGN_RIGHT:
             x = text->getWidth() - _u8g2->getUTF8Width(textTitle.c_str());
+            break;
         }
 
+        // logi::p("iEngine", "Draw new x: " + String(x) + " for: " + text->getText());
+
+        // Вертикальное выравнивание
         if (text->getVerticalAlignment() == el_vertical_align::EL_ALIGN_CENTER)
         {
-            y = (int)((text->getParent()->getHeight() * 0.5) - (_u8g2->getMaxCharHeight() * 0.5));
+            y += (text->getParent()->getHeight() >> 1) - (_display->getMaxTextHeight(text->getTextSize()) >> 1);
         }
+        if(text->isNeedUtf8Patch()) y -= 3; // -3 это костыль для выравнивания кирилличекого шрифта. Иначе почему то съезжает ниже чем предполагается
 
         uint16_t textX = x + text->getParent()->getX();
-        uint16_t textY = y + _u8g2->getMaxCharHeight() + text->getParent()->getY();
+        uint16_t textY = y + _u8g2->getMaxCharHeight() + text->getParent()->getY(); //  (Y элемента делаем по верхнему углу)
 
-        //_eraseAreaOnDisplay(_u8g2, textX, textY, _u8g2->getUTF8Width(textTitle.c_str()), _u8g2->getMaxCharHeight());
-        // Отрисовать текст (y эллемеента делаем по верхнему углу)
+        // Отрисовать текст
         _u8g2->drawUTF8(textX, textY, textTitle.c_str());
 
         if (text->getEditPosition() >= 0 && textTitle.length() > 0)
@@ -490,25 +501,16 @@ public:
     void drawDisplayTest(ElDisplayTest *displayTest) override
     {
         // bool fill = true;
-        static uint16_t prevIndex = 0;
-        static uint8_t prevMask = 0;
-        static uint8_t frameStop = 0;
-        static uint16_t prevX = 0;
-        static uint16_t prevY = 0;
+        // static uint16_t prevIndex = 0;
+        // static uint8_t prevMask = 0;
+        // static uint8_t frameStop = 0;
+        // static uint16_t prevX = 0;
+        // static uint16_t prevY = 0;
 
-        uint8_t *buffer = _u8g2->getBufferPtr();
+        // uint8_t *buffer = _u8g2->getBufferPtr();
 
-        uint16_t width = displayTest->getWidth();
-        uint16_t height = displayTest->getHeight();
-
-        getPxPos(prevX, prevY, width);
-
-        prevX += 1;
-        if (prevX == width - 1)
-        {
-            prevX = 0;
-            prevY = range(prevY + 1, 0, height - 1, true);
-        }
+        // uint16_t width = displayTest->getWidth();
+        // uint16_t height = displayTest->getHeight();
 
         // int16_t x1 = 10, y1 = 10, x2 = width - 10, y2 = height - 10;
 
@@ -520,7 +522,6 @@ public:
 
         // if (frameStop > 10)
         // {
-        //     getPxPos(buffer, width >> 1, height >> 1, width, height);
         //     if (prevMask >= 7)
         //     {
         //         prevMask = 0;

@@ -51,17 +51,17 @@ public:
         _bigCenterText
             .setText("_.__")
             ->setTextSize(el_text_size::EL_VOLTMETER_VALUE_LARGE)
-            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER)
+            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH)
             ->setX(_display->getMaxTextWidth(_titleForBigCenterText.getTextSize()) * _titleForBigCenterText.getText().length()) // Отступаем надпись max по x
-            ->setY(_waveform.getHeight() + 1)
+            ->setY(_waveform.getHeight())
             ->setWidth(_display->getWidth() - _bigCenterText.getX()) // Занимаем остальное место после x
 
             //->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER)
             ;
 
         // Второстепенные поля по низу экрана и по середине своей ширины (ширину устновит контейнер)
-        _smallLeftText.setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER);
-        _smallRightText.setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER);
+        _smallLeftText.setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH);
+        _smallRightText.setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH);
 
         addElement(&_waveform)
             ->addElement(&_titleForBigCenterText)
