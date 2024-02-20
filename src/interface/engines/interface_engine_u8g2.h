@@ -371,8 +371,17 @@ public:
     uint8_t getMaxTextHeight(el_text_size textSize) override
     {
         auto font = _getFontForSize(textSize);
-        font += 10; // Число взято из метода https://github.com/olikraus/u8g2/blob/master/csrc/u8g2_font.c#L131
+        font += 13; // Число взято из метода https://github.com/olikraus/u8g2/blob/master/csrc/u8g2_font.c#L131
         return u8x8_pgm_read(font);
+    }
+
+    void drawElement(ElementVirtual *el) override
+    {
+        // Частично ограничиваем отрисовку интерфейса рамками дисплея
+        if (el->getX() > _display->getWidth() || el->getY() > _display->getHeight())
+            return;
+
+        InterfaceEngineVirtual::drawElement(el);
     }
 
     void drawCenteredGroup(ElCenteredGroup *group) override
@@ -386,7 +395,7 @@ public:
         }
 
         auto newWidth = group->getWidth() / group->getElementsCount();
-        auto groupArea = group->getArea();
+        // auto groupArea = group->getArea();
 
         int16_t prevX = 0;
 
@@ -396,10 +405,33 @@ public:
             el->setWidth(newWidth);
             el->setX(newWidth * i);
 
-            // logi::p("iEngine", "NewX: " + String(el->getX()) + " NewWidht: " + String(el->getWidth()));
+            // Устанавливаем реальные размеры и положение группы  (возможно удалю, если не найдет применения)
+            {
+                //     auto elArea = drawElement(el);
 
-            drawElement(el);
+                //     if (elArea.getX() < groupArea.getX())
+                //     {
+                //         groupArea.setX(elArea.getX());
+                //     }
+
+                //     if (elArea.getY() < groupArea.getY())
+                //     {
+                //         groupArea.setY(elArea.getY());
+                //     }
+
+                //     if (elArea.getWidth() > groupArea.getWidth())
+                //     {
+                //         groupArea.setWidth(elArea.getWidth());
+                //     }
+
+                //     if (elArea.getHeight() > groupArea.getHeight())
+                //     {
+                //         groupArea.setHeight(elArea.getHeight());
+                //     }
+            }
         }
+
+        // return groupArea;
     }
 
     void drawLine(ElLine *line) override
@@ -407,19 +439,23 @@ public:
         _u8g2->drawLine(line->getX(), line->getY(), line->getArea().rightDown.x, line->getArea().rightDown.y);
     }
 
-    void drawButton(ElTextButton *button) override
+    display_position drawButton(ElTextButton *button) override
     {
-
-        drawText(button);                                          // Выводим текст
+        // Получаем реальную позицию отрисовки текста
+        auto pos = drawText(button);                               // Выводим текст
         if (button->isSelected() && button->getEditPosition() < 0) // если активна то рисуем рамку вокруг
         {
-            int16_t x = (button->getParent()->getX() + button->getX()) - 2;
-            int16_t y = (button->getParent()->getY() + button->getY()) - 2;
-            int16_t w = _u8g2->getUTF8Width(button->getText().c_str()) + 4;
-            int16_t h = _u8g2->getMaxCharHeight() + 4;
+            // int16_t x = (button->getParent()->getX() + button->getX()) - 2;
+            // int16_t y = (button->getParent()->getY() + button->getY()) - 2;
+            int16_t w = pos.getWidth();
+            int16_t h = pos.getHeight();
             uint8_t r = 2;
-            _u8g2->drawRFrame(x, y, w, h, r);
+
+            // Рисуем рамку с отступами, а по Y вычитаем высоту строки, иначе рамка будет сдвинута вниз
+            _u8g2->drawRFrame(pos.getX() - 4, pos.getY() - h - 4, w + 8, h + 8, r);
         }
+
+        return pos;
     }
 
     void drawWaveform(ElWaveform *waveform) override
@@ -429,7 +465,7 @@ public:
         _drawWaveform(waveform);
     }
 
-    void drawText(ElText *text) override
+    display_position drawText(ElText *text) override
     {
         _setTextSize(text->getTextSize()); // Размер и шрифт. Обязательно вызывать перед расчетом положения
 
@@ -438,8 +474,8 @@ public:
         int16_t x = text->getX();
         int y = text->getY();
 
-        int w = _u8g2->getUTF8Width(textTitle.c_str());
-        int h = _u8g2->getMaxCharHeight();
+        int textWidth = _u8g2->getUTF8Width(textTitle.c_str());
+        int textHeight = _u8g2->getAscent();
 
         // Горизонтальное выравнивание
         switch (text->getAlignment())
@@ -462,16 +498,16 @@ public:
         // Вертикальное выравнивание
         if (text->getVerticalAlignment() == el_vertical_align::EL_ALIGN_CENTER)
         {
-            y += (text->getParent()->getHeight() >> 1) - (_display->getMaxTextHeight(text->getTextSize()) >> 1);
+            y += (text->getParent()->getHeight() >> 1) - (textHeight >> 1);
         }
-        if(text->isNeedUtf8Patch()) y -= 3; // -3 это костыль для выравнивания кирилличекого шрифта. Иначе почему то съезжает ниже чем предполагается
 
         uint16_t textX = x + text->getParent()->getX();
-        uint16_t textY = y + _u8g2->getMaxCharHeight() + text->getParent()->getY(); //  (Y элемента делаем по верхнему углу)
+        uint16_t textY = y + textHeight + text->getParent()->getY(); //  (Y элемента делаем по верхнему углу)
 
         // Отрисовать текст
         _u8g2->drawUTF8(textX, textY, textTitle.c_str());
 
+        // Если в режиме посимвольного редактирования то рисуем линию под символом, который редактируется
         if (text->getEditPosition() >= 0 && textTitle.length() > 0)
         {
             uint8_t maxPosition = text->getText().length() - 1;                    // Кол-во символов
@@ -483,6 +519,8 @@ public:
 
             _u8g2->drawLine((textX + textWidth) - (subWidth + 2), textY + 2, textX + textWidth - 1, textY + 2);
         }
+
+        return display_position{.leftUp{.x = textX, .y = textY}, .rightDown{.x = textX + textWidth, .y = textY + textHeight}};
     }
 
     void drawProgressBar(ElProgressBar *progressBar) override
@@ -558,16 +596,15 @@ public:
     /// @param scrollbar
     void drawScrollbar(ElScrollBar *scrollbar) override
     {
-        // logi::p("IEngine", "DispWidth " + String(scrollbar->getDisplayedWidth()));
-
         int scrollWidth = (int)((float)(scrollbar->getWidth() - 4) * scrollbar->getDisplayedWidth());
         _u8g2->drawRFrame(scrollbar->getX() + (scrollbar->getWidth() * scrollbar->getScrollPosition()),
                           scrollbar->getY(),
                           scrollWidth,
                           scrollbar->getHeight(),
                           2);
+
         // Точки для отслеживания ширины
-        // _u8g2->drawPixel(scrollbar->getX(), scrollbar->getY() + (scrollbar->getHeight() >> 1));
-        // _u8g2->drawPixel(scrollbar->getX() + scrollbar->getWidth(), scrollbar->getY() + (scrollbar->getHeight() >> 1));
+        _u8g2->drawPixel(scrollbar->getX(), scrollbar->getY() + (scrollbar->getHeight() >> 1));
+        _u8g2->drawPixel(scrollbar->getX() + scrollbar->getWidth(), scrollbar->getY() + (scrollbar->getHeight() >> 1));
     }
 };

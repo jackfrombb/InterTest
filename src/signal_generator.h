@@ -140,13 +140,29 @@ private:
         _isThreadStarted = true;
     }
 
-public:
+protected:
+    static SignalGenerator *_instance;
     SignalGenerator(uint8_t dacPin)
     {
         _pin = dacPin;
     }
 
+public:
     ~SignalGenerator() = default;
+
+    /// @brief Инициализация перед запуском
+    /// @param dacPin
+    static void init(uint8_t dacPin)
+    {
+        _instance = new SignalGenerator(dacPin);
+    }
+
+    /// @brief Получить объект генератора
+    /// временное решение. В дальнейшем буду либо встрою в MainBoard либо ещё что то придумаю
+    static SignalGenerator *get()
+    {
+        return _instance;
+    }
 
     static void testLedc(void *args)
     {
@@ -167,11 +183,11 @@ public:
             .speed_mode = mode,
             .duty_resolution = timer_bit,
             .timer_num = timer,
-            .freq_hz = frq, 
+            .freq_hz = frq,
             .clk_cfg = ledc_clk_cfg_t::LEDC_AUTO_CLK,
         };
 
-        float maxDuty = 1;//pow(2.0, (float)ledc_timer.duty_resolution) - 1; //((2 ** 13) - 1) - взято из примера https://github.com/espressif/esp-idf/blob/v4.4.6/examples/peripherals/ledc/ledc_basic/main/ledc_basic_example_main.c
+        float maxDuty = 1; // pow(2.0, (float)ledc_timer.duty_resolution) - 1; //((2 ** 13) - 1) - взято из примера https://github.com/espressif/esp-idf/blob/v4.4.6/examples/peripherals/ledc/ledc_basic/main/ledc_basic_example_main.c
 
         ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
 
@@ -239,6 +255,7 @@ public:
 
     void startSawtoothDac(float frq)
     {
+        
     }
 
     void stop()
@@ -253,4 +270,33 @@ public:
             break;
         }
     }
+
+    // Дальше заглушки для реализации интерфейса TODO: реализовать функционал
+
+    bool isGenerationEnable()
+    {
+        return true;
+    }
+
+    uint32_t getFrequensy()
+    {
+        return _pwmFreq;
+    }
+
+    float getDutyCycle()
+    {
+        return _duty;
+    }
+
+    void setFrequensy(uint32_t frq)
+    {
+        _pwmFreq = frq;
+    }
+
+    void setDutyCycle(float duty)
+    {
+        _duty = duty;
+    }
 };
+
+SignalGenerator *SignalGenerator::_instance = nullptr;

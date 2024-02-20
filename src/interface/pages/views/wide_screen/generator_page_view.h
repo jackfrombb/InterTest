@@ -2,78 +2,97 @@
 
 class GeneratorPageView : public PageView
 {
-    ElRecycleGroup recycleGroup;
+private:
+    SignalGenerator *_generator;
 
-    function<ElGroup *(uint16_t position)> _elementGetter = [this](uint16_t position)
+    uint8_t _buttonFocus = 0; // Для управления переводом фокуса с кнопки на кнопку
+
+    ElText _stateTitleText;         // Состояние генератора. Надпись
+    ElTextButton _stateValueButton; // Переключение состояния генератора
+    bool _isGeneratorEnabled;       // Состояние генератора
+
+    ElText _freqTitleText;         // Частота сигнала. Надпись
+    ElTextButton _freqValueButton; // Изменение частоты генерации
+    String *_freqValuePtr;         // Указатель на частоту
+
+    ElText _dutyTitleText;         // Скважность сигнала. Надпись
+    ElTextButton _dutyValueButton; // Изменение скважности
+    String *_dutyValuePtr;         // Указатель на значение скважности
+
+    void _initElements()
     {
-        ElGroup *group;
-        switch (position)
-        {
-        case 0:
-            group = _getOnOffPage();
-            break;
+        uint16_t padding = 2;
 
-        case 1:
-            break;
-        case 2:
-            break;
+        _stateTitleText
+            .setText(String(LOC_STATE) + ":") // "Состояние"
+            ->setX(padding)
+            ->setY(padding);
 
-        default:
-            break;
-        }
+        _stateValueButton
+            .setButtonId(0)
+            ->setSelectedButtonPtr(&_buttonFocus)
+            ->setCalculatedText([this]
+                                {
+                                    return _generator->isGenerationEnable() ? LOC_ON : LOC_OFF; // Если включен то надпись Вкл
+                                })
+            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
+            ->setY(padding + _display->getMaxTextHeight(_stateTitleText.getTextSize()) + 10);
 
-        return group;
-    };
-    uint8_t buttonFocus = 0;
-    ElGroup *_getOnOffPage()
-    {
+        _freqTitleText
+            .setText(String(LOC_FREQ) + ":")
+            ->setX(padding)
+            ->setY(_stateValueButton.getY() + 20);
 
-        ElGroup *root = new ElGroup();
-        ElText *onOffTitleText = new ElText();
-        onOffTitleText
-            ->setText("Состояние:")
-            ->utf8Patch()
-            ->setX(0)
-            ->setY(0);
+        _freqValueButton
+            .setButtonId(1)
+            ->setCalculatedText([this]
+                                { return String(_generator->getFrequensy()); })
+            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
+            ->setY(_freqTitleText.getY() + _display->getMaxTextHeight(_freqTitleText.getTextSize()) + 10);
 
-        ElCenteredGroup *toggleGroup = new ElCenteredGroup();
-        toggleGroup
-            ->setNeedDrawFrame(true)
-            ->setX(0)
-            ->setWidth(_display->getWidth())
-            ->setHeight(_display->getMaxTextHeight(el_text_size::EL_TEXT_SIZE_MIDDLE))
-            ->setY((_display->getHeight() >> 1) - (toggleGroup->getHeight() >> 1))
-            ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER);
+        _dutyTitleText
+            .setText(String(LOC_DUTY) + ":")
+            ->setX(padding)
+            ->setY(_freqValueButton.getY() + 20);
 
-        ElTextButton *onButton = new ElTextButton();
-        onButton->setButtonId(0)
-            ->setSelectedButtonPtr(&buttonFocus)
-            ->setText("Вкл")
-            ->utf8Patch()
-            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH)
-            ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER);
-
-        ElTextButton *offButton = new ElTextButton();
-        offButton->setButtonId(1)
-            ->setSelectedButtonPtr(&buttonFocus)
-            ->setText("Выкл")
-            ->utf8Patch()
-            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH)
-            ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER);
-
-        toggleGroup->addElement(onButton)->addElement(offButton);
-
-        root->addElement(onOffTitleText)->addElement(toggleGroup);
-
-        return root;
+        _dutyValueButton
+            .setButtonId(2)
+            ->setCalculatedText([this]
+                                { return String((uint8_t)(100.0 * _generator->getDutyCycle())); })
+            ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
+            ->setY(_dutyTitleText.getY() + _display->getMaxTextHeight(_dutyTitleText.getTextSize()) + 10);
     }
 
 public:
-    GeneratorPageView(DisplayVirtual *display) : PageView(display)
+    GeneratorPageView(DisplayVirtual *display, SignalGenerator *generator) : PageView(display)
     {
-        recycleGroup.setElementsSingleSize(area_size{.width = display->getWidth(), .height = display->getHeight()});
-        recycleGroup.setElementGetter(_elementGetter, 3);
-        addElement(&recycleGroup);
+        _generator = generator;
+
+        // Инициализация элементов
+        _initElements();
+
+        // Добавление элементов на страничку
+        addElement(&_stateTitleText)
+            ->addElement(&_stateValueButton)
+            ->addElement(&_freqTitleText)
+            ->addElement(&_freqValueButton)
+            ->addElement(&_dutyTitleText)
+            ->addElement(&_dutyValueButton);
+    }
+
+    bool *getIsGeneratorEnabledPtr()
+    {
+        return &_isGeneratorEnabled;
+    }
+
+    String *getGenerationFreqPtr()
+    {
+        return _freqValuePtr;
+    }
+
+    String *getDutyCyclePtr()
+    {
+        return _dutyValuePtr;
     }
 };
 

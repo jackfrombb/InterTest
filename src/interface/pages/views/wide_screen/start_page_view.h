@@ -58,7 +58,6 @@ private:
             .setCalculatedText([this]
                                { return pages_list_getName(_focusPage); })
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH)
-            ->utf8Patch()
             ->setX(0) // на весь экран
             ->setY(0)
             ->setWidth(_display->getWidth())
@@ -69,7 +68,6 @@ private:
         _prev.setCalculatedText([this]
                                 { return pages_list_getName((pages_list)((int)_focusPage - 1)); })
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH)
-            ->utf8Patch()
             ->setX(-(_display->getWidth()))
             ->setY(0)
             ->setWidth(_display->getWidth())
@@ -80,7 +78,7 @@ private:
         _next.setCalculatedText([this]
                                 { return pages_list_getName((pages_list)((int)_focusPage + 1)); })
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH)
-            ->utf8Patch()
+
             ->setX(_display->getWidth())
             ->setY(0)
             ->setWidth(_display->getWidth())

@@ -11,3 +11,5 @@
 #define LOC_ACTIVE "State"
 #define LOC_ON "On"
 #define LOC_OFF "Off"
+#define LOC_FREQ "Frequency"
+#define LOC_DUTY "Duty"

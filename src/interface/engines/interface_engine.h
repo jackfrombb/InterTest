@@ -7,13 +7,21 @@ class InterfaceEngineVirtual
 protected:
     bool inverImg = false;
 
+    // Событие вызывается перед стартом прорисовки
     virtual void _onStartDraw() {}
+    // Событие вызывается после прорисовки
     virtual void _onEndDraw() {}
 
+    /* Все методы возвращают фактическое полоение на дисплее */
+
     virtual void drawProgressBar(ElProgressBar *progressBar) = 0;
-    virtual void drawButton(ElTextButton *button) = 0;
     virtual void drawWaveform(ElWaveform *waveform) = 0;
-    virtual void drawText(ElText *text) = 0;
+    /// @brief Отрисовать текст
+    /// @return реальное положение на экране после отрисовки (при создании не всегдна можно заранее знать реальную ширину и высоту)
+    virtual display_position drawText(ElText *text) = 0;
+    /// @brief Отрисовать текстовую кнопку
+    /// @return реальное положение на экране после отрисовки (при создании не всегдна можно заранее знать реальную ширину и высоту)
+    virtual display_position drawButton(ElTextButton *button) = 0;
     virtual void drawCenteredGroup(ElCenteredGroup *group) = 0;
     virtual void drawLine(ElLine *line) = 0;
     virtual void drawDisplayTest(ElDisplayTest *displayTest) {}

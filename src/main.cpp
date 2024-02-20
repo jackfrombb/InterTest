@@ -1,17 +1,17 @@
 #include <Arduino.h>
 
 // Переключение настроек здесь
-#include "configuration.h" 
+#include "configuration.h"
 
 // Переключение языка интерфейса. Все языкозависимые переменные интерфейса определять там и дублировать для каждой локали
 #ifdef LOCALE_RU
 #include "interface/localisation/ru.h"
-#elif defined (LOCALE_EN)
+#elif defined(LOCALE_EN)
 #include "interface/localisation/en.h"
 #endif
 
-#include "app_data.h"      // Тут чтение и запись настроек в ПЗУ
-#include "logi.h"          // Централизация логирования
+#include "app_data.h" // Тут чтение и запись настроек в ПЗУ
+#include "logi.h"     // Централизация логирования
 #include "USB.h"
 
 #include "helpers.h"                  // Вспомогательные методы общие (найти средне)
@@ -45,6 +45,11 @@ typedef struct
 #include "board_virtual.h"           // Абстракция главной платы/контроллера
 #include "oscils/oscil_virtual.h"    // Абстракция над логикой осциографа
 #include "oscils/oscil_adc_dma.h"    // Логикой осциографа continue
+
+#include "hard_timer.h"         // Логика тамера прерываний
+#include "oscils/oscils_list.h" // Логика осцилографа
+#include "voltmeter.h"          // Логика вольтметра
+#include "signal_generator.h"   // Логика генератора сигналов
 
 #include "interface/pages/views/page_view.h"      // Абстракция представления страницы граф. интерфейся
 #include "interface/pages/page_virtual.h"         // Абстракция над контроллера странички
@@ -100,26 +105,20 @@ MainBoard *mainBoard = new Esp32S2Mini(display, control);
 MainBoard *mainBoard = new Esp32Wroom32(display, control);
 #endif
 
-#include "hard_timer.h"         // Логика тамера прерываний
-#include "oscils/oscils_list.h" // Логика осцилографа
-#include "voltmeter.h"          // Логика вольтметра
-#include "signal_generator.h"   // Логика генератора сигналов
-
 InterfaceController interfaceController(mainBoard);
 
 // Частота генерации
 int pwmF = 100000;
 // USBCDC usbSerial;
 
-SignalGenerator sigGen(mainBoard->getPwmPin());
-
 // #include "ai_samples/dac_i2s_4_4_6__timer.h"
 
 void setup()
 {
-  Serial.begin(115200);
-  // while (!Serial)// Эта строка не дает загрузится устройству пока не запустится Serial костыль для отладки s2mini
+  // Serial.begin(115200);
+  // while (!Serial) // Эта строка не дает загрузится устройству пока не запустится Serial костыль для отладки s2mini
   // {
+  //   vTaskDelay(1000); // Что бы не будить псов
   // };
   // Serial.println("SERIAL: Setup complete");
 
@@ -163,7 +162,11 @@ void setup()
                       "\nCore Freq: " + String(ESP.getCpuFreqMHz()) +
                       "\nHeap: " + String(ESP.getHeapSize()));
 
+  // Инициализация синглтона хранения настроек/состояний
   AppData::begin();
+  
+  // Инициализация синглтона генератора
+  SignalGenerator::init(mainBoard->getPwmPin());
 
 #ifdef BUZZ
   Serial.println("Buzzer");
@@ -174,7 +177,7 @@ void setup()
   delay(300);
 
   // Временный костыль для проверки АЦП
-  // sigGen.startMeandrLedc(pwmF, 0.5);
+  SignalGenerator::get()->startMeandrLedc(pwmF, 0.5);
   // sigGen.startMenadrDac(pwmF, .5);
   // sigGen.startWaveDac(pwmF);
   // создание буфера для хранения сэмплов

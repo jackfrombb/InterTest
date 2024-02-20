@@ -8,6 +8,8 @@
 #define LOC_SETTING "Настройки"
 
 //Генератор
-#define LOC_ACTIVE "Активация"
+#define LOC_STATE "Состояние"
 #define LOC_ON "Вкл"
 #define LOC_OFF "Выкл"
+#define LOC_FREQ "Частота"
+#define LOC_DUTY "Скважность"
