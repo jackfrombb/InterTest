@@ -35,7 +35,9 @@
 /// @brief Старый дисплей от Nokia
 class Nokia5110_U8g2 : public U8g2DisplayVirtual
 {
-private:
+protected:
+    InterfaceEngineVirtual *_interfaceEngine;
+
 public:
     Nokia5110_U8g2()
     {
@@ -46,6 +48,10 @@ public:
     ~Nokia5110_U8g2()
     {
         delete _u8g2;
+        _u8g2 = nullptr;
+
+        delete _interfaceEngine;
+        _interfaceEngine = nullptr;
     }
 
     void init() override

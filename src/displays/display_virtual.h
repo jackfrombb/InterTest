@@ -1,6 +1,8 @@
 #pragma once
 #include <Arduino.h>
 
+class InterfaceEngineVirtual; // Определяем прототип. Костыль, что бы виртуальный дисплей знал про движок отрисовки
+
 /// @brief Тип подключения дисплея
 typedef enum
 {
@@ -43,8 +45,6 @@ public:
     DisplayVirtual(/* args */) = default;
     virtual ~DisplayVirtual()
     {
-        delete _interfaceEngine;
-        _interfaceEngine = nullptr;
     }
 
     /// @brief Получить тип подключения дисплея
@@ -79,18 +79,9 @@ public:
 
     virtual const uint8_t *getFontForSize(el_text_size size) = 0;
 
-    virtual uint8_t getMaxTextWidth(el_text_size textSize)
-    {
-        return _interfaceEngine->getMaxTextWidth(textSize);
-    }
+    virtual uint8_t getMaxTextWidth(el_text_size textSize) = 0;
 
-    virtual uint8_t getMaxTextHeight(el_text_size textSize)
-    {
-        return _interfaceEngine->getMaxTextHeight(textSize);
-    }
+    virtual uint8_t getMaxTextHeight(el_text_size textSize) = 0;
 
-    virtual InterfaceEngineVirtual *getInterfaceEngine()
-    {
-        return _interfaceEngine;
-    }
+    virtual InterfaceEngineVirtual *getInterfaceEngine() { return _interfaceEngine; }
 };

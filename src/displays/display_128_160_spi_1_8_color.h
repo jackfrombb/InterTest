@@ -43,6 +43,9 @@ class Display128x160_1_8_Spi_Color : public DisplayVirtual
 private:
     TFT_eSPI *tft;
 
+protected:
+    InterfaceEngineVirtual *_interfaceEngine;
+    
 public:
     Display128x160_1_8_Spi_Color()
     {
@@ -106,7 +109,7 @@ public:
     {
         // static uint8_t ret = 0;
 
-        //tft->setFreeFont(FF18);
+        // tft->setFreeFont(FF18);
 
         // switch (size)
         // {
@@ -131,5 +134,15 @@ public:
         // }
 
         return nullptr;
+    }
+
+    uint8_t getMaxTextWidth(el_text_size textSize) override
+    {
+        return _interfaceEngine->getMaxTextWidth(textSize);
+    }
+
+    uint8_t getMaxTextHeight(el_text_size textSize) override
+    {
+        return _interfaceEngine->getMaxTextHeight(textSize);
     }
 };

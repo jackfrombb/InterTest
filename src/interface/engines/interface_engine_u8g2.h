@@ -378,8 +378,8 @@ public:
     void drawElement(ElementVirtual *el) override
     {
         // Частично ограничиваем отрисовку интерфейса рамками дисплея
-        if (el->getX() > _display->getWidth() || el->getY() > _display->getHeight())
-            return;
+        // if (el->getX() > _display->getWidth() || el->getY() > _display->getHeight())
+        //     return;
 
         InterfaceEngineVirtual::drawElement(el);
     }
@@ -442,11 +442,11 @@ public:
     display_position drawButton(ElTextButton *button) override
     {
         // Получаем реальную позицию отрисовки текста
-        auto pos = drawText(button);                               // Выводим текст
+        display_position pos = drawText(button);                   // Выводим текст
         if (button->isSelected() && button->getEditPosition() < 0) // если активна то рисуем рамку вокруг
         {
-            // int16_t x = (button->getParent()->getX() + button->getX()) - 2;
-            // int16_t y = (button->getParent()->getY() + button->getY()) - 2;
+            int16_t x = (button->getParent()->getX() + button->getX()) - 2;
+            int16_t y = (button->getParent()->getY() + button->getY()) - 2;
             int16_t w = pos.getWidth();
             int16_t h = pos.getHeight();
             uint8_t r = 2;
@@ -504,7 +504,8 @@ public:
         uint16_t textX = x + text->getParent()->getX();
         uint16_t textY = y + textHeight + text->getParent()->getY(); //  (Y элемента делаем по верхнему углу)
 
-        // Отрисовать текст
+        // Отрисовать текст если он вмещается в экран
+        // if (textX + textWidth > 0 && textY < _display->getHeight() && textX < _display->getWidth() && textY > 0)
         _u8g2->drawUTF8(textX, textY, textTitle.c_str());
 
         // Если в режиме посимвольного редактирования то рисуем линию под символом, который редактируется
@@ -520,7 +521,8 @@ public:
             _u8g2->drawLine((textX + textWidth) - (subWidth + 2), textY + 2, textX + textWidth - 1, textY + 2);
         }
 
-        return display_position{.leftUp{.x = textX, .y = textY}, .rightDown{.x = textX + textWidth, .y = textY + textHeight}};
+        return display_position{.leftUp{.x = (int)textX, .y = (int)textY},
+                                .rightDown{.x = (int)(textX + textWidth), .y = (int)(textY + textHeight)}};
     }
 
     void drawProgressBar(ElProgressBar *progressBar) override
@@ -605,6 +607,6 @@ public:
 
         // Точки для отслеживания ширины
         _u8g2->drawPixel(scrollbar->getX(), scrollbar->getY() + (scrollbar->getHeight() >> 1));
-        _u8g2->drawPixel(scrollbar->getX() + scrollbar->getWidth(), scrollbar->getY() + (scrollbar->getHeight() >> 1));
+        _u8g2->drawPixel(scrollbar->getX() + scrollbar->getWidth() - 2, scrollbar->getY() + (scrollbar->getHeight() >> 1));
     }
 };

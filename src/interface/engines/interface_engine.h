@@ -1,3 +1,19 @@
+/**
+ * @file interface_engine.h
+ * @author JackFromBB (jack@boringbar.ru)
+ * @brief Виртуальный класс, представляющий частично абстрактные функции отрисовки элементов на дисплее
+ * - Главный метод отрисовки страницы - drawPage, потому что там взываются события начала и конца отрисовки страницы.
+ * - Главный метод отрисовки для элементов - drawElement, там так же вызываются события, 
+ *   идет проверка и потом уже выбор метода отрисовки
+ * - Отрисовка идет в замкнутых на себя методах/функциях, которые берут страничку как группу и начинают поочерёдно идти по элементам
+ *   пока не дойдет последнего, пропуская скрытые и nullptr элементы
+ * @version 0.1
+ * @date 2024-02-21
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
+
 #pragma once
 // #include "interface/ellements/ellements_list.h"
 //  #include "interface/pages/page_virtual.h"
@@ -30,17 +46,8 @@ protected:
 
     virtual void drawGroup(ElGroup *group)
     {
-        if (!group->isVisible())
-            return;
-
-        group->onDraw();
-
         for (auto el : group->getElements())
         {
-            if (!el->isVisible())
-                continue;
-
-            el->onDraw();
             drawElement(el);
         }
     }
@@ -48,6 +55,12 @@ protected:
     virtual void drawElement(ElementVirtual *el)
     {
         if (el != nullptr)
+        {
+            if (!el->isVisible())
+                return;
+
+            el->onDraw();
+
             switch (el->getElementType())
             {
             case el_type::EL_TYPE_BUTTON:
@@ -81,6 +94,7 @@ protected:
             case el_type::EL_TYPE_DISPLAY_TEST:
                 drawDisplayTest((ElDisplayTest *)el);
                 break;
+
             case el_type::EL_TYPE_BATTERY_INDCATOR:
                 drawBatteryIndicr((ElBattery *)el);
                 break;
@@ -89,6 +103,7 @@ protected:
                 drawScrollbar((ElScrollBar *)el);
                 break;
             }
+        }
         else
             logi::p("EngineVirtual", "Try to draw empty element");
     }
@@ -103,7 +118,7 @@ public:
     void drawPage(ElGroup *group)
     {
         _onStartDraw();
-        drawGroup(group);
+        drawElement(group);
         _onEndDraw();
     }
 

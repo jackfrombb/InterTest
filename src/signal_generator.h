@@ -52,6 +52,12 @@ private:
     int pulse = 0;
     int period = 0;
 
+    // настройки для ledc
+    ledc_mode_t mode = ledc_mode_t::LEDC_LOW_SPEED_MODE;
+    ledc_timer_bit_t timer_bit = ledc_timer_bit_t::LEDC_TIMER_1_BIT;
+    ledc_timer_t timer = ledc_timer_t::LEDC_TIMER_3;
+    ledc_channel_t chanel = ledc_channel_t::LEDC_CHANNEL_2;
+
     void _generateDacMeandre()
     {
         // Вычисляем длительность импульса в микросекундах
@@ -174,11 +180,6 @@ public:
     {
         // ledc_isr_register(&testLedc, this, ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_HIGH, &isrHandle);
 
-        ledc_mode_t mode = ledc_mode_t::LEDC_LOW_SPEED_MODE;
-        ledc_timer_bit_t timer_bit = ledc_timer_bit_t::LEDC_TIMER_1_BIT;
-        ledc_timer_t timer = ledc_timer_t::LEDC_TIMER_3;
-        ledc_channel_t chanel = ledc_channel_t::LEDC_CHANNEL_2;
-
         ledc_timer_config_t ledc_timer = {
             .speed_mode = mode,
             .duty_resolution = timer_bit,
@@ -255,7 +256,6 @@ public:
 
     void startSawtoothDac(float frq)
     {
-        
     }
 
     void stop()
@@ -273,9 +273,23 @@ public:
 
     // Дальше заглушки для реализации интерфейса TODO: реализовать функционал
 
+    void setEnable(bool enable)
+    {
+        if (!enable)
+        {
+            ledc_stop(mode, chanel, 0);
+            _currentMode = signal_type::SIGNAL_TYPE_NONE;
+        }
+        else
+        {
+            _currentMode = signal_type::SIGNAL_TYPE_MEANDR_LEDC;
+            startMeandrLedc(_pwmFreq, _duty);
+        }
+    }
+
     bool isGenerationEnable()
     {
-        return true;
+        return _currentMode != signal_type::SIGNAL_TYPE_NONE;
     }
 
     uint32_t getFrequensy()

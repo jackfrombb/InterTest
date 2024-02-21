@@ -36,10 +36,10 @@ typedef struct
 
 #include "interface/ellements/ellements_structs.h" // Вспомогательные структуры граф элементов
 #include "interface/ellements/ellement_virtual.h"  // Абстракция граф элементов
-#include "interface/ellements/ellements_list.h"    // Список элементов
 
-#include "interface/engines/interface_engine.h" // Абстракция двигателя отрисовки
 #include "displays/display_virtual.h"           // Абстракция дисплея.  Cоздаёт двигатель отрисовки (InterfaceEngine)
+#include "interface/ellements/ellements_list.h"    // Список элементов
+#include "interface/engines/interface_engine.h" // Абстракция двигателя отрисовки
 
 #include "controllers/adc_virtual.h" //Абстракция контроллера adc
 #include "board_virtual.h"           // Абстракция главной платы/контроллера
@@ -115,7 +115,8 @@ int pwmF = 100000;
 
 void setup()
 {
-  // Serial.begin(115200);
+  Serial.begin(115200);
+  
   // while (!Serial) // Эта строка не дает загрузится устройству пока не запустится Serial костыль для отладки s2mini
   // {
   //   vTaskDelay(1000); // Что бы не будить псов

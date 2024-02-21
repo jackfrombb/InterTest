@@ -39,4 +39,14 @@ public:
     /// @brief Получить библиотеку дисплея
     /// @return Основной класс библиотеки, в зависимости от типа
     void *getLibrary() override { return _u8g2; }
+    
+    uint8_t getMaxTextWidth(el_text_size textSize) override
+    {
+        return _interfaceEngine->getMaxTextWidth(textSize);
+    }
+
+    uint8_t getMaxTextHeight(el_text_size textSize) override
+    {
+        return _interfaceEngine->getMaxTextHeight(textSize);
+    }
 };

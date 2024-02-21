@@ -6,6 +6,9 @@ private:
     SignalGenerator *_generator;
 
     uint8_t _buttonFocus = 0; // Для управления переводом фокуса с кнопки на кнопку
+    int8_t _buttonsCount = 0;
+
+    ElScroll _elScroll = ElScroll(_display, false, false);
 
     ElText _stateTitleText;         // Состояние генератора. Надпись
     ElTextButton _stateValueButton; // Переключение состояния генератора
@@ -23,13 +26,19 @@ private:
     {
         uint16_t padding = 2;
 
+        _elScroll
+            .setX(0)
+            ->setY(0)
+            ->setWidth(_display->getWidth())
+            ->setHeight(_display->getHeight());
+
         _stateTitleText
             .setText(String(LOC_STATE) + ":") // "Состояние"
             ->setX(padding)
             ->setY(padding);
 
         _stateValueButton
-            .setButtonId(0)
+            .setButtonId(_buttonsCount++)
             ->setSelectedButtonPtr(&_buttonFocus)
             ->setCalculatedText([this]
                                 {
@@ -44,7 +53,8 @@ private:
             ->setY(_stateValueButton.getY() + 20);
 
         _freqValueButton
-            .setButtonId(1)
+            .setButtonId(_buttonsCount++)
+            ->setSelectedButtonPtr(&_buttonFocus)
             ->setCalculatedText([this]
                                 { return String(_generator->getFrequensy()); })
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
@@ -56,11 +66,53 @@ private:
             ->setY(_freqValueButton.getY() + 20);
 
         _dutyValueButton
-            .setButtonId(2)
+            .setButtonId(_buttonsCount++)
+            ->setSelectedButtonPtr(&_buttonFocus)
             ->setCalculatedText([this]
                                 { return String((uint8_t)(100.0 * _generator->getDutyCycle())); })
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
             ->setY(_dutyTitleText.getY() + _display->getMaxTextHeight(_dutyTitleText.getTextSize()) + 10);
+
+        _elScroll.addElement(&_stateTitleText)
+            ->addElement(&_stateValueButton)
+            ->addElement(&_freqTitleText)
+            ->addElement(&_freqValueButton)
+            ->addElement(&_dutyTitleText)
+            ->addElement(&_dutyValueButton);
+    }
+
+    /// @brief Получить элемент до которого нужно прокрутить при переводе фокуса с кнопки на кнопку
+    /// В данном случае это заголовок для настройки, которо й управляет кнопка
+    /// @param id id кнопки на которую перевелся фокус
+    ElementVirtual *_getTargetForId(uint8_t id)
+    {
+        switch (id)
+        {
+        case 0:
+            return &_stateTitleText;
+
+        case 1:
+            return &_freqTitleText;
+
+        case 2:
+            return &_dutyTitleText;
+        }
+
+        return &_stateValueButton;
+    }
+
+    void _onOkPress()
+    {
+        switch (_buttonFocus)
+        {
+        case 0:
+            _generator->setEnable(!_generator->isGenerationEnable());
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+        }
     }
 
 public:
@@ -72,27 +124,36 @@ public:
         _initElements();
 
         // Добавление элементов на страничку
-        addElement(&_stateTitleText)
-            ->addElement(&_stateValueButton)
-            ->addElement(&_freqTitleText)
-            ->addElement(&_freqValueButton)
-            ->addElement(&_dutyTitleText)
-            ->addElement(&_dutyValueButton);
+        addElement(&_elScroll);
     }
 
-    bool *getIsGeneratorEnabledPtr()
+    bool onControlEvent(control_event_type eventType) override
     {
-        return &_isGeneratorEnabled;
+        switch (eventType)
+        {
+        case control_event_type::PRESS_LEFT:
+        {
+            _buttonFocus = range(_buttonFocus - 1, 0, _buttonsCount - 1);
+            _elScroll.smoothScrollTo(_getTargetForId(_buttonFocus));
+            return true;
+        }
+
+        case control_event_type::PRESS_RIGHT:
+        {
+            _buttonFocus = range(_buttonFocus + 1, 0, _buttonsCount - 1);
+            _elScroll.smoothScrollTo(_getTargetForId(_buttonFocus));
+            return true;
+        }
+
+        case control_event_type::PRESS_OK:
+            _onOkPress();
+            return true;
+        }
+        return false;
     }
 
-    String *getGenerationFreqPtr()
+    void onDraw() override
     {
-        return _freqValuePtr;
-    }
-
-    String *getDutyCyclePtr()
-    {
-        return _dutyValuePtr;
     }
 };
 

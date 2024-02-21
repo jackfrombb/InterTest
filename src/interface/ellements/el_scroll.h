@@ -1,0 +1,106 @@
+/**
+ * @file el_scroll.h
+ * @author JackFromBB (jack@boringbar.ru)
+ * @brief Группа для плавной и быстрой прокрутки на непоместившиеся на дисплее элементы
+ * @version 0.1
+ * @date 2024-02-20
+ *
+ * @copyright Copyright (c) 2024
+ *
+ */
+
+#pragma once
+#include "ellements_list.h"
+
+class ElScroll : public ElGroup
+{
+private:
+    DisplayVirtual *_display;
+    // ElGroup _root;
+    ElText _testText;
+    bool _isOneByOne;                // Если включен, то добавление элементов будет друг за другом по выбранному направлению
+    bool _isHorizontal;              // Вертикальныая или горизонтальная прокрутка
+    uint8_t _overscrollPadding = 10; // Величина отступа добавляемая последнему элементу
+
+public:
+    ElScroll(DisplayVirtual *display, bool isOneByOne = true, bool isHorizontal = false)
+    {
+        _isOneByOne = isOneByOne;
+        _isHorizontal = isHorizontal;
+        _display = display;
+        // ElGroup::addElement(&_root); // Добавляем корневой элемент, с помощью которого будем управлять положением вложенных
+    }
+
+    ElScroll *addElement(ElementVirtual *el) override
+    {
+        // Если элементы нужны выставлять друг за другом и это второй и долше элемент, то суммируем их положения
+
+        if (_isHorizontal)
+        {
+            if (getElements().size() > 1 && _isOneByOne)
+            {
+                el->setX(el->getX() + getElement(getElementsCount() - 2)->getX());
+            }
+
+            if (getHeight() < el->getHeight())
+            {
+                setHeight(el->getHeight());
+            }
+        }
+        else
+        {
+            if (getElements().size() > 1 && _isOneByOne)
+            {
+                el->setY(el->getY() + getElement(getElementsCount() - 2)->getY());
+            }
+
+            if (getWidth() < el->getWidth())
+            {
+                setWidth(el->getWidth());
+            }
+        }
+
+        ElGroup::addElement(el);
+        return this;
+    }
+
+    ElGroup *setOverscrollPadding(uint8_t padding)
+    {
+        _overscrollPadding = padding;
+        return this;
+    }
+
+    void scrollTo(ElementVirtual *el)
+    {
+        if (_isHorizontal)
+        {
+            int16_t pos = 0 - el->getX();
+            setX(pos); // Складываем ширину с положением по x + отступ
+        }
+        else
+        {
+            int16_t pos = 0 - el->getY(); // Высчитваем сдвиг
+            setY(pos);                    // Складываем высоту с положением по y + отступ
+            Serial.println("New Y:" + String(pos) + " El Y: " + String(el->getY()));
+        }
+    }
+
+    void smoothScrollTo(ElementVirtual *el)
+    {
+        if (_isHorizontal)
+        {
+            int16_t pos = 0 - el->getX();
+            flyTo(pos, getY(), 10);
+        }
+        else
+        {
+            int16_t pos = 0 - el->getY();
+            flyTo(getX(), pos, 10);
+        }
+    }
+
+    virtual void onDraw()
+    {
+        nextAnimStep();
+    }
+};
