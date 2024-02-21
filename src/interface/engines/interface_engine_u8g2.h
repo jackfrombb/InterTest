@@ -404,9 +404,11 @@ public:
             ElementVirtual *el = group->getElement(i);
             el->setWidth(newWidth);
             el->setX(newWidth * i);
+            drawElement(el);
 
             // Устанавливаем реальные размеры и положение группы  (возможно удалю, если не найдет применения)
             {
+                //
                 //     auto elArea = drawElement(el);
 
                 //     if (elArea.getX() < groupArea.getX())
@@ -598,15 +600,37 @@ public:
     /// @param scrollbar
     void drawScrollbar(ElScrollBar *scrollbar) override
     {
-        int scrollWidth = (int)((float)(scrollbar->getWidth() - 4) * scrollbar->getDisplayedWidth());
-        _u8g2->drawRFrame(scrollbar->getX() + (scrollbar->getWidth() * scrollbar->getScrollPosition()),
-                          scrollbar->getY(),
-                          scrollWidth,
-                          scrollbar->getHeight(),
-                          2);
+        // Разные, но похожие способы рисования для вертикальных и горизонтальный полос прокрутки
+        // надо будет оптимизировать код
+        if (scrollbar->isVertical())
+        {
+            int scrollHeight = (int)((float)(scrollbar->getHeight()) * scrollbar->getDisplayedWidth());
+            int scrollY = scrollbar->getY() + (scrollbar->getHeight() * scrollbar->getScrollPosition()) + 1;
 
-        // Точки для отслеживания ширины
-        _u8g2->drawPixel(scrollbar->getX(), scrollbar->getY() + (scrollbar->getHeight() >> 1));
-        _u8g2->drawPixel(scrollbar->getX() + scrollbar->getWidth() - 2, scrollbar->getY() + (scrollbar->getHeight() >> 1));
+            _u8g2->drawRFrame(scrollbar->getX(),
+                              scrollY,
+                              scrollbar->getWidth(),
+                              scrollHeight,
+                              2);
+
+            // Точки для отслеживания высоты
+            _u8g2->drawPixel(scrollbar->getX() + (scrollbar->getWidth() >> 1), scrollbar->getY());
+            _u8g2->drawPixel(scrollbar->getX() + (scrollbar->getWidth() >> 1), scrollbar->getY() + scrollbar->getHeight());
+        }
+        else
+        {
+            int scrollWidth = (int)((float)(scrollbar->getWidth() - 4) * scrollbar->getDisplayedWidth());
+            int scrollX = scrollbar->getX() + (scrollbar->getWidth() * scrollbar->getScrollPosition()) + 1;
+
+            _u8g2->drawRFrame(scrollX,
+                              scrollbar->getY(),
+                              scrollWidth,
+                              scrollbar->getHeight(),
+                              2);
+
+            // Точки для отслеживания ширины
+            _u8g2->drawPixel(scrollbar->getX(), scrollbar->getY() + (scrollbar->getHeight() >> 1));
+            _u8g2->drawPixel(scrollbar->getX() + scrollbar->getWidth(), scrollbar->getY() + (scrollbar->getHeight() >> 1));
+        }
     }
 };

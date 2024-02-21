@@ -8,7 +8,8 @@ private:
     uint8_t _buttonFocus = 0; // Для управления переводом фокуса с кнопки на кнопку
     int8_t _buttonsCount = 0;
 
-    ElScroll _elScroll = ElScroll(_display, false, false);
+    ElScroll _elScroll = ElScroll(false, false);
+    ElScrollBar _elScrollBar = ElScrollBar(true);
 
     ElText _stateTitleText;         // Состояние генератора. Надпись
     ElTextButton _stateValueButton; // Переключение состояния генератора
@@ -24,14 +25,17 @@ private:
 
     void _initElements()
     {
+        // Для удобсва указания отступов
         uint16_t padding = 2;
 
+        // Инициализируем корневую группу для прокрутки
         _elScroll
             .setX(0)
             ->setY(0)
             ->setWidth(_display->getWidth())
             ->setHeight(_display->getHeight());
 
+        // Инициализируем поля
         _stateTitleText
             .setText(String(LOC_STATE) + ":") // "Состояние"
             ->setX(padding)
@@ -73,12 +77,29 @@ private:
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
             ->setY(_dutyTitleText.getY() + _display->getMaxTextHeight(_dutyTitleText.getTextSize()) + 10);
 
+        // Добавляем элементы в прокрутку
         _elScroll.addElement(&_stateTitleText)
             ->addElement(&_stateValueButton)
             ->addElement(&_freqTitleText)
             ->addElement(&_freqValueButton)
             ->addElement(&_dutyTitleText)
             ->addElement(&_dutyValueButton);
+
+        // Инициализируем индикацию прокрутки
+        _elScrollBar.setArea({.leftUp = {.x = (int)_display->getWidth() - 6, .y = (int)5},
+                              .rightDown{.x = (int)_display->getWidth() - 2, .y = (int)_display->getHeight() - 5}});
+        // Вычисляем положение прокрутки
+        _calculateScrollBarPosition();
+    }
+
+    void _calculateScrollBarPosition()
+    {
+        uint16_t height = _dutyValueButton.getY() + 10;
+        uint16_t pos = _getTargetForId(_buttonFocus)->getY();
+        _elScrollBar.setScrollPosition(
+            height,
+            (height / (_buttonsCount - 1)) * _buttonFocus,
+            (uint16_t)(height / (_buttonsCount - 1)));
     }
 
     /// @brief Получить элемент до которого нужно прокрутить при переводе фокуса с кнопки на кнопку
@@ -115,6 +136,13 @@ private:
         }
     }
 
+    void _changeButtonFocus(int8_t dir)
+    {
+        _buttonFocus = range(_buttonFocus + (1 * dir), 0, _buttonsCount - 1);
+        _elScroll.smoothScrollTo(_getTargetForId(_buttonFocus));
+        _calculateScrollBarPosition();
+    }
+
 public:
     GeneratorPageView(DisplayVirtual *display, SignalGenerator *generator) : PageView(display)
     {
@@ -124,7 +152,7 @@ public:
         _initElements();
 
         // Добавление элементов на страничку
-        addElement(&_elScroll);
+        addElement(&_elScroll)->addElement(&_elScrollBar);
     }
 
     bool onControlEvent(control_event_type eventType) override
@@ -133,15 +161,13 @@ public:
         {
         case control_event_type::PRESS_LEFT:
         {
-            _buttonFocus = range(_buttonFocus - 1, 0, _buttonsCount - 1);
-            _elScroll.smoothScrollTo(_getTargetForId(_buttonFocus));
+            _changeButtonFocus(-1);
             return true;
         }
 
         case control_event_type::PRESS_RIGHT:
         {
-            _buttonFocus = range(_buttonFocus + 1, 0, _buttonsCount - 1);
-            _elScroll.smoothScrollTo(_getTargetForId(_buttonFocus));
+            _changeButtonFocus(1);
             return true;
         }
 

@@ -53,7 +53,7 @@ public:
             ->setTextSize(el_text_size::EL_VOLTMETER_VALUE_LARGE)
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH)
             ->setX(_display->getMaxTextWidth(_titleForBigCenterText.getTextSize()) * _titleForBigCenterText.getText().length()) // Отступаем надпись max по x
-            ->setY(_waveform.getHeight())
+            ->setY(_waveform.getHeight() + 4)
             ->setWidth(_display->getWidth() - _bigCenterText.getX()) // Занимаем остальное место после x
 
             //->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER)

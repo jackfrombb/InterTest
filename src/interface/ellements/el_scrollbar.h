@@ -5,10 +5,12 @@ class ElScrollBar : public ElementVirtual
 private:
     float _position;
     float _displayedWidth;
+    bool _isVertical = false;
 
 public:
-    ElScrollBar()
+    ElScrollBar(bool isVertical = false)
     {
+        _isVertical = isVertical;
     }
 
     /// @brief Получаить положение относительно общей ширины
@@ -31,11 +33,16 @@ public:
     /// @param displayedWidth Отображаемая ширина
     void setScrollPosition(uint32_t totalWidth, uint32_t xPos, uint16_t displayedWidth)
     {
-        totalWidth = totalWidth == 0 ? 1 : totalWidth;        // Исключаем деление на 0
+        totalWidth = totalWidth == 0 ? 1 : totalWidth;                           // Исключаем деление на 0
         _displayedWidth = (float)displayedWidth / (totalWidth + displayedWidth); // Высчитваем относительную ширину, макс 1.0
         _position = ((float)xPos / (totalWidth + displayedWidth));               // Высчитываем относительную позицию, макс 1.0 - относительная ширина
 
         // Serial.println("w: " + String(_displayedWidth) + " p: " + String(_position));
+    }
+
+    bool isVertical()
+    {
+        return _isVertical;
     }
 
     el_type getElementType() override

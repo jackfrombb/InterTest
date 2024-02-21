@@ -15,20 +15,16 @@
 class ElScroll : public ElGroup
 {
 private:
-    DisplayVirtual *_display;
-    // ElGroup _root;
     ElText _testText;
     bool _isOneByOne;                // Если включен, то добавление элементов будет друг за другом по выбранному направлению
     bool _isHorizontal;              // Вертикальныая или горизонтальная прокрутка
     uint8_t _overscrollPadding = 10; // Величина отступа добавляемая последнему элементу
 
 public:
-    ElScroll(DisplayVirtual *display, bool isOneByOne = true, bool isHorizontal = false)
+    ElScroll(bool isOneByOne = true, bool isHorizontal = false)
     {
         _isOneByOne = isOneByOne;
         _isHorizontal = isHorizontal;
-        _display = display;
-        // ElGroup::addElement(&_root); // Добавляем корневой элемент, с помощью которого будем управлять положением вложенных
     }
 
     ElScroll *addElement(ElementVirtual *el) override
@@ -81,7 +77,6 @@ public:
         {
             int16_t pos = 0 - el->getY(); // Высчитваем сдвиг
             setY(pos);                    // Складываем высоту с положением по y + отступ
-            Serial.println("New Y:" + String(pos) + " El Y: " + String(el->getY()));
         }
     }
 
@@ -101,6 +96,6 @@ public:
 
     virtual void onDraw()
     {
-        nextAnimStep();
+        nextAnimStep(); // Для отрисовки плавной прокрутки
     }
 };
