@@ -109,9 +109,6 @@ InterfaceController interfaceController(mainBoard);
 
 // Частота генерации
 int pwmF = 100000;
-// USBCDC usbSerial;
-
-// #include "ai_samples/dac_i2s_4_4_6__timer.h"
 
 void setup()
 {

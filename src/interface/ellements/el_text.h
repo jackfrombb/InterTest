@@ -10,7 +10,6 @@ private:
     el_text_align _alignment = el_text_align::EL_TEXT_ALIGN_LEFT;
     std::function<String()> _calculateText = nullptr;
     int8_t _editPosition = -1;
-    // bool _needUtf8Patch = false;
 
 public:
     ElText() = default;

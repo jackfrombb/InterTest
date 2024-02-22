@@ -122,6 +122,7 @@ private:
         return &_stateValueButton;
     }
 
+    /// @brief Действия при нажатии кнопки OK
     void _onOkPress()
     {
         switch (_buttonFocus)
@@ -130,12 +131,15 @@ private:
             _generator->setEnable(!_generator->isGenerationEnable());
             break;
         case 1:
+            
             break;
         case 2:
             break;
         }
     }
 
+    /// @brief Первести фокус
+    /// @param dir направление первода фокуса (-1 назад, +1 вперед)
     void _changeButtonFocus(int8_t dir)
     {
         _buttonFocus = range(_buttonFocus + (1 * dir), 0, _buttonsCount - 1);
@@ -180,6 +184,7 @@ public:
 
     void onDraw() override
     {
+        
     }
 };
 
