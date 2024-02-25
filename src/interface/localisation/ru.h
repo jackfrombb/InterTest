@@ -13,3 +13,8 @@
 #define LOC_OFF "Выкл"
 #define LOC_FREQ "Частота"
 #define LOC_DUTY "Скважность"
+
+// Настройки дисплея
+#define LOC_DISPLAY "Дисплей"
+#define LOC_CONTRAST "Контраст"
+#define LOC_BRIGHTNESS "Яркость"

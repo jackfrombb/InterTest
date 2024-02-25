@@ -8,7 +8,8 @@ private:
     String _text;
     el_text_size _elSize = el_text_size::EL_TEXT_SIZE_MIDDLE;
     el_text_align _alignment = el_text_align::EL_TEXT_ALIGN_LEFT;
-    std::function<String()> _calculateText = nullptr;
+    std::function<String(void*)> _calculateText = nullptr;
+    void *_calculateTextArgs = nullptr;
     int8_t _editPosition = -1;
 
 public:
@@ -27,16 +28,17 @@ public:
         return this;
     }
 
-    ElText *setCalculatedText(std::function<String()> calculateText)
+    ElText *setCalculatedText(std::function<String(void*)> calculateText, void *args = nullptr)
     {
         _calculateText = std::move(calculateText);
+        _calculateTextArgs = args;
         return this;
     }
 
     String getText()
     {
         if (_calculateText != nullptr)
-            return _calculateText();
+            return _calculateText(_calculateTextArgs);
         else
             return _text;
     }
@@ -90,19 +92,6 @@ public:
         _alignment = alignment;
         return this;
     }
-
-    // /// @brief Костыль для подгона размеров текста содержащего кириллицу
-    // /// Обязаетльно включать для текста где есть UTF8 символы (русские буквы к примеру)
-    // ElText *utf8Patch()
-    // {
-    //     _needUtf8Patch = true;
-    //     return this;
-    // }
-
-    // bool isNeedUtf8Patch()
-    // {
-    //     return _needUtf8Patch;
-    // }
 
     el_type getElementType() override
     {

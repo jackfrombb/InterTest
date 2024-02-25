@@ -55,7 +55,7 @@ private:
     void _initPoints()
     {
         _current
-            .setCalculatedText([this]
+            .setCalculatedText([this](void* arg)
                                { return pages_list_getName(_focusPage); })
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH)
             ->setX(0) // на весь экран
@@ -65,7 +65,7 @@ private:
             ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER) // Вертикально по центру
             ;
 
-        _prev.setCalculatedText([this]
+        _prev.setCalculatedText([this](void* arg)
                                 { return pages_list_getName((pages_list)((int)_focusPage - 1)); })
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH)
             ->setX(-(_display->getWidth()))
@@ -75,7 +75,7 @@ private:
             ->setVerticalAlignment(el_vertical_align::EL_ALIGN_CENTER) //
             ;
 
-        _next.setCalculatedText([this]
+        _next.setCalculatedText([this](void* arg)
                                 { return pages_list_getName((pages_list)((int)_focusPage + 1)); })
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH)
 

@@ -37,7 +37,7 @@ typedef enum
     SIGNAL_TYPE_SAWTOOTH
 } signal_type;
 
-class SignalGenerator
+class SignalGenerator : public iHaveShareSettings
 {
 private:
     bool _isThreadStarted = false;
@@ -146,11 +146,46 @@ private:
         _isThreadStarted = true;
     }
 
+    function<bool(settings_args_virtual *)> _onSettingChangeEvent = [this](settings_args_virtual *args)
+    {
+        switch (args->id)
+        {
+        case 0:
+            setEnable(_stateArg.currentVal);
+            break;
+
+        case 1:
+            setFrequensy(_freqArg.currentVal);
+            break;
+
+        case 2:
+            setDutyCycle(_dutyArg.getSteepValue());
+            break;
+        }
+
+        return true;
+    };
+
+    // Настройки состояния
+    setting_args_bool _stateArg = setting_args_bool(0, "generator_state", true);
+    ShareSetting _stateSetting = ShareSetting(LOC_STATE, &_stateArg, _onSettingChangeEvent);
+
+    // Настройки частоты
+    setting_args_int_range _freqArg = setting_args_int_range(1, "generator_freq", 0, 20000000, 100000);
+    ShareSetting _freqSetting = ShareSetting(LOC_FREQ, &_freqArg, _onSettingChangeEvent);
+
+    // Настройки скважности
+    setting_args_int_steep _dutyArg = setting_args_int_steep(2, "generator_duty", {}, 0);
+    ShareSetting _dutySetting = ShareSetting(LOC_DUTY, &_dutyArg, _onSettingChangeEvent);
+
 protected:
     static SignalGenerator *_instance;
-    SignalGenerator(uint8_t dacPin)
+    SignalGenerator(uint8_t dacPin) : iHaveShareSettings(LOC_GENERATOR)
     {
         _pin = dacPin;
+
+        // Добавляем настройки в класс хранения
+        addSetting(&_stateSetting).addSetting(&_freqSetting).addSetting(&_dutySetting);
     }
 
 public:

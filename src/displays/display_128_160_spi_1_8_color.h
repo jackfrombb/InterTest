@@ -20,11 +20,11 @@
 #define GFXFF 1
 #define FF18 &FreeSans12pt7b
 
-#define DISP_DC GPIO_NUM_33 // A0 on board
-#define DISP_CS GPIO_NUM_16
-#define DISP_SCK GPIO_NUM_37
-#define DISP_MOSI GPIO_NUM_35
-#define DISP_RST GPIO_NUM_21
+// #define DISP_DC GPIO_NUM_33 // A0 on board
+// #define DISP_CS GPIO_NUM_16
+// #define DISP_SCK GPIO_NUM_37
+// #define DISP_MOSI GPIO_NUM_35
+// #define DISP_RST GPIO_NUM_21
 #define DISP_LED GPIO_NUM_38 // Подсветка дисплея. Можно управлять яркостью управляя скважностью шим
 
 #include <TFT_eSPI.h>
@@ -43,9 +43,6 @@ class Display128x160_1_8_Spi_Color : public DisplayVirtual
 private:
     TFT_eSPI *tft;
 
-protected:
-    InterfaceEngineVirtual *_interfaceEngine;
-    
 public:
     Display128x160_1_8_Spi_Color()
     {
@@ -61,8 +58,18 @@ public:
         // Инициализация дисплея
         tft->init();
 
-        tft->setRotation(3);        // Устанавливаем ориентацию дисплея
-        tft->fillScreen(TFT_BLACK); // Заполняем экран черным цветом
+        tft->setRotation(3); // Устанавливаем ориентацию дисплея
+
+        tft->fillScreen(TFT_RED); // Проверка пикселей (только для разработки, потом сделаю пункт проверки в настройках)
+        delay(100);
+        tft->fillScreen(TFT_GREEN);
+        delay(100);
+        tft->fillScreen(TFT_BLUE);
+        delay(100);
+        tft->fillScreen(TFT_BLACK);
+        delay(100);
+        tft->fillScreen(TFT_WHITE);
+        delay(100);
 
         _interfaceEngine = new InterfaceEngine_ArduinoGfx(this);
     }

@@ -6,17 +6,16 @@ class ElGroup : public ElementVirtual
 {
 private:
     std::vector<ElementVirtual *> _elements;
+
 protected:
 public:
-    ElGroup(/* args */)
-    = default;
+    ElGroup(/* args */) = default;
 
-    ~ElGroup()
-    = default;
+    ~ElGroup() = default;
 
     virtual int8_t getElementsCount()
     {
-        return (int8_t) _elements.size();
+        return (int8_t)_elements.size();
     }
 
     virtual ElementVirtual *getElement(uint8_t num)

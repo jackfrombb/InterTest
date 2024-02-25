@@ -26,7 +26,7 @@ public:
     void setPointsSource(function<adc_measures_t()> getMeasuresFunc)
     {
         _getMeasuresFunc = getMeasuresFunc;
-        _drawDots = AppData::getBool("waveformDots", false);
+        _drawDots = false; //AppData::getBool("waveformDots", false);
         _drawBackGround = true;
     }
 

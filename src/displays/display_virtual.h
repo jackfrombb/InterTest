@@ -35,14 +35,16 @@ typedef struct
 } display_resolution;
 
 /// @brief Виртуальный класс, основа для подключения разных дисплеев
-class DisplayVirtual : public ModuleVirtual
+class DisplayVirtual : public ModuleVirtual, public iHaveShareSettings
 {
 protected:
     InterfaceEngineVirtual *_interfaceEngine;
 
 private:
 public:
-    DisplayVirtual(/* args */) = default;
+    DisplayVirtual(/* args */) : iHaveShareSettings(LOC_DISPLAY)
+    {
+    }
     virtual ~DisplayVirtual()
     {
     }

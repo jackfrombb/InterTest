@@ -50,7 +50,7 @@ typedef struct display_position
 
   /// @brief Ширина участка на дисплее
   /// @return ширина в пикселях
-  int getWidth() const
+  uint getWidth() const
   {
     return rightDown.x - leftUp.x;
   }
@@ -62,7 +62,7 @@ typedef struct display_position
 
   /// @brief Высота участка на дисплее
   /// @return высота в пикселях
-  int getHeight() const
+  uint getHeight() const
   {
     return rightDown.y - leftUp.y;
   }

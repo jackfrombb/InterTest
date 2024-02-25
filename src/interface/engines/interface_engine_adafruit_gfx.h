@@ -5,12 +5,88 @@
 #include "interface/ellements/ellements_list.h"
 #include "displays/display_virtual.h"
 
+// https://github.com/Bodmer/U8g2_for_TFT_eSPI - библиотека шрифтов u8g2
+
 class InterfaceEngine_ArduinoGfx : public InterfaceEngineVirtual
 {
 private:
     DisplayVirtual *_display;
     TFT_eSPI *_tft;
     TFT_eSprite *_spr;
+
+    /// @brief Отрисовать ориентиры и надписи (буферезируется)
+    void _drawDotBack(ElWaveform *waveform)
+    {
+        uint16_t width = waveform->getArea().getWidth();
+        uint16_t height = waveform->getArea().getHeight();
+
+        // Это два вспомогательных пикселя, которые помогают оценить расположение
+        _spr->drawPixel(width - 1, height - 1, TFT_RED);
+        _spr->drawPixel(0, 0, TFT_RED);
+
+        uint8_t widthPixelsCount = (float)width / waveform->getWidthSectionsCount();
+        uint8_t heightPixelInSection = (float)height / waveform->getMaxMeasureValue();
+
+        // Serial.println("Draw init OK");
+        int voltSectionTitle = 0; // (int) waveform->getMaxMeasureValue();
+
+        for (uint16_t v = height; v > 0; v -= heightPixelInSection)
+        {
+            for (uint16_t x = 0; x <= width; x += widthPixelsCount)
+            {
+                int titlePos = width - widthPixelsCount;
+
+                if (x >= titlePos && voltSectionTitle != 0)
+                {
+                    String title = String(voltSectionTitle);
+                    int xPos = titlePos;
+                    int y = (int)(v + (_spr->fontHeight() * .5));
+
+                    _spr->drawString(title, xPos, y);
+                }
+
+                if (waveform->isNeedDrawBackDots())
+                    _spr->drawPixel(x, v, TFT_SILVER);
+            }
+            voltSectionTitle += 1;
+        }
+    }
+
+    /// @brief Отрисовать график
+    /// @param waveform данные осциллограммы
+    void _drawWaveform(ElWaveform *waveform)
+    {
+        auto measures = waveform->getMeasures();
+
+        uint16_t width = waveform->getArea().getWidth();
+        uint16_t height = waveform->getArea().getHeight();
+
+        uint bias = measures.bias > measures.readedSize - width ? 0 : measures.bias; // SyncBuffer::findSignalOffset(waveform->getPoints(), waveform->getPointsLength());
+        int vBias = 0;
+
+        //  Преобразованный предел
+        const int maxMeasureValNormalized = (int)(waveform->getMaxMeasureValue() * 1000);
+
+        for (uint16_t x = bias; x < width + bias; x++)
+        {
+            uint32_t realVolt = measures.buffer[x]; //(int)_mainBoard->rawToVoltage(buf[x]);
+            uint32_t next = x == width ? 0 : measures.buffer[x + 1];
+
+            byte val = map(realVolt, 0, maxMeasureValNormalized, height - 1, 0);
+
+            if (x == width + bias)
+            {
+                _spr->drawPixel(x - bias, val + vBias, TFT_WHITE);
+            }
+            else
+            {
+                byte val2 = map(next, 0, maxMeasureValNormalized, height - 1, 0);
+                _spr->drawLine(x - bias, val + vBias, (x - bias) + 1, val2 + vBias, TFT_WHITE);
+            }
+        }
+
+        // voidArea(_u8g2->getBufferPtr(), width, height, 10, 10, width - 10, height - 10, true);
+    }
 
 public:
     explicit InterfaceEngine_ArduinoGfx(DisplayVirtual *display)
@@ -34,9 +110,6 @@ public:
 
     void _onStartDraw() override
     {
-        // _tft->fillScreen(TFT_BLACK);
-        // _tft->drawPixel(10, 10, TFT_RED);
-        //_spr->setCursor(0, 0);
         _spr->fillSprite(TFT_BLACK);
     }
 
@@ -49,18 +122,38 @@ public:
     {
     }
 
-    void drawButton(ElTextButton *button) override
+    display_position drawButton(ElTextButton *button) override
     {
+        display_position pos = drawText(button); // Выводим текст
+
+        int16_t x = (button->getParent()->getX() + button->getX()) - 2;
+        int16_t y = (button->getParent()->getY() + button->getY()) - 2;
+        int16_t w = pos.getWidth();
+        int16_t h = pos.getHeight();
+        uint8_t r = 2;
+
+        if (button->isSelected() && button->getEditPosition() < 0) // если активна то рисуем рамку вокруг
+        {
+
+            // Рисуем рамку с отступами, а по Y вычитаем высоту строки, иначе рамка будет сдвинута вниз
+            _spr->drawRoundRect(pos.getX() - 4, pos.getY() - h - 4, w + 8, h + 8, r, TFT_WHITE);
+        }
+        else
+        {
+            _spr->drawRoundRect(pos.getX() - 4, pos.getY() - h - 4, w + 8, h + 8, r, TFT_SILVER);
+        }
+
+        return pos;
     }
 
     void drawWaveform(ElWaveform *waveform) override
     {
     }
 
-    void drawText(ElText *text) override
+    display_position drawText(ElText *text) override
     {
         //_display->getFontForSize(text->getTextSize());
-        _spr->setFreeFont(&FreeSans12pt7b);
+        _spr->setTextSize(1);
 
         String title = text->getText();
         int16_t x = text->getX() + text->getParent()->getX();
@@ -69,11 +162,11 @@ public:
         switch (text->getAlignment())
         {
         case el_text_align::EL_TEXT_ALIGN_CENTER_PARENT:
-            x += (text->getParent()->getWidth() >> 1) - (_tft->textWidth(title) >> 1);
+            x += (text->getParent()->getWidth() >> 1) - (_spr->textWidth(title) >> 1);
             break;
 
         case el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH:
-            x += (text->getWidth() >> 1) - (_tft->textWidth(title) >> 1);
+            x += (text->getWidth() >> 1) - (_spr->textWidth(title) >> 1);
             break;
 
         case el_text_align::EL_TEXT_ALIGN_LEFT:
@@ -83,42 +176,13 @@ public:
 
         if (text->getVerticalAlignment() == el_vertical_align::EL_ALIGN_CENTER)
         {
-            y += (text->getParent()->getHeight() >> 1) - (_tft->fontHeight() >> 1);
+            y += (text->getParent()->getHeight() >> 1) - (_spr->fontHeight() >> 1);
         }
 
-        //_gfx->setCursor(0, 0);
-        //_spr->drawPixel(10, 10, TFT_RED);
-        _spr->setTextColor(TFT_WHITE);  // Устанавливаем цвет текста на белый
-        _spr->setCursor(x, y);          // Устанавливаем курсор в верхний левый угол спрайта
-        _spr->println(text->getText()); // Выводим текст в спрайте
+        _spr->setTextColor(TFT_WHITE); // Устанавливаем цвет текста на белый
+        _spr->drawString(title, x, y);
 
-        // _textEngine->setFont(_display->getFontForSize(text->getTextSize()));
-
-        // String textTitle = text->getText();
-
-        // int16_t x = text->getX();
-        // int y = text->getY();
-
-        // int w = _textEngine->getUTF8Width(textTitle.c_str());
-        // int h = _textEngine->getFontAscent();
-
-        // // Горизонтальное выравнивание
-        // switch (text->getAlignment())
-        // {
-        // case el_text_align::EL_TEXT_ALIGN_CENTER_PARENT:
-        //     x = _getTextCenterX(textTitle, text->getParent()->getX(), text->getParent()->getWidth());
-        //     break;
-
-        // case el_text_align::EL_TEXT_ALIGN_CENTER_SELF_WIDTH:
-        //     x = _getTextCenterX(textTitle, x + text->getParent()->getX(), text->getWidth());
-        //     break;
-
-        // case el_text_align::EL_TEXT_ALIGN_RIGHT:
-        //     x = text->getWidth() - _textEngine->getUTF8Width(textTitle.c_str());
-        //     break;
-        // }
-
-        // _textEngine->drawUTF8(x, y, textTitle.c_str());
+        return display_position{{.x = x, .y = y}};
     }
 
     void drawCenteredGroup(ElCenteredGroup *group) override
@@ -131,6 +195,12 @@ public:
 
     void drawLine(ElLine *line) override
     {
+        auto x = line->getX();
+        auto y = line->getY();
+        auto x1 = line->getArea().rightDown.x;
+        auto y1 = line->getArea().rightDown.y;
+
+        _spr->drawLine(x, y, x1, y1, TFT_WHITE);
     }
 
     void drawDisplayTest(ElDisplayTest *displayTest)
@@ -141,6 +211,7 @@ public:
     void drawBatteryIndicr(ElBattery *batteryIndcr) override
     {
     }
+
     void drawScrollbar(ElScrollBar *scrollbar) override
     {
     }

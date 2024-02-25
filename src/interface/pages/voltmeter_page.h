@@ -27,11 +27,11 @@ public:
         _pageView = new VoltemeterPageView(mainBoard->getDisplay(), mainBoard->getInterfaceEngine());
 
         // Восстанавливаем последнее значение частоты АЦП
-        uint lastSampleRate = AppData::getUint("lastSampleData", 80000);
-        Serial.println("Get uint: " + String(lastSampleRate));
+        // uint lastSampleRate = AppData::getUint("lastSampleData", 80000);
+        // Serial.println("Get uint: " + String(lastSampleRate));
 
         // Создаем логику измерения
-        _oscil = new OscilAdcDma(mainBoard, lastSampleRate);
+        _oscil = new OscilLogic(mainBoard);
         _voltmeter = new Voltmetr(mainBoard);
         _voltmeter->setOscil(_oscil);
         _oscil->init();

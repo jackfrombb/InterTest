@@ -7,9 +7,14 @@
 #define LOC_GENERATOR "Generator"
 #define LOC_SETTING "Settings"
 
-//Generator page
-#define LOC_ACTIVE "State"
+// Generator page
+#define LOC_STATE "State"
 #define LOC_ON "On"
 #define LOC_OFF "Off"
 #define LOC_FREQ "Frequency"
 #define LOC_DUTY "Duty"
+
+// Display settings
+#define LOC_DISPLAY "Display"
+#define LOC_CONTRAST "Contrast"
+#define LOC_BRIGHTNESS "Brightness"

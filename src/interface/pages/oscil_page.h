@@ -20,10 +20,9 @@ public:
     {
         _mainBoard = mainBoard;
 
-        uint lastSampleRate = AppData::getUint("lastSampleData", 80000);
-        
+       // uint lastSampleRate = AppData::getUint("lastSampleData", 80000);
 
-        _oscil = new OscilAdcDma(mainBoard, lastSampleRate);
+        _oscil = new OscilLogic(mainBoard);
         _voltmeter = new Voltmetr(_mainBoard);
         _voltmeter->setOscil(_oscil);
 

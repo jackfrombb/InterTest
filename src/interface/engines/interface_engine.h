@@ -3,15 +3,15 @@
  * @author JackFromBB (jack@boringbar.ru)
  * @brief Виртуальный класс, представляющий частично абстрактные функции отрисовки элементов на дисплее
  * - Главный метод отрисовки страницы - drawPage, потому что там взываются события начала и конца отрисовки страницы.
- * - Главный метод отрисовки для элементов - drawElement, там так же вызываются события, 
+ * - Главный метод отрисовки для элементов - drawElement, там так же вызываются события,
  *   идет проверка и потом уже выбор метода отрисовки
  * - Отрисовка идет в замкнутых на себя методах/функциях, которые берут страничку как группу и начинают поочерёдно идти по элементам
  *   пока не дойдет последнего, пропуская скрытые и nullptr элементы
  * @version 0.1
  * @date 2024-02-21
- * 
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 
 #pragma once
@@ -61,6 +61,8 @@ protected:
 
             el->onDraw();
 
+            // Serial.println("El type: " + String(el->getElementType()));
+
             switch (el->getElementType())
             {
             case el_type::EL_TYPE_BUTTON:
@@ -72,7 +74,7 @@ protected:
                 break;
 
             case el_type::EL_TYPE_TEXT:
-                drawText((ElText *)el);
+                drawText((ElText *)el); //(ElText *)el);
                 break;
 
             case el_type::EL_TYPE_PROGRESS_BAR:

@@ -476,6 +476,16 @@ public:
         int16_t x = text->getX();
         int y = text->getY();
 
+        if (text->isWidthMatchParent())
+        {
+            text->setWidth((uint32_t)text->getParent()->getWidth());
+        }
+
+        if (text->isHeightMatchParent())
+        {
+            text->setHeight((uint32_t)text->getParent()->getHeight());
+        }
+
         int textWidth = _u8g2->getUTF8Width(textTitle.c_str());
         int textHeight = _u8g2->getAscent();
 
@@ -536,7 +546,7 @@ public:
         int progressLineWidth = (int)((float)(progressBar->getWidth() - 4) * progressBar->getProgress());
 
         progressLineWidth = max(progressLineWidth, 0);
-        progressLineWidth = min(progressLineWidth, progressBar->getWidth() - 4);
+        progressLineWidth = min(progressLineWidth, (int) (progressBar->getWidth() - 4));
         _u8g2->drawBox(progressBar->getX() + 2, progressBar->getY() + 2, progressLineWidth, (progressBar->getHeight() - 4));
     }
 
@@ -592,7 +602,7 @@ public:
         int progressLineWidth = (int)((float)(batteryIndcr->getWidth() - 4) * batteryIndcr->getProgress());
 
         progressLineWidth = max(progressLineWidth, 0);
-        progressLineWidth = min(progressLineWidth, batteryIndcr->getWidth() - 4);
+        progressLineWidth = min(progressLineWidth, (int) (batteryIndcr->getWidth() - 4));
         _u8g2->drawBox(batteryIndcr->getX() + 6, batteryIndcr->getY() + 2, progressLineWidth, (batteryIndcr->getHeight() - 4));
     }
 

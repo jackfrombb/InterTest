@@ -14,11 +14,12 @@ class SettingsPage : public InterfacePageVirtual
 {
 private:
     SettingsPageView* _pageView;
+    iHaveShareSettings* owners[1] = { _display };
 
 public:
     SettingsPage(MainBoard *mainBoard) : InterfacePageVirtual(mainBoard->getDisplay())
     {
-        _pageView = new SettingsPageView(_display);
+        _pageView = new SettingsPageView(_display, owners, 1);
     }
 
     ~SettingsPage()

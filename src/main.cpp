@@ -16,6 +16,8 @@
 
 #include "helpers.h"                  // Вспомогательные методы общие (найти средне)
 #include "displays/display_structs.h" // Вспомогательные структуры дисплея (точка, область и пр)
+#include "share_setting.h"            // Единый вид настроек. Класс помогающий передать настройку чего либо от разных компонентов
+                                      // на страницу настроек.
 
 /// @brief Структура для передачи данных измерений в интерфейс
 // Пока не придумал где её хранить, что бы избежать "взаимных зависимостей", потому лежит здесь
@@ -34,24 +36,23 @@ typedef struct
 
 #include "controls/control_virtual.h" // Абстракция управления
 
-#include "interface/ellements/ellements_structs.h" // Вспомогательные структуры граф элементов
-#include "interface/ellements/ellement_virtual.h"  // Абстракция граф элементов
+#include "interface/ellements/ellements_structs.h" // Вспомогательные структуры интерфейсных элементов
+#include "interface/ellements/ellement_virtual.h"  // Абстракция интерфейсных элементов
 
 #include "displays/display_virtual.h"           // Абстракция дисплея.  Cоздаёт двигатель отрисовки (InterfaceEngine)
-#include "interface/ellements/ellements_list.h"    // Список элементов
+#include "interface/ellements/ellements_list.h" // Список элементов
 #include "interface/engines/interface_engine.h" // Абстракция двигателя отрисовки
 
 #include "controllers/adc_virtual.h" //Абстракция контроллера adc
 #include "board_virtual.h"           // Абстракция главной платы/контроллера
-#include "oscils/oscil_virtual.h"    // Абстракция над логикой осциографа
-#include "oscils/oscil_adc_dma.h"    // Логикой осциографа continue
+#include "oscils/oscil_virtual.h"    // Абстракция над логикой осциллографа
+#include "oscils/oscil_logic.h"      // Основная логика считывания осциллограммы
 
-#include "hard_timer.h"         // Логика тамера прерываний
-#include "oscils/oscils_list.h" // Логика осцилографа
-#include "voltmeter.h"          // Логика вольтметра
-#include "signal_generator.h"   // Логика генератора сигналов
+#include "hard_timer.h"       // Логика тамера прерываний
+#include "voltmeter.h"        // Логика вольтметра
+#include "signal_generator.h" // Логика генератора сигналов
 
-#include "interface/pages/views/page_view.h"      // Абстракция представления страницы граф. интерфейся
+#include "interface/pages/views/page_view.h"      // Абстракция представления страницы граф. интерфейса
 #include "interface/pages/page_virtual.h"         // Абстракция над контроллера странички
 #include "interface/ellements/ellement_virtual.h" // Абстракция элемента графического дизайна
 
@@ -113,7 +114,7 @@ int pwmF = 100000;
 void setup()
 {
   Serial.begin(115200);
-  
+
   // while (!Serial) // Эта строка не дает загрузится устройству пока не запустится Serial костыль для отладки s2mini
   // {
   //   vTaskDelay(1000); // Что бы не будить псов
@@ -162,7 +163,7 @@ void setup()
 
   // Инициализация синглтона хранения настроек/состояний
   AppData::begin();
-  
+
   // Инициализация синглтона генератора
   SignalGenerator::init(mainBoard->getPwmPin());
 

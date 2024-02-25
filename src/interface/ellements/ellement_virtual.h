@@ -3,7 +3,7 @@
 #include <cmath>
 #include "ellements_structs.h"
 #include "displays/display_structs.h"
-//#include "controls/control_virtual.h"
+// #include "controls/control_virtual.h"
 #include "logi.h"
 
 using namespace std;
@@ -11,18 +11,31 @@ using namespace std;
 class ElementVirtual
 {
 protected:
+    // Элемент видим
     bool _visible = true;
-    display_position _area{};
-    ElementVirtual *_parent = nullptr;
-    el_vertical_align _vertAlign = el_vertical_align::EL_ALGN_TOP;
-    // function<uint16_t()> _calculatedPositionX = nullptr;
-    // function<uint16_t()> _calculatedPositionY = nullptr;
+    // Ширина элемента совпадает с шириной родителя
+    bool _widthMatchParent = false;
+    // Высота элемента совпадает с высотой родителя
+    bool _heightMatchParrent = false;
 
+    // Координаты расположения и размеров
+    display_position _area{};
+    // Родительский элемент
+    ElementVirtual *_parent = nullptr;
+    // Вертикальное выравнивание
+    el_vertical_align _vertAlign = el_vertical_align::EL_ALGN_TOP;
+
+    // Состояние анимации (true в данный момент анимируется)
     bool _isAnimationInProcess = false;
+    // Координаты для анимации перемещения
     display_position _flyToArea{};
+    // Скорость в пикселях за один кадр анимации по X
     float _stepInFrameX = 1.0;
+    // Скорость в пикселях за один кадр анимации по Y
     float _stepInFrameY = 1.0;
+    // Аргументы для события завершения анимации
     void *_animArgs = nullptr;
+    // Событие завершения анимации
     function<void(ElementVirtual *, void *)> _onAnimationEnd = nullptr;
 
 private:
@@ -30,9 +43,11 @@ public:
     ElementVirtual() = default;
     virtual ~ElementVirtual() = default;
 
-    explicit ElementVirtual(ElementVirtual *parent)
+    explicit ElementVirtual(ElementVirtual *parent, bool widhtMatchParent = false, bool heightMatchParent = false)
     {
         _parent = parent;
+        _widthMatchParent = widhtMatchParent;
+        _heightMatchParrent = heightMatchParent;
     }
 
     virtual bool isGroup()
@@ -49,6 +64,28 @@ public:
     virtual bool isVisible()
     {
         return _visible;
+    }
+
+    virtual ElementVirtual *setWidthMatchParent(bool matchParent = true)
+    {
+        _widthMatchParent = matchParent;
+        return this;
+    }
+    
+    // TODO: реализовать поддержку метода в движке интерфейса
+    virtual bool isWidthMatchParent()
+    {
+        return _widthMatchParent;
+    }
+
+    virtual ElementVirtual *setHeightMatchParent(bool matchParent = true)
+    {
+        _heightMatchParrent = matchParent;
+        return this;
+    }
+    virtual bool isHeightMatchParent()
+    {
+        return _heightMatchParrent;
     }
 
     virtual ElementVirtual *setArea(display_position area)
@@ -99,7 +136,7 @@ public:
         return this;
     }
 
-    virtual int getWidth()
+    virtual uint getWidth()
     {
         return _area.getWidth();
     }
@@ -110,7 +147,7 @@ public:
         return this;
     }
 
-    virtual int getHeight()
+    virtual uint getHeight()
     {
         return _area.getHeight();
     }
@@ -136,7 +173,6 @@ public:
     {
         return _isAnimationInProcess;
     }
-
 
     /// @brief Старт анимации перемещения с сохранением размеров
     /// для работы этого метода, все элементы с анимацией должны вызывать .nextAnimStep() в событии прорисовки .onDraw()
@@ -195,20 +231,12 @@ public:
 
                 _onAnimationEnd = nullptr;
             }
-
-            // String msgS = (_isAnimationInProcess ? "Animation in process " : "Animation end ");
-            // logi::p("ElementVirtual", msgS +
-            //                               " diffX: " + String(diffX) +
-            //                               // " diffY: " + String(diffY) +
-            //                               " X: " + String(getX()) +
-            //                               " To X: " + String(_flyToArea.getX()));
-            // " Y: " + String(getY()));
         }
     }
 
     virtual void onDraw()
     {
-        // Стараюсь не использовать это событие для всех элементов, 
+        // Стараюсь не использовать это событие для всех элементов,
         // что бы из бежать лишних проверок (например проверку на анимацию для статичных объектов)
         // Используется в: ElScroll
     }

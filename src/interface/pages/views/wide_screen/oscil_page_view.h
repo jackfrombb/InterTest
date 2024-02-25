@@ -25,7 +25,7 @@ private:
 
     void _initInfoTexts()
     {
-        oscilFreqText.setCalculatedText([this]()
+        oscilFreqText.setCalculatedText([this](void* arg)
                                         { return String(_oscil->getMeasuresInSecond()); })
             ->setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
@@ -40,7 +40,7 @@ private:
         _volt.setButtonId(0)
             ->setSelectedButtonPtr(&selectedButton)
             ->setCalculatedText(
-                [this]
+                [this](void* arg)
                 {
                 String out = "";
                 switch(_selectedMeasuresMode){
@@ -66,7 +66,7 @@ private:
 
         _herz.setButtonId(1)
             ->setSelectedButtonPtr(&selectedButton)
-            ->setCalculatedText([this]
+            ->setCalculatedText([this](void* arg)
                                 { 
                                     String out;
                                     if(_isOnSampleChangeMod){
@@ -82,7 +82,7 @@ private:
 
         _pause.setButtonId(2)
             ->setSelectedButtonPtr(&selectedButton)
-            ->setCalculatedText([this]
+            ->setCalculatedText([this](void* arg)
                                 { return _oscil->isOnPause() ? ">" : "II"; })
             ->setTextSize(el_text_size::EL_TEXT_SIZE_SMALL)
             ->setX(_display->getWidth() - 20)

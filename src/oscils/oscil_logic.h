@@ -17,12 +17,14 @@
 #define ADC_BUFFER_SIZE 512
 
 /// @brief Общая логика снятия осцилограммы с АЦП в continue режиме
-class OscilAdcDma : public OscilVirtual
+class OscilLogic : public OscilVirtual
 {
 private:
     AdcVirtual *_adc = nullptr;
 
-    uint _sampleRate = 1000;
+    setting_args_int_range _freqSetting = setting_args_int_range(0, "lastSampleData", 0, 20000000, 100000);
+
+    //uint _sampleRate = 1000;
 
     // Буферы для хранения результатов АЦП
     uint8_t adc_buffer[ADC_BUFFER_SIZE] = {0};      // Буфер для байтов замеров
@@ -47,7 +49,7 @@ private:
     /// @param pvParameters
     static IRAM_ATTR void readSignal(void *pvParameters)
     {
-        OscilAdcDma *oscil = (OscilAdcDma *)pvParameters;
+        OscilLogic *oscil = (OscilLogic *)pvParameters;
         oscil->xLastWakeTime = xTaskGetTickCount();
         // oscil->_taskIsRuning = true;
 
@@ -83,12 +85,12 @@ private:
     }
 
 public:
-    OscilAdcDma(MainBoard *mainBoard, int sampleRate) : OscilVirtual(mainBoard)
+    OscilLogic(MainBoard *mainBoard) : OscilVirtual(mainBoard)
     {
-        _sampleRate = sampleRate;
+        //_sampleRate = sampleRate;
         _adc = mainBoard->getAdcContinue();
     }
-    ~OscilAdcDma() override
+    ~OscilLogic() override
     {
         deinit();
         _mainBoard->removeAdcContinue();
@@ -110,8 +112,8 @@ public:
 
     esp_err_t init() override
     {
-        auto ret = _adc->init(ADC_BUFFER_SIZE, _sampleRate);
-        if (logi::err("OscilAdcDma", ret))
+        auto ret = _adc->init(ADC_BUFFER_SIZE, _freqSetting.currentVal);
+        if (logi::err("OscilLogic", ret))
         {
             _startThread();
         }
@@ -148,9 +150,12 @@ public:
         auto err = _adc->changeSampleRate(tickTime);
         _pause = false;
 
+
         if (logi::err("OscilContinue", err)) // Если успешно то сохраняем семплрейт
         {
-            AppData::saveUInt("lastSampleData", tickTime);
+            _freqSetting.currentVal = tickTime;
+            _freqSetting.saveToRom();
+            //AppData::saveUInt("lastSampleData", tickTime);
         }
     }
 

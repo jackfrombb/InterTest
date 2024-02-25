@@ -14,7 +14,7 @@
 
 #include "adc_virtual.h"
 #include "driver/i2s.h"
-#include "soc/syscon_periph.h"
+//#include "soc/syscon_periph.h" // Используется для обращения по регистрам
 #include "logi.h"
 
 #define OSCIL_I2S_NUM I2S_NUM_0
@@ -54,8 +54,8 @@ public:
 
         logi::p("Esp32Board", "I2s init ok");
 
-        SYSCON.saradc_ctrl2.sar1_inv = 1;     // SAR ADC samples are inverted by default
-        SYSCON.saradc_ctrl.sar1_patt_len = 0; // Use only the first entry of the pattern table
+        // SYSCON.saradc_ctrl2.sar1_inv = 1;     // SAR ADC samples are inverted by default
+        // SYSCON.saradc_ctrl.sar1_patt_len = 0; // Use only the first entry of the pattern table
                                               // REG_SET_BIT(SYSCON_SARADC_CTRL_REG, SYSCON_SARADC_DATA_TO_I2S);
 
         // delay(300); // required for stability of ADC (вроде и без задержек работает норм, но оставлю как напоминание)

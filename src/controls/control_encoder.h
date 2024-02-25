@@ -6,12 +6,15 @@
 #include "logi.h"
 #include "hard_timer.h"
 
+//  Энкодеры отличаются по способу коммуникации, а потому требуют дополнительного типа
+#define ENCODER_TYPE2 // Это энкодеры с низким профилем.
+
 #ifdef S2MINI
 // Энкодер
-#define ENC_VCC GPIO_NUM_38
-#define ENC_CLCK GPIO_NUM_37
-#define ENC_DT GPIO_NUM_39
-#define ENC_SW GPIO_NUM_40 // Кнопка
+// #define ENC_VCC GPIO_NUM_38
+#define ENC_CLCK GPIO_NUM_10
+#define ENC_DT GPIO_NUM_12
+#define ENC_SW GPIO_NUM_14 // Кнопка
 #endif
 
 #ifdef WROOM32
@@ -79,6 +82,10 @@ public:
     ControlEncoder()
     {
         _enc = new EncButton(ENC_DT, ENC_CLCK, ENC_SW);
+
+#ifdef ENCODER_TYPE2
+        _enc->setEncType(EB_STEP4_LOW);
+#endif
         _encoderTimer = new HardTimer(encTick, TIMER_GROUP_1, TIMER_0, 600, 80);
     }
 
@@ -90,8 +97,10 @@ public:
 
     void init() override
     {
+#ifdef ENC_VCC // Если необходимо запитывать, иначе пин питания подключается к питанию контроллера
         pinMode(ENC_VCC, OUTPUT);
         digitalWrite(ENC_VCC, 1);
+#endif
 
         _encoderTimer->setArgs(this);
         _encoderTimer->init();

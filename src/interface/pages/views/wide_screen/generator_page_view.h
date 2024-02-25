@@ -44,7 +44,7 @@ private:
         _stateValueButton
             .setButtonId(_buttonsCount++)
             ->setSelectedButtonPtr(&_buttonFocus)
-            ->setCalculatedText([this]
+            ->setCalculatedText([this](void* arg)
                                 {
                                     return _generator->isGenerationEnable() ? LOC_ON : LOC_OFF; // Если включен то надпись Вкл
                                 })
@@ -59,7 +59,7 @@ private:
         _freqValueButton
             .setButtonId(_buttonsCount++)
             ->setSelectedButtonPtr(&_buttonFocus)
-            ->setCalculatedText([this]
+            ->setCalculatedText([this](void* arg)
                                 { return String(_generator->getFrequensy()); })
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
             ->setY(_freqTitleText.getY() + _display->getMaxTextHeight(_freqTitleText.getTextSize()) + 10);
@@ -72,7 +72,7 @@ private:
         _dutyValueButton
             .setButtonId(_buttonsCount++)
             ->setSelectedButtonPtr(&_buttonFocus)
-            ->setCalculatedText([this]
+            ->setCalculatedText([this](void* arg)
                                 { return String((uint8_t)(100.0 * _generator->getDutyCycle())); })
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
             ->setY(_dutyTitleText.getY() + _display->getMaxTextHeight(_dutyTitleText.getTextSize()) + 10);
@@ -107,19 +107,26 @@ private:
     /// @param id id кнопки на которую перевелся фокус
     ElementVirtual *_getTargetForId(uint8_t id)
     {
-        switch (id)
+        try
         {
-        case 0:
-            return &_stateTitleText;
+            switch (id)
+            {
+            case 0:
+                return &_stateTitleText;
 
-        case 1:
-            return &_freqTitleText;
+            case 1:
+                return &_freqTitleText;
 
-        case 2:
-            return &_dutyTitleText;
+            case 2:
+                return &_dutyTitleText;
+            }
+
+            return nullptr;
+        }
+        catch(exception ex) {
+            return nullptr;
         }
 
-        return &_stateValueButton;
     }
 
     /// @brief Действия при нажатии кнопки OK
@@ -131,7 +138,7 @@ private:
             _generator->setEnable(!_generator->isGenerationEnable());
             break;
         case 1:
-            
+
             break;
         case 2:
             break;
@@ -184,7 +191,6 @@ public:
 
     void onDraw() override
     {
-        
     }
 };
 
