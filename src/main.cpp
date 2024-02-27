@@ -19,31 +19,18 @@
 #include "share_setting.h"            // Единый вид настроек. Класс помогающий передать настройку чего либо от разных компонентов
                                       // на страницу настроек.
 
-/// @brief Структура для передачи данных измерений в интерфейс
-// Пока не придумал где её хранить, что бы избежать "взаимных зависимостей", потому лежит здесь
-typedef struct
-{
-  uint16_t *buffer;    // Буфер значений (заполняет ацп в логике осцилографа)
-  uint16_t bufferSize; // Размер буфера
-  uint16_t middle;     // Среднее значение высчитывает вольтметр
-  uint16_t max;        // Максимальное
-  uint16_t min;        // Минимальное
-  int16_t bias;        // Смещение для синхронизации периодических сигналов
-  uint16_t readedSize; // Размер считанного в ацп
-} adc_measures_t;
+#include "module_virtual.h" // Абстракция обобщающая инициализируемые компоненты (перестал применять еще в начале разработки, но зависимости не удалял)
 
-#include "module_virtual.h" // Абстракция для того что необходимо инициализировать перед использованием (перестал применять, но не удалил)
+#include "controls/control_virtual.h" // Абстракция обобщающая способы управления (кнопки, энкодеры и пр)
 
-#include "controls/control_virtual.h" // Абстракция управления
-
-#include "interface/ellements/ellements_structs.h" // Вспомогательные структуры интерфейсных элементов
+#include "interface/ellements/ellements_structs.h" // Вспомогательные структуры интерфейсных элементов (положение на экране, размеры и пр.)
 #include "interface/ellements/ellement_virtual.h"  // Абстракция интерфейсных элементов
 
-#include "displays/display_virtual.h"           // Абстракция дисплея.  Cоздаёт двигатель отрисовки (InterfaceEngine)
-#include "interface/ellements/ellements_list.h" // Список элементов
-#include "interface/engines/interface_engine.h" // Абстракция двигателя отрисовки
+#include "displays/display_virtual.h"           // Абстракция дисплея. Cоздаёт двигатель отрисовки (InterfaceEngine прототипирован без реализации)
+#include "interface/ellements/ellements_list.h" // Список элементов интерфейса (текстовые поля, кнопки, отображение графика и пр)
+#include "interface/engines/interface_engine.h" // Абстракция двигателя отрисовки дизайна на дисплее
 
-#include "controllers/adc_virtual.h" //Абстракция контроллера adc
+#include "controllers/adc_virtual.h" // Абстракция контроллера adc
 #include "board_virtual.h"           // Абстракция главной платы/контроллера
 #include "oscils/oscil_virtual.h"    // Абстракция над логикой осциллографа
 #include "oscils/oscil_logic.h"      // Основная логика считывания осциллограммы
@@ -121,30 +108,13 @@ void setup()
   // };
   // Serial.println("SERIAL: Setup complete");
 
-  // logi::settings(true, &usbSerial);
-
-  // Просто смотрю на конфигурацию в теории
-  // spi_bus_config_t spi_config = {
-  //   .data0_io_num = GPIO_NUM_0,
-  //   .data1_io_num = GPIO_NUM_1,
-  //   .data2_io_num = GPIO_NUM_2,
-  //   .data3_io_num = GPIO_NUM_3,
-  //   .data4_io_num = GPIO_NUM_5,
-  //   .data5_io_num = GPIO_NUM_6,
-  //   .data6_io_num = GPIO_NUM_7,
-  //   .data7_io_num = GPIO_NUM_8,
-  //   .max_transfer_sz = 0,
-  //   .flags = 0,
-  //   .intr_flags =0,
-  // };
-
-  // spi_bus_initialize(spi_host_device_t::SPI1_HOST, &spi_config, SPI_DMA_CH_AUTO);
-  // spi_bus_add_device(spi_host_device_t::SPI1_HOST, )
-
   logi::p("Main", "Start");
 
+  // Инициализация синглтона хранения настроек/состояний
+  AppData::begin();
+
   display->init();
-  Serial.println("Display init OK");
+  logi::p("Main", "Display init OK");
   delay(100);
 
   mainBoard->init();
@@ -156,13 +126,12 @@ void setup()
   *progress = 0.3;
   delay(100);
 
+  // Выводим описание контроллера
   logi::p("Main", "Model: " + String(ESP.getChipModel()) +
                       "\nCores: " + String(ESP.getChipCores()) +
                       "\nCore Freq: " + String(ESP.getCpuFreqMHz()) +
                       "\nHeap: " + String(ESP.getHeapSize()));
 
-  // Инициализация синглтона хранения настроек/состояний
-  AppData::begin();
 
   // Инициализация синглтона генератора
   SignalGenerator::init(mainBoard->getPwmPin());

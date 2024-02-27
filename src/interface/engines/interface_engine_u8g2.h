@@ -438,23 +438,28 @@ public:
 
     void drawLine(ElLine *line) override
     {
-        _u8g2->drawLine(line->getX(), line->getY(), line->getArea().rightDown.x, line->getArea().rightDown.y);
+        _u8g2->drawLine(line->getX(), line->getY(), line->getX() + line->getWidth(), line->getY() + line->getHeight());
     }
 
+    /// @brief Отрисовать кнопку
+    /// @param button класс описывающий кнопку
+    /// @return точная позиция и размеры текста в кнопке
     display_position drawButton(ElTextButton *button) override
     {
         // Получаем реальную позицию отрисовки текста
         display_position pos = drawText(button);                   // Выводим текст
         if (button->isSelected() && button->getEditPosition() < 0) // если активна то рисуем рамку вокруг
         {
-            int16_t x = (button->getParent()->getX() + button->getX()) - 2;
-            int16_t y = (button->getParent()->getY() + button->getY()) - 2;
+            uint8_t padding = 3;
             int16_t w = pos.getWidth();
             int16_t h = pos.getHeight();
+
+            int16_t x = pos.getX();
+            int16_t y = pos.getY();
             uint8_t r = 2;
 
             // Рисуем рамку с отступами, а по Y вычитаем высоту строки, иначе рамка будет сдвинута вниз
-            _u8g2->drawRFrame(pos.getX() - 4, pos.getY() - h - 4, w + 8, h + 8, r);
+            _u8g2->drawFrame(x - padding, y - padding, w + (padding << 1), h + (padding << 1));
         }
 
         return pos;
@@ -473,9 +478,6 @@ public:
 
         String textTitle = text->getText();
 
-        int16_t x = text->getX();
-        int y = text->getY();
-
         if (text->isWidthMatchParent())
         {
             text->setWidth((uint32_t)text->getParent()->getWidth());
@@ -488,6 +490,9 @@ public:
 
         int textWidth = _u8g2->getUTF8Width(textTitle.c_str());
         int textHeight = _u8g2->getAscent();
+
+        int16_t x = text->getX();
+        int y = text->getY();
 
         // Горизонтальное выравнивание
         switch (text->getAlignment())
@@ -512,29 +517,51 @@ public:
         {
             y += (text->getParent()->getHeight() >> 1) - (textHeight >> 1);
         }
-
-        uint16_t textX = x + text->getParent()->getX();
-        uint16_t textY = y + textHeight + text->getParent()->getY(); //  (Y элемента делаем по верхнему углу)
-
-        // Отрисовать текст если он вмещается в экран
-        // if (textX + textWidth > 0 && textY < _display->getHeight() && textX < _display->getWidth() && textY > 0)
-        _u8g2->drawUTF8(textX, textY, textTitle.c_str());
-
-        // Если в режиме посимвольного редактирования то рисуем линию под символом, который редактируется
-        if (text->getEditPosition() >= 0 && textTitle.length() > 0)
+        else if (text->getVerticalAlignment() == el_vertical_align::EL_TEXT_ALIGN_SELF_CENTER)
         {
-            uint8_t maxPosition = text->getText().length() - 1;                    // Кол-во символов
-            uint8_t pos = std::min<uint8_t>(maxPosition, text->getEditPosition()); // Находим положение подчеркнутого символа
-            String sub = textTitle.substring(0, pos);                              // Строка до подчеркнутого
-            String subText = (String)textTitle[pos];                               // Сам символ
-            uint8_t subWidth = _u8g2->getUTF8Width(subText.c_str());               // Ширина символа в пикс
-            uint16_t textWidth = _u8g2->getUTF8Width(sub.c_str());                 // Расстояние от начала текста до символа
-
-            _u8g2->drawLine((textX + textWidth) - (subWidth + 2), textY + 2, textX + textWidth - 1, textY + 2);
+            y += (text->getHeight() >> 1) - (textHeight >> 1);
         }
 
-        return display_position{.leftUp{.x = (int)textX, .y = (int)textY},
-                                .rightDown{.x = (int)(textX + textWidth), .y = (int)(textY + textHeight)}};
+        uint16_t textX = x;
+        uint16_t textY = y + textHeight; //  (Y элемента делаем по верхнему углу)
+
+        // Отрисовать текст опираясь на стиль заголовка
+        if (text->getVisualStyleFlags() & STYLE_MAIN_TITLE)
+        {
+            _u8g2->setDrawColor(1);
+            _u8g2->drawRBox(text->getX(), text->getY(), text->getWidth(), text->getHeight(), 2);
+
+            _u8g2->setDrawColor(0);
+            _u8g2->drawUTF8(textX, textY, textTitle.c_str());
+            _u8g2->setDrawColor(1);
+        }
+        else
+        {
+            _u8g2->drawUTF8(textX, textY, textTitle.c_str());
+        }
+
+        // Если в режиме посимвольного редактирования то рисуем линию под символом, который редактируется
+        if (text->isInEditMode())
+        {
+            // Отсчет идет от 1, потому длина строки и есть последний символ
+            uint8_t maxPosition = text->getText().length();                        // Кол-во символов
+            uint8_t pos = std::min<uint8_t>(maxPosition, text->getEditPosition()); // Находим положение подчеркнутого символа
+            String sub = textTitle.substring(0, pos - 1);                          // Строка до подчеркнутого
+            String subText = (String)textTitle[pos - 1];                           // Сам символ
+            uint8_t subWidth = _u8g2->getMaxCharWidth();                           // Ширина символа в пикс
+            uint16_t textWidth = _u8g2->getUTF8Width(sub.c_str());                 // Расстояние от начала текста до символа
+
+            _u8g2->drawLine(textX + textWidth, textY + 2, textX + textWidth + subWidth, textY + 2);
+            Serial.println("Sub: " + sub);
+        }
+
+        if (text->getVisualStyleFlags() & STYLE_ROUNDED_BORDER_AROUND)
+        {
+            _u8g2->drawRFrame(text->getX(), text->getY(), text->getWidth(), text->getHeight(), 2);
+        }
+
+        return display_position{.leftUp{.x = (int)textX, .y = (int)textY - textHeight},
+                                .rightDown{.x = (int)(textX + textWidth), .y = (int)textY}};
     }
 
     void drawProgressBar(ElProgressBar *progressBar) override
@@ -546,7 +573,7 @@ public:
         int progressLineWidth = (int)((float)(progressBar->getWidth() - 4) * progressBar->getProgress());
 
         progressLineWidth = max(progressLineWidth, 0);
-        progressLineWidth = min(progressLineWidth, (int) (progressBar->getWidth() - 4));
+        progressLineWidth = min(progressLineWidth, (int)(progressBar->getWidth() - 4));
         _u8g2->drawBox(progressBar->getX() + 2, progressBar->getY() + 2, progressLineWidth, (progressBar->getHeight() - 4));
     }
 
@@ -602,7 +629,7 @@ public:
         int progressLineWidth = (int)((float)(batteryIndcr->getWidth() - 4) * batteryIndcr->getProgress());
 
         progressLineWidth = max(progressLineWidth, 0);
-        progressLineWidth = min(progressLineWidth, (int) (batteryIndcr->getWidth() - 4));
+        progressLineWidth = min(progressLineWidth, (int)(batteryIndcr->getWidth() - 4));
         _u8g2->drawBox(batteryIndcr->getX() + 6, batteryIndcr->getY() + 2, progressLineWidth, (batteryIndcr->getHeight() - 4));
     }
 

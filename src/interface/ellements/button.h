@@ -3,22 +3,23 @@
 #include "ellement_virtual.h"
 #include "el_text.h"
 
-typedef struct
-{
-    void (*event)(void *args);
-    void *args;
-} ui_event;
-
 class ElTextButton : public ElText
 {
 private:
     uint8_t _buttonId;        // ID этой кнопки
     uint8_t *_selectedButton; // ID кнопки на которой сейчас курсор
 
-    bool _pushed;    // кнопка нажата
-    bool _selected;  // кнопка выбрана
-    ui_event _event; // событие по нажатию кнопки
+    bool _pushed;   // кнопка нажата
+    bool _selected; // кнопка выбрана
     el_text_size _textSize;
+
+    // Событие наведения фокуса на кнопку
+    void *_onSelectedArgs = nullptr;
+    function<void(void *args, ElementVirtual *el)> _onSelectedEvent = nullptr;
+
+    // События контрола при наведении фокуса на кнопку
+    void *_controlEventArgs = nullptr;
+    function<bool(void *args, control_event_type event, ElementVirtual *el)> _onControlEvent = nullptr;
 
 public:
     ElTextButton()
@@ -34,14 +35,8 @@ public:
         _selected = false;
         _pushed = false;
     }
-    ~ElTextButton()
-    = default;
 
-    ElTextButton *setEvent(ui_event event)
-    {
-        _event = event;
-        return this;
-    }
+    ~ElTextButton() = default;
 
     ElTextButton *setButtonId(uint8_t buttonId)
     {
@@ -60,9 +55,34 @@ public:
         return this;
     }
 
-    ui_event getEvent()
+    ElTextButton *setOnControlEvent(function<bool(void *args, control_event_type event, ElementVirtual *el)> onControlEvent, void *args)
     {
-        return _event;
+        _onControlEvent = onControlEvent;
+        _controlEventArgs = args;
+        return this;
+    }
+
+    ElTextButton *setOnSelctedEvent(function<void(void *args, ElementVirtual *el)> onSelectedEvent)
+    {
+        _onSelectedEvent = onSelectedEvent;
+
+        return this;
+    }
+
+    bool onControl(control_event_type type, void *args = nullptr) override
+    {
+        if (isInEditMode())
+        {
+            return ElText::onControl(type, args);
+        }
+        else
+        {
+            if (_onControlEvent != nullptr)
+            {
+                return _onControlEvent(_controlEventArgs, type, this);
+            }
+        }
+        return false;
     }
 
     ElTextButton *setPushed(bool pushed)

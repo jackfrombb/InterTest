@@ -1,8 +1,8 @@
 #pragma once
 
 #include <Arduino.h>
-#include "ellement_virtual.h"
-#include "displays/display_structs.h"
+// #include "ellement_virtual.h"
+// #include "displays/display_structs.h"
 
 using namespace std;
 
@@ -26,7 +26,7 @@ public:
     void setPointsSource(function<adc_measures_t()> getMeasuresFunc)
     {
         _getMeasuresFunc = getMeasuresFunc;
-        _drawDots = false; //AppData::getBool("waveformDots", false);
+        _drawDots = false; // AppData::getBool("waveformDots", false);
         _drawBackGround = true;
     }
 
@@ -35,7 +35,8 @@ public:
         _measures = measures;
     }
 
-    adc_measures_t* getMeasuresPtr(){
+    adc_measures_t *getMeasuresPtr()
+    {
         return &_measures;
     }
 
@@ -48,7 +49,8 @@ public:
         return _measures;
     }
 
-    bool isNeedDrawBackground(){
+    bool isNeedDrawBackground()
+    {
         return _drawBackGround;
     }
 

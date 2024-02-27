@@ -16,12 +16,12 @@ class ElScroll : public ElGroup
 {
 private:
     ElText _testText;
-    bool _isOneByOne;                // Если включен, то добавление элементов будет друг за другом по выбранному направлению
+    bool _isOneByOne;                // [Не доделано] Если включен, то добавление элементов будет друг за другом по выбранному направлению
     bool _isHorizontal;              // Вертикальныая или горизонтальная прокрутка
     uint8_t _overscrollPadding = 10; // Величина отступа добавляемая последнему элементу
 
 public:
-    ElScroll(bool isOneByOne = true, bool isHorizontal = false)
+    ElScroll(bool isOneByOne = false, bool isHorizontal = false)
     {
         _isOneByOne = isOneByOne;
         _isHorizontal = isHorizontal;
@@ -84,13 +84,32 @@ public:
     {
         if (_isHorizontal)
         {
-            int16_t pos = 0 - el->getX();
+            int16_t pos = 0 - el->getArea().leftUp.x;
             flyTo(pos, getY(), 10);
         }
         else
         {
-            int16_t pos = 0 - el->getY();
+            int16_t pos = 0 -  el->getArea().leftUp.y;
+            logi::p("Scroll", "Scroll to y: " + String(pos));
             flyTo(getX(), pos, 10);
+        }
+    }
+
+    void smoothScrollToPosition(uint8_t position)
+    {
+        smoothScrollTo(getElements()[position]);
+    }
+
+    void smoothScrollTo(int xOrY)
+    {
+        int val = -xOrY;
+        if (_isHorizontal)
+        {
+            flyTo(val, getY(), 10);
+        }
+        else
+        {
+            flyTo(getX(), val, 10);
         }
     }
 

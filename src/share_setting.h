@@ -34,7 +34,7 @@ enum share_setting_type
 struct settings_args_virtual
 {
 public:
-    int16_t id; // Id для определения настройки в событии
+    int16_t id = 0; // Id для определения настройки в событии
     // тип настройки
     share_setting_type settings_type;
     // активна ли настройка (возможно какие то другие настройки её отключают её действие)
@@ -58,7 +58,7 @@ public:
 
         case share_setting_type::SETTING_TYPE_INT_STEEP:
         {
-            AppData::get()->saveInt(inRomTag, *((uint *)getValuePtr()));
+            AppData::get()->saveInt(inRomTag, *((int *)getValuePtr()));
             break;
         }
         case share_setting_type::SETTING_TYPE_INT_RANGE:
@@ -72,9 +72,10 @@ public:
 protected:
     /// @brief Конструктор. Скрыт для не наследующих классов, что бы не могли создать объект
     /// @param inRomTag Тег для хранения настройки в пзу
-    settings_args_virtual(int16_t id, const char *inRomTag)
+    settings_args_virtual(int16_t idNum, const char *tag)
     {
-        settings_args_virtual::inRomTag = inRomTag;
+        id = idNum;
+        inRomTag = tag;
     }
 };
 
@@ -215,9 +216,9 @@ public:
 
     virtual vector<ShareSetting *> getSettings() { return settings; }
     virtual String getShareSettingsOwnerName() { return _ownerName; };
-    virtual iHaveShareSettings addSetting(ShareSetting *setting)
+    virtual iHaveShareSettings *addSetting(ShareSetting *setting)
     {
         settings.push_back(setting);
-        return *this;
+        return this;
     }
 };

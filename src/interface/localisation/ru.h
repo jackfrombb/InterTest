@@ -13,6 +13,7 @@
 #define LOC_OFF "Выкл"
 #define LOC_FREQ "Частота"
 #define LOC_DUTY "Скважность"
+#define LOC_WAIT "Подождите"
 
 // Настройки дисплея
 #define LOC_DISPLAY "Дисплей"

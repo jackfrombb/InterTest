@@ -13,6 +13,7 @@
 #define LOC_OFF "Off"
 #define LOC_FREQ "Frequency"
 #define LOC_DUTY "Duty"
+#define LOC_WAIT "Wait for"
 
 // Display settings
 #define LOC_DISPLAY "Display"

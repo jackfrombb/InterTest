@@ -31,6 +31,7 @@ typedef enum
 {
     EL_ALGN_TOP,
     EL_ALIGN_CENTER,
+    EL_TEXT_ALIGN_SELF_CENTER,
     EL_ALIGN_BOTTOM
 } el_vertical_align;
 
@@ -51,5 +52,17 @@ typedef enum
     EL_TYPE_BATTERY_INDCATOR, // Отображать заряд батареи
     EL_TYPE_SCROLLBAR,        // Индикатор прокрутки страницы
 } el_type;
+
+/// @brief Структура для передачи данных измерений в интерфейс
+typedef struct
+{
+  uint16_t *buffer;    // Буфер значений (заполняет ацп в логике осцилографа)
+  uint16_t bufferSize; // Размер буфера
+  uint16_t middle;     // Среднее значение высчитывает вольтметр
+  uint16_t max;        // Максимальное
+  uint16_t min;        // Минимальное
+  int16_t bias;        // Смещение для синхронизации периодических сигналов
+  uint16_t readedSize; // Размер считанного в ацп
+} adc_measures_t;
 
 

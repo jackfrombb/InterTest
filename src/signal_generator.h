@@ -185,7 +185,9 @@ protected:
         _pin = dacPin;
 
         // Добавляем настройки в класс хранения
-        addSetting(&_stateSetting).addSetting(&_freqSetting).addSetting(&_dutySetting);
+        addSetting(&_stateSetting)
+            ->addSetting(&_freqSetting)
+            ->addSetting(&_dutySetting);
     }
 
 public:

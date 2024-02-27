@@ -35,12 +35,13 @@ private:
             ->setWidth(_display->getWidth())
             ->setHeight(_display->getHeight());
 
-        // Инициализируем поля
+        // Состояние генератора надпись
         _stateTitleText
             .setText(String(LOC_STATE) + ":") // "Состояние"
             ->setX(padding)
             ->setY(padding);
 
+        // Состояние генератора кнопка
         _stateValueButton
             .setButtonId(_buttonsCount++)
             ->setSelectedButtonPtr(&_buttonFocus)
@@ -51,11 +52,13 @@ private:
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
             ->setY(padding + _display->getMaxTextHeight(_stateTitleText.getTextSize()) + 10);
 
+        // Частота генератора надпись
         _freqTitleText
             .setText(String(LOC_FREQ) + ":")
             ->setX(padding)
             ->setY(_stateValueButton.getY() + 20);
 
+        // Частота кнопка
         _freqValueButton
             .setButtonId(_buttonsCount++)
             ->setSelectedButtonPtr(&_buttonFocus)
@@ -64,11 +67,13 @@ private:
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
             ->setY(_freqTitleText.getY() + _display->getMaxTextHeight(_freqTitleText.getTextSize()) + 10);
 
+        // Скважность генератора надпись
         _dutyTitleText
             .setText(String(LOC_DUTY) + ":")
             ->setX(padding)
             ->setY(_freqValueButton.getY() + 20);
 
+        // Скважность кнопка
         _dutyValueButton
             .setButtonId(_buttonsCount++)
             ->setSelectedButtonPtr(&_buttonFocus)

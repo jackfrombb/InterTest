@@ -43,24 +43,26 @@ protected:
         switch (args->id)
         {
         case 0:
-            _u8g2->setContrast(_contrastSettingsArg.currentVal);
+            _u8g2->setContrast(_contrastSettingsArg->currentVal);
+            // logi::p("Display", "Set contrast: " + String(_contrastSettingsArg->currentVal));
             break;
 
         case 1:
-            uint8_t val = (uint8_t)((float)255 * (_brightnessSettingsArg.currentVal / 100.0));
-            ledcWrite(3, val);
+            uint8_t val = (uint8_t)((float)255 * (_brightnessSettingsArg->currentVal / 100.0));
+            ledcWrite(ledc_channel_t::LEDC_CHANNEL_3, 255 - val);
+            // ledc_update_duty(ledc_mode_t::LEDC_LOW_SPEED_MODE, ledc_channel_t::LEDC_CHANNEL_3);
             break;
         }
         return true;
     };
 
     // делегирование настроек контрастности дисплея
-    setting_args_int_range _contrastSettingsArg = setting_args_int_range(0, "display_contrast", 0, 255, 190);
-    ShareSetting _contrastSetting = ShareSetting(LOC_CONTRAST, &_contrastSettingsArg, _onSettingChangeEvent);
+    setting_args_int_range *_contrastSettingsArg; // = setting_args_int_range(0, "d_co", 50, 200, 190);
+    ShareSetting _contrastSetting = ShareSetting(LOC_CONTRAST, _contrastSettingsArg, _onSettingChangeEvent);
 
     // делегирование настроек яркости подсветки дисплея
-    setting_args_int_range _brightnessSettingsArg = setting_args_int_range(1, "display_brightness", 0, 100, 80);
-    ShareSetting _brightnessSetting = ShareSetting(LOC_BRIGHTNESS, &_brightnessSettingsArg, _onSettingChangeEvent);
+    setting_args_int_range *_brightnessSettingsArg; // = setting_args_int_range(1, "d_br", 0, 100, 80);
+    ShareSetting _brightnessSetting = ShareSetting(LOC_BRIGHTNESS, _brightnessSettingsArg, _onSettingChangeEvent);
 
 public:
     Nokia5110_U8g2()
@@ -68,12 +70,7 @@ public:
         _u8g2 = new U8G2_PCD8544_84X48_F_4W_SW_SPI(U8G2_R0, /* clock=*/GPIO_NUM_19, /* data=*/GPIO_NUM_18,
                                                    /* cs=*/GPIO_NUM_17, /* dc=*/GPIO_NUM_5, /* reset=*/GPIO_NUM_16);
 
-        addSetting(&_contrastSetting).addSetting(&_brightnessSetting);
-    }
-
-    Nokia5110_U8g2(const Nokia5110_U8g2 &copy)
-    {
-        Serial.println("Copy YES");
+        addSetting(&_contrastSetting)->addSetting(&_brightnessSetting);
     }
 
     ~Nokia5110_U8g2()
@@ -83,16 +80,27 @@ public:
 
         delete _interfaceEngine;
         _interfaceEngine = nullptr;
+
+        delete _contrastSettingsArg;
+        delete _brightnessSettingsArg;
+        _contrastSettingsArg = nullptr;
+        _brightnessSettingsArg = nullptr;
     }
 
     void init() override
     {
         Serial.println("Display width: " + String(_u8g2->getWidth()));
 
+        _contrastSettingsArg = new setting_args_int_range(0, "d_co", 50, 200, 190);
+        _brightnessSettingsArg = new setting_args_int_range(1, "d_br", 0, 100, 80);
+
+        uint8_t val = (uint8_t)((float)255 * (_brightnessSettingsArg->currentVal / 100.0));
         //  Подсветка дисплея
-        ledcSetup(3, 100, 8);
+        ledcSetup(3, 1000, 8);
         ledcAttachPin(DISPLAY_LED_PIN, 3);
-        ledcWrite(3, 150);
+        ledcWrite(3, 255 - val);
+
+        _u8g2->setContrast(_contrastSettingsArg->currentVal);
 
         _u8g2->begin();
         _u8g2->enableUTF8Print();

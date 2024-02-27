@@ -1,9 +1,10 @@
 #pragma once
 
 #include <cmath>
-#include "ellements_structs.h"
-#include "displays/display_structs.h"
-// #include "controls/control_virtual.h"
+#include "element_style_tags.h" // Теги меняющие стиль отображения элемента
+// #include "ellements_structs.h"
+// #include "displays/display_structs.h"
+//  #include "controls/control_virtual.h"
 #include "logi.h"
 
 using namespace std;
@@ -38,6 +39,9 @@ protected:
     // Событие завершения анимации
     function<void(ElementVirtual *, void *)> _onAnimationEnd = nullptr;
 
+    // флаги меняющие отображение на страничке
+    uint16_t _visualStyleTags = 0x0;
+
 private:
 public:
     ElementVirtual() = default;
@@ -53,6 +57,19 @@ public:
     virtual bool isGroup()
     {
         return false;
+    }
+
+    /// @brief Установить флаги меняюще стиль отображения
+    /// @param flags флаги можно посмотреть в element_style_tags.h
+    virtual ElementVirtual *setVisualStyleFlags(uint16_t flags)
+    {
+        _visualStyleTags = flags;
+        return this;
+    }
+
+    virtual uint16_t getVisualStyleFlags()
+    {
+        return _visualStyleTags;
     }
 
     virtual ElementVirtual *setVisibility(bool visible)
@@ -71,7 +88,7 @@ public:
         _widthMatchParent = matchParent;
         return this;
     }
-    
+
     // TODO: реализовать поддержку метода в движке интерфейса
     virtual bool isWidthMatchParent()
     {
@@ -116,6 +133,10 @@ public:
 
     virtual int getX()
     {
+        if (getParent() != nullptr)
+        {
+            return _area.leftUp.x + getParent()->getX();
+        }
         return _area.leftUp.x;
     }
 
@@ -127,6 +148,10 @@ public:
 
     virtual int getY()
     {
+        if (getParent() != nullptr)
+        {
+            return _area.leftUp.y + getParent()->getY();
+        }
         return _area.leftUp.y;
     }
 
