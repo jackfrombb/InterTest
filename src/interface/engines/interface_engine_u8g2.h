@@ -459,7 +459,7 @@ public:
             uint8_t r = 2;
 
             // Рисуем рамку с отступами, а по Y вычитаем высоту строки, иначе рамка будет сдвинута вниз
-            _u8g2->drawFrame(x - padding, y - padding, w + (padding << 1), h + (padding << 1));
+            _u8g2->drawRFrame(x - padding, y - padding, w + (padding << 1), h + (padding << 1), 2);
         }
 
         return pos;

@@ -3,23 +3,29 @@
 class SettingsPageView : public PageView
 {
 private:
+    // номер кнопки на который наведен фокус
     uint8_t _selectedButton = 0;
-    // uint8_t _buttonsCount = 0;
-    bool _inEditMode = false; // flase - normal, true - edit
+    // Флаг нахождения в режиме редактирования
+    // flase - normal, true - edit
+    bool _inEditMode = false;
 
+    // Список точек перемотки для кнопок (id кнопки = положение в списке, значение = положение в ElScroll root)
     vector<uint8_t> _scrollPositions;
-    vector<uint8_t> _buttonPositions; // Список соотношений позиции кнопки в root и её id. _buttonPositions.size() = кол-во кнопок
+    // Список соотношений позиции кнопки в root и её id.(положение в списке = id кнопки, значение = положение кнопки в root)
+    // _buttonPositions.size() = кол-во кнопок
+    vector<uint8_t> _buttonPositions;
 
+    // Массив указателей классов-владельцев настроек
     iHaveShareSettings **_settingsOwners;
+    // Размер массива _settingsOwners
     uint8_t _ownersCount;
-    ShareSetting *_selectedSetting = nullptr;
 
     // Корневой элемент
     ElScroll *root;
 
-    /// @brief Заполнить страничку секциями
-    /// @param owners
-    /// @param count
+    /// @brief Заполнить страничку секциями и настройками в них
+    /// @param owners владельцы настроек (название секции)
+    /// @param count кол-во владельцев
     void _createSettingsSection(iHaveShareSettings **owners, uint8_t count)
     {
         int y = 0; // Для высчитывания положения следующего элемента по y
@@ -88,7 +94,7 @@ private:
                 // Увеличиваем на высоту + отступ для кнопки
                 y += settingTitle->getHeight() + 6;
 
-                _addSettingToRoot(root, &y, s);
+                _addButtonToSetting(root, &y, s);
             }
         }
 
@@ -99,13 +105,14 @@ private:
     /// @param root корневой элемент
     /// @param y положение добавляемого элемента по y
     /// @param setting настройка
-    void _addSettingToRoot(ElGroup *root, int *y, ShareSetting *setting)
+    void _addButtonToSetting(ElGroup *root, int *y, ShareSetting *setting)
     {
         ElTextButton *button = new ElTextButton();
 
         button
             ->setButtonId(_buttonPositions.size()) // Как id ставим позицию в списке позиций кнопок
             ->setSelectedButtonPtr(&_selectedButton)
+            ->setShareSetting(setting)
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
             ->setY(*y) // отступ на 8 писелей, что бы рамка не наезжала
             ->setHeight(_display->getMaxTextHeight(button->getTextSize()))
@@ -117,32 +124,6 @@ private:
         case share_setting_type::SETTING_TYPE_BOOL:
         {
             button
-                // Событие управления
-                ->setOnControlEvent([this](void *args, control_event_type event, ElementVirtual *el)
-                                    {
-                                        ShareSetting *setting = (ShareSetting *)args;
-                                        auto setArgs = (setting_args_bool *)setting->getArgs();
-
-                                        // Может прийти только вкл и выкл, потому применяем
-                                        // новое значение и сразу выходим из режима редактирования
-                                        switch (event)
-                                        {
-                                        case control_event_type::PRESS_OK:
-                                        {
-                                            // Меняем значение
-                                            setArgs->currentVal = !setArgs->currentVal;
-                                            // Оповещаем
-                                            setting->onChange();
-                                            // Выходим из editMode
-                                            _inEditMode = false;
-                                            // Уведомляем об обработке нажатия
-                                            return true;
-                                            break;
-                                        }
-                                        }
-
-                                        return false; },
-                                    setting)
                 // Высчитыываемый текст
                 ->setCalculatedText([this](void *arg)
                                     {
@@ -156,32 +137,6 @@ private:
         case share_setting_type::SETTING_TYPE_INT_RANGE:
         {
             button
-                // Обработка события выбора. Перводим кнопку в режим редактирования
-                ->setOnControlEvent([this](void *args, control_event_type event, ElementVirtual *el)
-                                    { 
-                                        if(event == control_event_type::PRESS_OK)
-                                        {
-                                            ElTextButton* button = (ElTextButton*)el;
-                                            button->switchEditMode();
-                                            return true;
-                                        }
-                                        return false; },
-                                    setting)
-                // Устанавливаем управление режимом редактирования
-                ->setOnEditModeEvent([this](void *arg)
-                                     {
-                                        ShareSetting* setting = (ShareSetting* ) arg;
-                                        auto args = (setting_args_int_range*) setting->getArgs();
-                                        return args->currentVal; },
-                                     [this](int val, ElText *el, void *arg)
-                                     {
-                                         ShareSetting *setting = (ShareSetting *)arg;
-                                         auto args = (setting_args_int_range *)setting->getArgs();
-                                         args->currentVal = range(val, args->fromVal, args->toVal);
-                                         setting->onChange();
-                                         return true;
-                                     },
-                                     setting)
                 // Устанавливаем вычисляемый текст
                 ->setCalculatedText([this](void *arg)
                                     {
@@ -229,45 +184,21 @@ private:
         }
     }
 
+    /// @brief Получить крайний в root элемент (Указатель)
     ElementVirtual *_getLastRootElement()
     {
         return root->getElements()[root->getElements().size() - 1]; // Аккуратнее с пустым списком
     }
 
+    /// @brief отправить событие управления на кнопку
+    /// @param isEventProcessed флаг обработано ли событие
+    /// @param event событие управления
     void _controlEventInEditMode(bool *isEventProcessed, control_event_type event)
     {
         // Выбираем кнопку из списка и отправляем ей событие
         ElTextButton *button = (ElTextButton *)root->getElement(_buttonPositions[_selectedButton]);
         *isEventProcessed = button->onControl(event);
         _inEditMode = button->isInEditMode();
-    }
-
-    /// @brief Обработка нажатия на кнопку состояния
-    /// @param event событие (тут может быть только PRESS_ОК, поскольку кнопка не обрабатывает другие события)
-    /// @param setting изменяемая настройка
-    bool _onBoolSettingEdit(control_event_type event, ShareSetting *setting)
-    {
-        auto args = (setting_args_bool *)setting->getArgs();
-
-        // Может прийти только вкл и выкл, потому применяем
-        // новое значение и сразу выходим из режима редактирования
-        switch (event)
-        {
-        case control_event_type::PRESS_OK:
-        {
-            // Меняем значение
-            args->currentVal = !args->currentVal;
-            // Оповещаем
-            setting->onChange();
-            // Выходим из editMode
-            _inEditMode = false;
-            // Уведомляем об обработке нажатия
-            return true;
-            break;
-        }
-        }
-
-        return false;
     }
 
 public:

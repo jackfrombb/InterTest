@@ -21,6 +21,9 @@ private:
     void *_controlEventArgs = nullptr;
     function<bool(void *args, control_event_type event, ElementVirtual *el)> _onControlEvent = nullptr;
 
+    // Настройки, которыми управляет кнопка
+    ShareSetting *_setting = nullptr;
+
 public:
     ElTextButton()
     {
@@ -83,6 +86,104 @@ public:
             }
         }
         return false;
+    }
+
+    /// @brief Установить настройку, которой будет управлять кнопка
+    /// @param setting настройка
+    ElTextButton *setShareSetting(ShareSetting *setting)
+    {
+        _setting = setting;
+
+        switch (setting->getArgs()->settings_type)
+        {
+        case share_setting_type::SETTING_TYPE_BOOL:
+            setOnControlEvent([this](void *args, control_event_type event, ElementVirtual *el)
+                              {
+                                        ShareSetting *setting = (ShareSetting *)args;
+                                        auto setArgs = (setting_args_bool *)setting->getArgs();
+
+                                        // Может прийти только вкл и выкл, потому применяем
+                                        // новое значение и сразу выходим из режима редактирования
+                                        switch (event)
+                                        {
+                                        case control_event_type::PRESS_OK:
+                                        {
+                                            // Меняем значение
+                                            setArgs->currentVal = !setArgs->currentVal;
+                                            // Оповещаем
+                                            setting->onChange();
+                                            // Уведомляем об обработке нажатия
+                                            return true;
+                                        }
+                                        }
+
+                                        return false; },
+                              setting);
+            break;
+        case share_setting_type::SETTING_TYPE_INT_RANGE:
+        {
+            // Переход в событие управления
+            setOnControlEvent([this](void *args, control_event_type event, ElementVirtual *el)
+                              { 
+                                        if(event == control_event_type::PRESS_OK)
+                                        {
+                                            ElTextButton* button = (ElTextButton*)el;
+                                            button->switchEditMode();
+                                            return true;
+                                        }
+                                        return false; },
+                              setting);
+
+            // Устанавливаем управление режимом редактирования
+            setOnEditModeEvent([this](void *arg)
+                               {
+                                        ShareSetting* setting = (ShareSetting* ) arg;
+                                        auto args = (setting_args_int_range*) setting->getArgs();
+                                        return args->currentVal; },
+                               [this](int val, ElText *el, void *arg)
+                               {
+                                   ShareSetting *setting = (ShareSetting *)arg;
+                                   auto args = (setting_args_int_range *)setting->getArgs();
+                                   args->currentVal = range(val, args->fromVal, args->toVal);
+                                   setting->onChange();
+                                   return true;
+                               },
+                               setting);
+            break;
+        }
+        case share_setting_type::SETTING_TYPE_INT_STEEP:
+        {
+            // Обработка события выбора. Перводим кнопку в режим редактирования
+            setOnControlEvent([this](void *args, control_event_type event, ElementVirtual *el)
+                              { 
+                                        if(event == control_event_type::PRESS_OK)
+                                        {
+                                            ElTextButton* button = (ElTextButton*)el;
+                                            button->switchEditMode();
+                                            return true;
+                                        }
+                                        return false; },
+                              setting);
+            // Устанавливаем управление режимом редактирования
+            setOnEditModeEvent([this](void *arg)
+                               {
+                                        ShareSetting* setting = (ShareSetting* ) arg;
+                                        auto args = (setting_args_int_steep*) setting->getArgs();
+                                        return args->getSteepValue(); },
+                               [this](int val, ElText *el, void *arg)
+                               {
+                                   ShareSetting *setting = (ShareSetting *)arg;
+                                   auto args = (setting_args_int_steep *)setting->getArgs();
+
+                                   setting->onChange();
+                                   return true;
+                               },
+                               setting);
+            break;
+        }
+        }
+
+        return this;
     }
 
     ElTextButton *setPushed(bool pushed)

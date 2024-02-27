@@ -135,7 +135,8 @@ struct setting_args_int_steep : public settings_args_virtual
         currentVal = AppData::getUint(inRomTag, defaultVal);
     }
 
-    // Возвращает текущее значение или 0
+    /// @brief Возвращает значение по адресу currentVal из массива значений
+    /// @return 
     int getSteepValue()
     {
         if (isHaveValue())
