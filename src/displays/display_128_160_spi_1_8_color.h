@@ -60,16 +60,16 @@ public:
 
         tft->setRotation(3); // Устанавливаем ориентацию дисплея
 
-        tft->fillScreen(TFT_RED); // Проверка пикселей (только для разработки, потом сделаю пункт проверки в настройках)
-        delay(100);
-        tft->fillScreen(TFT_GREEN);
-        delay(100);
-        tft->fillScreen(TFT_BLUE);
-        delay(100);
-        tft->fillScreen(TFT_BLACK);
-        delay(100);
-        tft->fillScreen(TFT_WHITE);
-        delay(100);
+        // tft->fillScreen(TFT_RED); // Проверка пикселей (только для разработки, потом сделаю пункт проверки в настройках)
+        // delay(100);
+        // tft->fillScreen(TFT_GREEN);
+        // delay(100);
+        // tft->fillScreen(TFT_BLUE);
+        // delay(100);
+        // tft->fillScreen(TFT_BLACK);
+        // delay(100);
+        // tft->fillScreen(TFT_WHITE);
+        // delay(100);
 
         _interfaceEngine = new InterfaceEngine_ArduinoGfx(this);
     }

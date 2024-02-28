@@ -44,6 +44,9 @@ protected:
         {
         case 0:
             _u8g2->setContrast(_contrastSettingsArg->currentVal);
+            
+            _u8g2->clearDisplay();
+            _u8g2->clearBuffer();
             // logi::p("Display", "Set contrast: " + String(_contrastSettingsArg->currentVal));
             break;
 
@@ -100,9 +103,10 @@ public:
         ledcAttachPin(DISPLAY_LED_PIN, 3);
         ledcWrite(3, 255 - val);
 
+        _u8g2->begin();
+
         _u8g2->setContrast(_contrastSettingsArg->currentVal);
 
-        _u8g2->begin();
         _u8g2->enableUTF8Print();
 
         U8g2DisplayVirtual::init(); // Там инициализация джвижка прорисовки

@@ -28,6 +28,7 @@
 #define GENERATOR_LEDC_PWM_NUM 2
 #endif
 
+// На данный момент реализован только меандр, что то другое буду делать гораздо позже и по необходимости
 typedef enum
 {
     SIGNAL_TYPE_NONE,
@@ -40,74 +41,17 @@ typedef enum
 class SignalGenerator : public iHaveShareSettings
 {
 private:
-    bool _isThreadStarted = false;
-    volatile bool stopDACGenerate = false;
+    bool _isEnabled = false;
 
     uint8_t _pin;                                // Пин вывода, для поддержки аналоговых сигналов должен быть dac выводом
     signal_type _currentMode = SIGNAL_TYPE_NONE; // Тип генерируемого сигнала
-    uint32_t _pwmFreq = 1000;                    // ledc max 150khz = 150000, dac wave min/max =
-    float _duty = 0.5;                           // 0.0-1.0 = 0-100%
     TaskHandle_t _workingThreadHandler;
-
-    int pulse = 0;
-    int period = 0;
 
     // настройки для ledc
     ledc_mode_t mode = ledc_mode_t::LEDC_LOW_SPEED_MODE;
     ledc_timer_bit_t timer_bit = ledc_timer_bit_t::LEDC_TIMER_1_BIT;
     ledc_timer_t timer = ledc_timer_t::LEDC_TIMER_3;
     ledc_channel_t chanel = ledc_channel_t::LEDC_CHANNEL_2;
-
-    void _generateDacMeandre()
-    {
-        // Вычисляем длительность импульса в микросекундах
-        pulse = 1000000 / _pwmFreq * _duty;
-        // Вычисляем период меандра в микросекундах
-        period = 1000000 / _pwmFreq;
-
-        // Serial.println("Pulse: " + String(pulse) + " Peiod: " + String(period));
-
-        // // Выводим максимальное напряжение на ЦАП
-        // dac_output_voltage(DAC_CHANNEL_1, DAC_OFFSET + DAC_AMP);
-        // // Ждем длительность импульса
-        // delayMicroseconds(pulse);
-        // // Выводим минимальное напряжение на ЦАП
-        // dac_output_voltage(DAC_CHANNEL_1, DAC_OFFSET + DAC_MIN);
-        // // Ждем остаток периода
-        // delayMicroseconds(period - pulse);
-    }
-
-    static IRAM_ATTR void _workThread(void *pvParameters)
-    {
-        auto gen = (SignalGenerator *)pvParameters;
-
-        // Инициализируем ЦАП
-        dac_output_enable(DAC_CHANNEL_1);
-
-        while (true)
-        {
-            switch (gen->_currentMode)
-            {
-            case signal_type::SIGNAL_TYPE_MEANDR_DAC:
-                // Проблема этого подхода, это то что невозможно не блокируя поток достаточно сколько то точно
-                // выводить сигнал. Решение это выводить через i2s, в dma стиле, порционно через буфер
-
-                // Выводим максимальное напряжение на ЦАП
-                dac_output_voltage(DAC_CHANNEL_1, 255);
-                // Ждем длительность импульса
-                delayMicroseconds(gen->pulse);
-                // Выводим минимальное напряжение на ЦАП
-                dac_output_voltage(DAC_CHANNEL_1, 0);
-                // Ждем остаток периода
-                delayMicroseconds(gen->period - gen->pulse);
-                vTaskDelay(1);
-                break;
-
-            default:
-                vTaskDelay(100);
-            }
-        }
-    }
 
     // функция для перевода микросекунд в xTicksToDelay
     TickType_t microseconds_to_ticks(uint32_t delay_us)
@@ -125,73 +69,88 @@ private:
         return xTicksToDelay;
     }
 
-    void _stopThread()
-    {
-        vTaskDelete(_workingThreadHandler);
-        _isThreadStarted = false;
-    }
-
-    void _startThread()
-    {
-        xTaskCreatePinnedToCore(
-            _workThread,            // Function to implement the task
-            "workThreadDac",        // Name of the task
-            1024,                   // Stack size in bytes
-            this,                   // Task input parameter
-            1100,                   // Priority of the task
-            &_workingThreadHandler, // Task handle.
-            0                       // Core where the task should run
-        );
-
-        _isThreadStarted = true;
-    }
-
     function<bool(settings_args_virtual *)> _onSettingChangeEvent = [this](settings_args_virtual *args)
     {
         switch (args->id)
         {
         case 0:
-            setEnable(_stateArg.currentVal);
-            break;
-
-        case 1:
-            setFrequensy(_freqArg.currentVal);
+            setEnable(_stateArg->currentVal);
             break;
 
         case 2:
-            setDutyCycle(_dutyArg.getSteepValue());
+        case 1:
+            setFrequensy(_freqArg->currentVal);
             break;
         }
 
         return true;
     };
 
+public:
     // Настройки состояния
-    setting_args_bool _stateArg = setting_args_bool(0, "generator_state", true);
-    ShareSetting _stateSetting = ShareSetting(LOC_STATE, &_stateArg, _onSettingChangeEvent);
+    setting_args_bool *_stateArg = nullptr; // = setting_args_bool(0, "ge_st", true);
+    ShareSetting *_stateSetting = nullptr;  // = ShareSetting(LOC_STATE, _stateArg, _onSettingChangeEvent);
 
     // Настройки частоты
-    setting_args_int_range _freqArg = setting_args_int_range(1, "generator_freq", 0, 20000000, 100000);
-    ShareSetting _freqSetting = ShareSetting(LOC_FREQ, &_freqArg, _onSettingChangeEvent);
+    setting_args_int_range *_freqArg = nullptr; // = setting_args_int_range(1, "ge_frq", 0, 20000000, 100000);
+    ShareSetting *_freqSetting = nullptr;       // ShareSetting(LOC_FREQ, _freqArg, _onSettingChangeEvent);
 
     // Настройки скважности
-    setting_args_int_steep _dutyArg = setting_args_int_steep(2, "generator_duty", {}, 0);
-    ShareSetting _dutySetting = ShareSetting(LOC_DUTY, &_dutyArg, _onSettingChangeEvent);
+    setting_args_int_steep *_dutyArg = nullptr; // = setting_args_int_steep(2, "ge_dty", {}, 0);
+    ShareSetting *_dutySetting = nullptr;       // ShareSetting(LOC_DUTY, _dutyArg, _onSettingChangeEvent);
 
 protected:
     static SignalGenerator *_instance;
+    vector<int> dutySteeps;
+
     SignalGenerator(uint8_t dacPin) : iHaveShareSettings(LOC_GENERATOR)
     {
         _pin = dacPin;
 
+        _init();
+
+        Serial.println("State id: " + String(_stateSetting->getArgs()->id) +
+                       "State type: " + String(_stateSetting->getArgs()->settings_type));
+
         // Добавляем настройки в класс хранения
-        addSetting(&_stateSetting)
-            ->addSetting(&_freqSetting)
-            ->addSetting(&_dutySetting);
+        addSetting(_stateSetting)
+            ->addSetting(_freqSetting)
+            ->addSetting(_dutySetting);
+    }
+
+    void _init()
+    {
+        _stateArg = new setting_args_bool(0, "ge_st", true);
+        _freqArg = new setting_args_int_range(1, "ge_frq", 0, 20000000, 100000);
+        setFrequensy(_freqArg->currentVal);
+        uint currentSteep = (uint)(dutySteeps.size() >> 1);
+
+        Serial.println("Steeps count : " + String(dutySteeps.size()) + " CurSteep: " + String(currentSteep));
+        _dutyArg = new setting_args_int_steep(2, "ge_dty", &dutySteeps, currentSteep);
+
+        _stateSetting = new ShareSetting(LOC_STATE, _stateArg, _onSettingChangeEvent);
+        _freqSetting = new ShareSetting(LOC_FREQ, _freqArg, _onSettingChangeEvent);
+        _dutySetting = new ShareSetting(LOC_DUTY, _dutyArg, _onSettingChangeEvent);
+
+        if (_stateArg->currentVal)
+        {
+            startMeandrLedc();
+        }
     }
 
 public:
-    ~SignalGenerator() = default;
+    /* Все аргументы настроек нужно инициализировать только после запуска и инициализации App_Data::init() в основном потоке */
+
+    ~SignalGenerator()
+    {
+        delete _stateArg;
+        delete _freqArg;
+        delete _dutyArg;
+
+        delete _stateSetting;
+        delete _freqSetting;
+        delete _dutySetting;
+    }
 
     /// @brief Инициализация перед запуском
     /// @param dacPin
@@ -207,13 +166,8 @@ public:
         return _instance;
     }
 
-    static void testLedc(void *args)
-    {
-    }
-
     ledc_isr_handle_t isrHandle; // Для управления прерыванием
-
-    void startMeandrLedc(uint32_t frq, float duty)
+    void startMeandrLedc()
     {
         // ledc_isr_register(&testLedc, this, ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_HIGH, &isrHandle);
 
@@ -221,11 +175,12 @@ public:
             .speed_mode = mode,
             .duty_resolution = timer_bit,
             .timer_num = timer,
-            .freq_hz = frq,
+            .freq_hz = (uint)_freqArg->currentVal,
             .clk_cfg = ledc_clk_cfg_t::LEDC_AUTO_CLK,
         };
 
-        float maxDuty = 1; // pow(2.0, (float)ledc_timer.duty_resolution) - 1; //((2 ** 13) - 1) - взято из примера https://github.com/espressif/esp-idf/blob/v4.4.6/examples/peripherals/ledc/ledc_basic/main/ledc_basic_example_main.c
+        // Выставляем скважность
+        uint32_t duty = (uint32_t)((pow(2.0, (float)ledc_timer.duty_resolution) - 1) * ((float)_dutyArg->getSteepValue() / 100.0)); // pow(2.0, (float)ledc_timer.duty_resolution) - 1; //((2 ** 13) - 1) - взято из примера https://github.com/espressif/esp-idf/blob/v4.4.6/examples/peripherals/ledc/ledc_basic/main/ledc_basic_example_main.c
 
         ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
 
@@ -235,64 +190,15 @@ public:
             .channel = chanel,
             .intr_type = ledc_intr_type_t::LEDC_INTR_DISABLE,
             .timer_sel = timer,
-            .duty = (uint32_t)(maxDuty),
+            .duty = duty,
             .hpoint = 0,
         };
 
         ledc_channel_config(&config);
 
-        // ledc_set_duty(mode, chanel, maxDuty * duty);
-        // ledc_update_duty(mode, chanel);
-
-        // // Номер шим, частота, битность (определяет максимальное число скважности)
-        // ledcSetup(GENERATOR_LEDC_PWM_NUM, frq, 1);
-        // // Номер пина вывода, номер шим
-        // ledcAttachPin(_pin, GENERATOR_LEDC_PWM_NUM);
-        // // Номер шим, скважность
-        // ledcWrite(GENERATOR_LEDC_PWM_NUM, 1);// ((float)std::numeric_limits<uint8_t>::max()) * duty);
-
         _currentMode = signal_type::SIGNAL_TYPE_MEANDR_LEDC;
-        _pwmFreq = frq;
-        _duty = duty;
-    }
 
-    void startMenadrDac(uint32_t frq, float duty)
-    {
-        _currentMode = signal_type::SIGNAL_TYPE_MEANDR_DAC;
-        _pwmFreq = frq;
-        _duty = duty;
-        // Вычисляем длительность импульса в микросекундах
-        pulse = 1000000 / _pwmFreq * _duty;
-        // Вычисляем период меандра в микросекундах
-        period = 1000000 / _pwmFreq;
-
-        if (!_isThreadStarted)
-        {
-            _startThread();
-        }
-    }
-
-    /// @brief Вывести синус сигнал на вывод DAC1
-    /// @param frq Range: 130(130Hz) ~ 55000(100KHz)
-    void startWaveDac(uint32_t frq)
-    {
-        dac_output_enable(DAC_CHANNEL_1);
-        dac_cw_config_t config = dac_cw_config_t{
-            .en_ch = DAC_CHANNEL_1,
-            .scale = dac_cw_scale_t::DAC_CW_SCALE_1,
-            .phase = dac_cw_phase_t::DAC_CW_PHASE_180,
-            .freq = frq,
-            .offset = (int8_t)-1,
-        };
-        dac_cw_generator_config(&config);
-        dac_cw_generator_enable();
-
-        _currentMode = signal_type::SIGNAL_TYPE_WAVE;
-        _pwmFreq = frq;
-    }
-
-    void startSawtoothDac(float frq)
-    {
+        _isEnabled = true;
     }
 
     void stop()
@@ -308,8 +214,6 @@ public:
         }
     }
 
-    // Дальше заглушки для реализации интерфейса TODO: реализовать функционал
-
     void setEnable(bool enable)
     {
         if (!enable)
@@ -320,7 +224,7 @@ public:
         else
         {
             _currentMode = signal_type::SIGNAL_TYPE_MEANDR_LEDC;
-            startMeandrLedc(_pwmFreq, _duty);
+            startMeandrLedc();
         }
     }
 
@@ -331,22 +235,59 @@ public:
 
     uint32_t getFrequensy()
     {
-        return _pwmFreq;
+        return (uint32_t)_freqArg->currentVal;
     }
 
-    float getDutyCycle()
+    int getDutyCycle()
     {
-        return _duty;
+        return _dutyArg->getSteepValue();
     }
 
     void setFrequensy(uint32_t frq)
     {
-        _pwmFreq = frq;
-    }
+        /*
+        Фнкция в тестовом режиме. Не доделана и не проверена
+        нам нужно установить частоту генерации, проверить что скважность входит в диапазон
+        и, если не входит, то задать подходящую частоте битность и подобрать близкую к нужной скважность
 
-    void setDutyCycle(float duty)
-    {
-        _duty = duty;
+        Чем выше частота тем ниже битность и больше глючность
+        */
+        Serial.println("Start set freq: " + String(frq));
+        _freqArg->currentVal = range(frq, _freqArg->fromVal, _freqArg->toVal);
+
+        if (_isEnabled)
+            setEnable(false);
+
+        dutySteeps.clear();
+
+        if (_freqArg->currentVal > 8000000)
+        {
+            dutySteeps.insert(dutySteeps.end(), {50}); // 2 значения
+            timer_bit = ledc_timer_bit_t::LEDC_TIMER_1_BIT;
+            Serial.println("Set duty 1 bit ");
+        }
+
+        else if (_freqArg->currentVal > 5000000)
+        {
+            dutySteeps.insert(dutySteeps.end(), {10, 20, 40, 50, 60, 80, 100}); // 4 bit 16 значений
+            timer_bit = ledc_timer_bit_t::LEDC_TIMER_4_BIT;
+            Serial.println("Set duty 4 bit ");
+        }
+        else if (_freqArg->currentVal > 300000)
+        {
+            dutySteeps.insert(dutySteeps.end(), {10, 20, 30, 40, 50, 60, 70, 80, 90, 100}); // 64 значений
+            timer_bit = ledc_timer_bit_t::LEDC_TIMER_6_BIT;
+            Serial.println("Set duty 6 bit ");
+        }
+        else
+        {
+            dutySteeps.insert(dutySteeps.end(), {10, 20, 30, 40, 50, 60, 70, 80, 90, 100}); // 256 значений
+            timer_bit = ledc_timer_bit_t::LEDC_TIMER_8_BIT;
+            Serial.println("Set duty 8 bit ");
+        }
+
+        if (_isEnabled)
+            setEnable(true);
     }
 };
 

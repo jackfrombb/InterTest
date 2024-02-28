@@ -89,8 +89,8 @@ public:
         }
         else
         {
-            int16_t pos = 0 -  el->getArea().leftUp.y;
-            logi::p("Scroll", "Scroll to y: " + String(pos));
+            int16_t pos = 0 - el->getArea().leftUp.y;
+            // logi::p("Scroll", "Scroll to y: " + String(pos));
             flyTo(getX(), pos, 10);
         }
     }

@@ -124,25 +124,35 @@ struct setting_args_int_range : public settings_args_virtual
 /// @brief Задача значений для SETTING_TYPE_INT_STEEP
 struct setting_args_int_steep : public settings_args_virtual
 {
-    int *steepValues; // Массив со значениями
-    int steepCount;   // Кол-во значений в массиве
-    uint currentVal;  // Индекс текущего значения
+    vector<int> *values;
+    uint currentVal = 0; // Индекс текущего значения
 
-    setting_args_int_steep(int16_t id, const char *inRomTag, int *steepVals, int defaultVal) : settings_args_virtual(id, inRomTag)
+    setting_args_int_steep(int16_t id, const char *inRomTag, vector<int> *vals, int defaultVal) : settings_args_virtual(id, inRomTag)
     {
+        values = vals;
         settings_type = share_setting_type::SETTING_TYPE_INT_STEEP;
-        steepValues = steepVals;
-        currentVal = AppData::getUint(inRomTag, defaultVal);
+        currentVal = range(AppData::getUint(inRomTag, defaultVal), 0, values->size() - 1);
+    }
+
+    void increaseCurrentVal()
+    {
+        currentVal = currentVal + 1;
+        if (currentVal >= values->size())
+        {
+            currentVal = 0;
+        }
+        logi::p("Setting steep", "Intrease. Size: " + String(values->size()) + " val: " + String(currentVal));
     }
 
     /// @brief Возвращает значение по адресу currentVal из массива значений
-    /// @return 
+    /// @return
     int getSteepValue()
     {
         if (isHaveValue())
         {
-            return steepValues[currentVal];
+            return (*values)[min<uint>(currentVal, values->size() - 1)];
         }
+        logi::p("Seting steep", "dont have steep value");
         return 0;
     }
 
@@ -155,7 +165,7 @@ struct setting_args_int_steep : public settings_args_virtual
     /// @return true если кол-во шагов больше 0, есть ссылка на массив и выбранный индекс меньше максимального
     bool isHaveValue()
     {
-        return steepCount > 0 && steepValues != nullptr && currentVal < steepCount - 1;
+        return values != nullptr && values->size() > 0;
     }
 };
 

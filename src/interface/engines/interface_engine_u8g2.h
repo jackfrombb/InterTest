@@ -552,7 +552,7 @@ public:
             uint16_t textWidth = _u8g2->getUTF8Width(sub.c_str());                 // Расстояние от начала текста до символа
 
             _u8g2->drawLine(textX + textWidth, textY + 2, textX + textWidth + subWidth, textY + 2);
-            Serial.println("Sub: " + sub);
+           // Serial.println("Sub: " + sub);
         }
 
         if (text->getVisualStyleFlags() & STYLE_ROUNDED_BORDER_AROUND)

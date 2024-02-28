@@ -95,9 +95,6 @@ MainBoard *mainBoard = new Esp32Wroom32(display, control);
 
 InterfaceController interfaceController(mainBoard);
 
-// Частота генерации
-int pwmF = 100000;
-
 void setup()
 {
   Serial.begin(115200);
@@ -133,7 +130,8 @@ void setup()
                       "\nHeap: " + String(ESP.getHeapSize()));
 
 
-  // Инициализация синглтона генератора
+  // Инициализация синглтона генератора (в этот момент запускается генерация, если она включена в настройках)
+  // частота и скважность берется так же из настроек
   SignalGenerator::init(mainBoard->getPwmPin());
 
 #ifdef BUZZ
@@ -143,17 +141,6 @@ void setup()
 
   *progress = 0.6;
   delay(300);
-
-  // Временный костыль для проверки АЦП
-  SignalGenerator::get()->startMeandrLedc(pwmF, 0.5);
-  // sigGen.startMenadrDac(pwmF, .5);
-  // sigGen.startWaveDac(pwmF);
-  // создание буфера для хранения сэмплов
-  // buffer = (uint8_t *)malloc(DMA_BUF_LEN);
-  // // инициализация I2S драйвера
-  // i2s_init();
-  // // инициализация таймера
-  // timer_init();
 
   *progress = 0.8;
   delay(100);

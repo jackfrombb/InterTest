@@ -6,7 +6,8 @@ private:
     SignalGenerator *_generator;
 
     uint8_t _buttonFocus = 0; // Для управления переводом фокуса с кнопки на кнопку
-    int8_t _buttonsCount = 0;
+    int8_t _buttonsCount = 0; // Для назначения номера кнопки и хранит кол-во кнопок
+    bool _inEditMode = false; // Флаг входа в редактирование настройки
 
     ElScroll _elScroll = ElScroll(false, false);
     ElScrollBar _elScrollBar = ElScrollBar(true);
@@ -45,7 +46,8 @@ private:
         _stateValueButton
             .setButtonId(_buttonsCount++)
             ->setSelectedButtonPtr(&_buttonFocus)
-            ->setCalculatedText([this](void* arg)
+            ->setShareSetting(_generator->_stateSetting)
+            ->setCalculatedText([this](void *arg)
                                 {
                                     return _generator->isGenerationEnable() ? LOC_ON : LOC_OFF; // Если включен то надпись Вкл
                                 })
@@ -62,7 +64,8 @@ private:
         _freqValueButton
             .setButtonId(_buttonsCount++)
             ->setSelectedButtonPtr(&_buttonFocus)
-            ->setCalculatedText([this](void* arg)
+            ->setShareSetting(_generator->_freqSetting)
+            ->setCalculatedText([this](void *arg)
                                 { return String(_generator->getFrequensy()); })
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
             ->setY(_freqTitleText.getY() + _display->getMaxTextHeight(_freqTitleText.getTextSize()) + 10);
@@ -77,8 +80,9 @@ private:
         _dutyValueButton
             .setButtonId(_buttonsCount++)
             ->setSelectedButtonPtr(&_buttonFocus)
-            ->setCalculatedText([this](void* arg)
-                                { return String((uint8_t)(100.0 * _generator->getDutyCycle())); })
+            ->setShareSetting(_generator->_dutySetting)
+            ->setCalculatedText([this](void *arg)
+                                { return String(_generator->_dutyArg->getSteepValue()); })
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
             ->setY(_dutyTitleText.getY() + _display->getMaxTextHeight(_dutyTitleText.getTextSize()) + 10);
 
@@ -128,25 +132,9 @@ private:
 
             return nullptr;
         }
-        catch(exception ex) {
-            return nullptr;
-        }
-
-    }
-
-    /// @brief Действия при нажатии кнопки OK
-    void _onOkPress()
-    {
-        switch (_buttonFocus)
+        catch (exception ex)
         {
-        case 0:
-            _generator->setEnable(!_generator->isGenerationEnable());
-            break;
-        case 1:
-
-            break;
-        case 2:
-            break;
+            return nullptr;
         }
     }
 
@@ -157,6 +145,28 @@ private:
         _buttonFocus = range(_buttonFocus + (1 * dir), 0, _buttonsCount - 1);
         _elScroll.smoothScrollTo(_getTargetForId(_buttonFocus));
         _calculateScrollBarPosition();
+    }
+
+    bool _sendControlEventToButton(control_event_type event)
+    {
+        bool isEventProcessed = false;
+        switch (_buttonFocus)
+        {
+        case 0:
+            isEventProcessed = _stateValueButton.onControl(event);
+            _inEditMode = _stateValueButton.isInEditMode();
+            break;
+        case 1:
+            isEventProcessed = _freqValueButton.onControl(event);
+            _inEditMode = _freqValueButton.isInEditMode();
+            break;
+        case 2:
+            isEventProcessed = _dutyValueButton.onControl(event);
+            _inEditMode = _dutyValueButton.isInEditMode();
+            break;
+        }
+
+        return isEventProcessed;
     }
 
 public:
@@ -173,24 +183,31 @@ public:
 
     bool onControlEvent(control_event_type eventType) override
     {
-        switch (eventType)
+        if (_inEditMode)
         {
-        case control_event_type::PRESS_LEFT:
-        {
-            _changeButtonFocus(-1);
-            return true;
+            return _sendControlEventToButton(eventType);
         }
+        else
+            switch (eventType)
+            {
+            case control_event_type::PRESS_LEFT:
+            {
+                _changeButtonFocus(-1);
+                return true;
+            }
 
-        case control_event_type::PRESS_RIGHT:
-        {
-            _changeButtonFocus(1);
-            return true;
-        }
+            case control_event_type::PRESS_RIGHT:
+            {
+                _changeButtonFocus(1);
+                return true;
+            }
 
-        case control_event_type::PRESS_OK:
-            _onOkPress();
-            return true;
-        }
+            case control_event_type::PRESS_OK:
+                //_onOkPress();
+                _sendControlEventToButton(eventType);
+                return true;
+            }
+
         return false;
     }
 
