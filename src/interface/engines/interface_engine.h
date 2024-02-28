@@ -38,7 +38,26 @@ protected:
     /// @brief Отрисовать текстовую кнопку
     /// @return реальное положение на экране после отрисовки (при создании не всегдна можно заранее знать реальную ширину и высоту)
     virtual display_position drawButton(ElTextButton *button) = 0;
-    virtual void drawCenteredGroup(ElCenteredGroup *group) = 0;
+    virtual void drawCenteredGroup(ElCenteredGroup *group)
+    {
+        if (group->getElementsCount() == 0)
+        {
+            return;
+        }
+
+        auto newWidth = group->getWidth() / group->getElementsCount();
+        // auto groupArea = group->getArea();
+
+        int16_t prevX = 0;
+
+        for (int i = 0; i < group->getElementsCount(); i++)
+        {
+            ElementVirtual *el = group->getElement(i);
+            el->setWidth(newWidth);
+            el->setX(newWidth * i);
+            drawElement(el);
+        }
+    }
     virtual void drawLine(ElLine *line) = 0;
     virtual void drawDisplayTest(ElDisplayTest *displayTest) {}
     virtual void drawBatteryIndicr(ElBattery *batteryIndcr) = 0;

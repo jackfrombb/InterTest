@@ -12,8 +12,8 @@
 #ifdef S2MINI
 // Энкодер
 // #define ENC_VCC GPIO_NUM_38
-#define ENC_CLCK GPIO_NUM_10
-#define ENC_DT GPIO_NUM_12
+#define ENC_CLCK GPIO_NUM_1
+#define ENC_DT GPIO_NUM_3
 #define ENC_SW GPIO_NUM_14 // Кнопка
 #endif
 
@@ -83,9 +83,12 @@ public:
     {
         _enc = new EncButton(ENC_DT, ENC_CLCK, ENC_SW);
 
-#ifdef ENCODER_TYPE2
+#ifdef WROOM32_
         _enc->setEncType(EB_STEP4_LOW);
+#elif defined(S2MINI)
+        _enc->setEncType(EB_STEP2);
 #endif
+
         _encoderTimer = new HardTimer(encTick, TIMER_GROUP_1, TIMER_0, 600, 80);
     }
 

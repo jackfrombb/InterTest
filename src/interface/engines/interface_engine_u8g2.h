@@ -405,32 +405,6 @@ public:
             el->setWidth(newWidth);
             el->setX(newWidth * i);
             drawElement(el);
-
-            // Устанавливаем реальные размеры и положение группы  (возможно удалю, если не найдет применения)
-            {
-                //
-                //     auto elArea = drawElement(el);
-
-                //     if (elArea.getX() < groupArea.getX())
-                //     {
-                //         groupArea.setX(elArea.getX());
-                //     }
-
-                //     if (elArea.getY() < groupArea.getY())
-                //     {
-                //         groupArea.setY(elArea.getY());
-                //     }
-
-                //     if (elArea.getWidth() > groupArea.getWidth())
-                //     {
-                //         groupArea.setWidth(elArea.getWidth());
-                //     }
-
-                //     if (elArea.getHeight() > groupArea.getHeight())
-                //     {
-                //         groupArea.setHeight(elArea.getHeight());
-                //     }
-            }
         }
 
         // return groupArea;
