@@ -8,7 +8,7 @@ private:
 public:
     GeneratorPage(MainBoard *mainBoard) : InterfacePageVirtual(mainBoard->getDisplay())
     {
-        _pageView = new GeneratorPageView(_display, SignalGenerator::get());
+        _pageView = new GeneratorPageView(_display, mainBoard->getPwmController());
     }
     ~GeneratorPage() override
     {

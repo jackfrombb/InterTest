@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <U8g2lib.h>
 #include "u8g2_display_virtual.h" // Абстракция над всеми дисплеями библиотеки u8g2
-#include "interface/pages/views/wide_screen/wide_views_list.h" // Определение интерфейса
+//#include "interface/pages/views/wide_screen/wide_views_list.h" // Определение интерфейса
 
 #ifdef U8X8_HAVE_HW_I2C
 #include <Wire.h>

@@ -18,6 +18,7 @@ protected:
     uint16_t _bufferSize;
 
     AdcVirtual *_adc = nullptr;
+    PwmControllerVirtual *_pwm = nullptr;
 
 private:
 public:
@@ -28,10 +29,18 @@ public:
         _interfaceEngine = display->getInterfaceEngine();
     }
 
-    virtual ~MainBoard() = default;
+    virtual ~MainBoard()
+    {
+        /*
+        Этот метод ни когда не будет вызываться, но все же напишу
+        */
+        delete _adc;
+        delete _pwm;
+    }
 
     virtual void init()
     {
+        _pwm->settingsInit();
     }
 
     DisplayVirtual *getDisplay()
@@ -52,6 +61,11 @@ public:
     virtual AdcVirtual *getAdcContinue()
     {
         return _adc;
+    }
+
+    virtual PwmControllerVirtual *getPwmController()
+    {
+        return _pwm;
     }
 
     virtual void removeAdcContinue()
@@ -93,5 +107,4 @@ public:
     }
 
     virtual uint16_t getPwmPin() = 0;
-
 };

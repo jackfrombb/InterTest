@@ -45,7 +45,6 @@ private:
 
     uint8_t _pin;                                // Пин вывода, для поддержки аналоговых сигналов должен быть dac выводом
     signal_type _currentMode = SIGNAL_TYPE_NONE; // Тип генерируемого сигнала
-    TaskHandle_t _workingThreadHandler;
 
     // настройки для ledc
     ledc_mode_t mode = ledc_mode_t::LEDC_LOW_SPEED_MODE;
@@ -109,9 +108,6 @@ protected:
 
         _init();
 
-        Serial.println("State id: " + String(_stateSetting->getArgs()->id) +
-                       "State type: " + String(_stateSetting->getArgs()->settings_type));
-
         // Добавляем настройки в класс хранения
         addSetting(_stateSetting)
             ->addSetting(_freqSetting)
@@ -166,7 +162,6 @@ public:
         return _instance;
     }
 
-    ledc_isr_handle_t isrHandle; // Для управления прерыванием
     void startMeandrLedc()
     {
         // ledc_isr_register(&testLedc, this, ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_HIGH, &isrHandle);
@@ -252,7 +247,7 @@ public:
 
         Чем выше частота тем ниже битность и больше глючность
         */
-        Serial.println("Start set freq: " + String(frq));
+        //Serial.println("Start set freq: " + String(frq));
         _freqArg->currentVal = range(frq, _freqArg->fromVal, _freqArg->toVal);
 
         if (_isEnabled)

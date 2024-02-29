@@ -15,7 +15,7 @@
 
 #include <Arduino.h>
 
-#include "interface/pages/views/wide_screen/wide_views_list.h" // Определение интерфейса
+//#include "interface/pages/views/wide_screen/wide_views_list.h" // Определение интерфейса
 
 #define GFXFF 1
 #define FF18 &FreeSans12pt7b

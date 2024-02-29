@@ -3,7 +3,7 @@
 class GeneratorPageView : public PageView
 {
 private:
-    SignalGenerator *_generator;
+    PwmControllerVirtual *_generator;
 
     uint8_t _buttonFocus = 0; // Для управления переводом фокуса с кнопки на кнопку
     int8_t _buttonsCount = 0; // Для назначения номера кнопки и хранит кол-во кнопок
@@ -46,10 +46,10 @@ private:
         _stateValueButton
             .setButtonId(_buttonsCount++)
             ->setSelectedButtonPtr(&_buttonFocus)
-            ->setShareSetting(_generator->_stateSetting)
+            ->setShareSetting(_generator->getStateSetting())
             ->setCalculatedText([this](void *arg)
                                 {
-                                    return _generator->isGenerationEnable() ? LOC_ON : LOC_OFF; // Если включен то надпись Вкл
+                                    return _generator->isEnable() ? LOC_ON : LOC_OFF; // Если включен то надпись Вкл
                                 })
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
             ->setY(padding + _display->getMaxTextHeight(_stateTitleText.getTextSize()) + 10);
@@ -64,9 +64,13 @@ private:
         _freqValueButton
             .setButtonId(_buttonsCount++)
             ->setSelectedButtonPtr(&_buttonFocus)
-            ->setShareSetting(_generator->_freqSetting)
+            ->setShareSetting(_generator->getFreqSetting())
             ->setCalculatedText([this](void *arg)
-                                { return String(_generator->getFrequensy()); })
+                                { 
+                                    ShareSetting* setting = (ShareSetting*) arg;
+                                    setting_args_int_range* settingArgs = (setting_args_int_range*) setting->getArgs();
+                                    return String(settingArgs->currentVal); },
+                                _generator->getFreqSetting())
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
             ->setY(_freqTitleText.getY() + _display->getMaxTextHeight(_freqTitleText.getTextSize()) + 10);
 
@@ -80,9 +84,13 @@ private:
         _dutyValueButton
             .setButtonId(_buttonsCount++)
             ->setSelectedButtonPtr(&_buttonFocus)
-            ->setShareSetting(_generator->_dutySetting)
+            ->setShareSetting(_generator->getDutySetting())
             ->setCalculatedText([this](void *arg)
-                                { return String(_generator->_dutyArg->getSteepValue()); })
+                                { 
+                                    ShareSetting* setting = (ShareSetting*) arg;
+                                    setting_args_int_steep* settingArgs = (setting_args_int_steep*) setting->getArgs();
+                                    return String(settingArgs->getSteepValue()); },
+                                _generator->getDutySetting())
             ->setAlignment(el_text_align::EL_TEXT_ALIGN_CENTER_PARENT)
             ->setY(_dutyTitleText.getY() + _display->getMaxTextHeight(_dutyTitleText.getTextSize()) + 10);
 
@@ -170,7 +178,7 @@ private:
     }
 
 public:
-    GeneratorPageView(DisplayVirtual *display, SignalGenerator *generator) : PageView(display)
+    GeneratorPageView(DisplayVirtual *display, PwmControllerVirtual *generator) : PageView(display)
     {
         _generator = generator;
 

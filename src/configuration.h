@@ -18,17 +18,17 @@ defines для изменения конфигурации железа
 #define APP_VERSION 0.01
 
 // Язык интерфейса-----------------------------------------
-//#define LOCALE_RU
-#define LOCALE_EN
+#define LOCALE_RU
+//#define LOCALE_EN
 
 // Выбор платы-----------------------------
-//#define WROOM32
-#define S2MINI
+#define WROOM32
+//#define S2MINI
 
 // Дисплей-----------------------------------
-//#define NOKIA5110_ // Nokia PCD8544 display
+#define NOKIA5110_ // Nokia PCD8544 display
 // #define OLED128x32_ //дисплей 0.96 OLED I2C
-#define ST7735_TFT_128x160_1_8 // подключение дисплея на контроллере ST7735 TFT 128x160 (1.8, red plate with sd)
+//#define ST7735_TFT_128x160_1_8 // подключение дисплея на контроллере ST7735 TFT 128x160 (1.8, red plate with sd)
 
 // Выбор способа упрвления-----------------
 #define ENCODER

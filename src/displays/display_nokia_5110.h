@@ -1,8 +1,8 @@
 #pragma once
 #include <Arduino.h>
-#include <U8g2lib.h>
-#include "interface/pages/views/wide_screen/wide_views_list.h" // Определение интерфейса
+#include <U8g2lib.h> 
 #include "u8g2_display_virtual.h"
+#include <driver/ledc.h>
 
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>

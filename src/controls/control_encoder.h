@@ -83,7 +83,7 @@ public:
     {
         _enc = new EncButton(ENC_DT, ENC_CLCK, ENC_SW);
 
-#ifdef WROOM32_
+#ifdef WROOM32
         _enc->setEncType(EB_STEP4_LOW);
 #elif defined(S2MINI)
         _enc->setEncType(EB_STEP2);

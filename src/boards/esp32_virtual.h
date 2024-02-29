@@ -2,9 +2,11 @@
     Тут обозначены общие для esp32 моменты, структуры и перчисления, что бы не повторять и в классе каждой платы
 */
 
-//#include "board_virtual.h"
-// #include "displays/display_virtual.h"
-//#include "controls/control_virtual.h"
+// #include "board_virtual.h"
+//  #include "displays/display_virtual.h"
+// #include "controls/control_virtual.h"
+
+#include "controllers/esp32_pwm.h"
 
 /// @brief Информация о конфигурации АЦП
 typedef struct
@@ -33,6 +35,12 @@ protected:
 public:
     Esp32Virtual(DisplayVirtual *display, ControlVirtual *control) : MainBoard(display, control)
     {
+    }
+
+    void init() override
+    {
+        _pwm = new Esp32PwmController(getPwmPin());
+        MainBoard::init();
     }
 
     virtual esp_adc_cal_characteristics_t *getAdcChars()

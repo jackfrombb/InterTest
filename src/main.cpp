@@ -1,4 +1,20 @@
 #include <Arduino.h>
+/**
+ * @file main.cpp
+ * @author JackFromBB (jack@boringbar.ru)
+ * @brief Прошивка для самодельного минимультиметра.
+ * Весь платформозависимый код должен быть спрятан за интерфейсами или, на крайний случай, define'ами, для возможности добавления новго железа
+ * 
+ * Поддержка железа на данный момент:
+ * - Микроконтроллеры: esp32(wroom32, s2mini)
+ * - Дисплеи: Nokia5110, oled, ST7735 TFT 128x160 (1.8, red plate with sd) [последний в ранней стадии добавления, но уже запускается]
+ * (монохромные дисплеи на u8g2 довольно лего добавляются, главное что бы интерфейс вмещался)
+ * @version 0.1
+ * @date 2024-02-29
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 
 // Переключение настроек здесь
 #include "configuration.h"
@@ -30,6 +46,7 @@
 #include "interface/ellements/ellements_list.h" // Список элементов интерфейса (текстовые поля, кнопки, отображение графика и пр)
 #include "interface/engines/interface_engine.h" // Абстракция двигателя отрисовки дизайна на дисплее
 
+#include "controllers/pwm_virtual.h" // Абстракция логики генеатора
 #include "controllers/adc_virtual.h" // Абстракция контроллера adc
 #include "board_virtual.h"           // Абстракция главной платы/контроллера
 #include "oscils/oscil_virtual.h"    // Абстракция над логикой осциллографа
@@ -37,7 +54,7 @@
 
 #include "hard_timer.h"       // Логика тамера прерываний
 #include "voltmeter.h"        // Логика вольтметра
-#include "signal_generator.h" // Логика генератора сигналов
+//#include "signal_generator.h" // Логика генератора сигналов [Утсаревшее. Определение переносится в MainBoard]
 
 #include "interface/pages/views/page_view.h"      // Абстракция представления страницы граф. интерфейса
 #include "interface/pages/page_virtual.h"         // Абстракция над контроллера странички
@@ -68,14 +85,20 @@ ControlVirtual *control = new ControlIr();
 
 // Определение дисплея
 #ifdef NOKIA5110_
+// Определение интерфейса
+#include "interface/pages/views/wide_screen/wide_views_list.h"
 // Nokia PCD8544 display
 #include "displays/display_nokia_5110.h"
 DisplayVirtual *display = new Nokia5110_U8g2();
 #elif defined(OLED128x32_)
+// Определение интерфейса
+#include "interface/pages/views/wide_screen/wide_views_list.h"
 // дисплей 0.96 OLED I2C
 #include "displays/display_128x64.h"
 DisplayVirtual *display = new Display128x64_U8g2();
 #elif defined(ST7735_TFT_128x160_1_8)
+// Определение интерфейса
+#include "interface/pages/views/wide_screen/wide_views_list.h"
 // подключение дисплея на контроллере ST7735 TFT 128x160 (1.8, red plate with sd)
 #include "displays/display_128_160_spi_1_8_color.h"
 DisplayVirtual *display = new Display128x160_1_8_Spi_Color();
@@ -83,6 +106,7 @@ DisplayVirtual *display = new Display128x160_1_8_Spi_Color();
 
 #include "interface/pages/page_list.h"      // Абстракция над контроллера странички
 #include "interface/interface_controller.h" // Управление страницами и отрисовкой
+
 
 // Определение платы
 #ifdef S2MINI
@@ -132,7 +156,7 @@ void setup()
 
   // Инициализация синглтона генератора (в этот момент запускается генерация, если она включена в настройках)
   // частота и скважность берется так же из настроек
-  SignalGenerator::init(mainBoard->getPwmPin());
+  //SignalGenerator::init(mainBoard->getPwmPin());
 
 #ifdef BUZZ
   Serial.println("Buzzer");

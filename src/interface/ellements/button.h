@@ -100,7 +100,7 @@ public:
     {
         _setting = setting;
 
-        logi::p("Button", "set setting: " + String(setting->getArgs()->id) + " type: " + String(setting->getArgs()->settings_type));
+        //logi::p("Button", "set setting: " + String(setting->getArgs()->id) + " type: " + String(setting->getArgs()->settings_type));
 
         switch (setting->getArgs()->settings_type)
         {

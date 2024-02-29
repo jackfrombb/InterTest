@@ -24,7 +24,7 @@ private:
     // Аргументы передаваемые вместе с событием редактирования и запроса числа
     void *_editEventArgs = nullptr;
     // Получить редактируемое число
-    function<int(void* args)> _getEditNumber;
+    function<int(void *args)> _getEditNumber;
     // Событие редактирования возвращает true если редактирование удачно иначе число не меняется
     // отправляет новое число, элемент в котором происходит редактирование и аргументы
     function<bool(int val, ElText *el, void *args)> _onEditEvent = nullptr;
@@ -35,7 +35,7 @@ private:
     void _checkEditPosition(int8_t changeValue, uint8_t maxPos)
     {
         _editPosition = range(_editPosition + changeValue, 1, maxPos, true); // Переносим на следующий разряд, ограничивая максимальным и минимальным значением
-        logi::p("ELText", "max edit pos: " + String(maxPos) + " after val: " + String(_editPosition));
+        // logi::p("ELText", "max edit pos: " + String(maxPos) + " after val: " + String(_editPosition));
     }
 
     /// @brief Изменить редактируемое число
@@ -175,7 +175,7 @@ public:
             case control_event_type::PRESS_OK:
             {
                 int8_t maxPos = getMaxNumPosition<int32_t>(_getEditNumber(_editEventArgs)); // Максимальное положение
-                _checkEditPosition(- 1, maxPos);
+                _checkEditPosition(-1, maxPos);
                 break;
             }
 
@@ -188,6 +188,22 @@ public:
                 // Увеличить число
                 _changeEditNumber(true);
                 break;
+
+            case control_event_type::LONG_PRESS_LEFT:
+            {
+                // Перевод фокуса редактируемого числа назад
+                int8_t maxPos = getMaxNumPosition<int32_t>(_getEditNumber(_editEventArgs)); // Максимальное положение
+                _checkEditPosition(-1, maxPos);
+                break;
+            }
+
+            case control_event_type::LONG_PRESS_RIGHT:
+            {
+                // Перевод фокуса редактируемого числа вперёд
+                int8_t maxPos = getMaxNumPosition<int32_t>(_getEditNumber(_editEventArgs)); // Максимальное положение
+                _checkEditPosition(+1, maxPos);
+                break;
+            }
 
             case control_event_type::PRESS_BACK:
                 // Выйти из режима редактирования
@@ -203,7 +219,7 @@ public:
     /// @param onEditEvent обработчик события
     /// @param args аргументы передаваемые в обработчик (возвращает true если число удачно установлено)
     virtual ElText *
-    setOnEditModeEvent(function<int(void* args)> getEditNumber,
+    setOnEditModeEvent(function<int(void *args)> getEditNumber,
                        function<bool(int val, ElText *el, void *args)> onEditEvent,
                        void *args = nullptr)
     {
