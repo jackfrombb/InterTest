@@ -100,7 +100,7 @@ public:
     {
         _setting = setting;
 
-        //logi::p("Button", "set setting: " + String(setting->getArgs()->id) + " type: " + String(setting->getArgs()->settings_type));
+        // logi::p("Button", "set setting: " + String(setting->getArgs()->id) + " type: " + String(setting->getArgs()->settings_type));
 
         switch (setting->getArgs()->settings_type)
         {
@@ -167,14 +167,28 @@ public:
             // Обработка события выбора. Перводим кнопку в режим редактирования
             setOnControlEvent([this](void *args, control_event_type event, ElementVirtual *el)
                               { 
-                                        if(event == control_event_type::PRESS_OK)
-                                        {
-                                            ShareSetting* setting = (ShareSetting*) args;
-                                            auto args = (setting_args_int_steep*) setting->getArgs();
-                                            args->increaseCurrentVal();
-                                            setting->onChange();
-                                            return true;
-                                        }
+                               ShareSetting* setting = (ShareSetting*) args;
+                               auto argsSetting = (setting_args_int_steep*) setting->getArgs();
+                               switch (event)
+                               {
+                                    case control_event_type::PRESS_OK:
+                                        argsSetting->increaseCurrentVal();
+                                        setting->onChange();
+                                        return true;
+                                    
+
+                                    case control_event_type::LONG_PRESS_LEFT:
+                                        argsSetting->decreaseCurrentVal();
+                                        setting->onChange();
+                                        return true;
+
+                                    case control_event_type::LONG_PRESS_RIGHT:
+                                        argsSetting->increaseCurrentVal();
+                                        setting->onChange();
+                                        return true;
+                                
+                                }
+                                        
                                         return false; },
                               setting);
             break;

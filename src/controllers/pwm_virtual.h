@@ -33,7 +33,7 @@ protected:
 
         case 2:
         case 1:
-            _dutyArg->currentVal = _calculateDutySteeps();
+            _dutyArg->currentVal = _checkDutySteeps();
             isSuccesfull = applySetting();
             break;
         }
@@ -46,7 +46,7 @@ protected:
         _dacPin = dacPin;
     }
 
-    virtual uint8_t _calculateDutySteeps() = 0;
+    virtual uint8_t _checkDutySteeps() = 0;
 
 public:
     virtual ~PwmControllerVirtual()
@@ -74,7 +74,7 @@ public:
         // Настройки частоты
         _freqArg = new setting_args_int_range(1, "ge_frq", 0, 20000000, 100000);
         // Вычисляем среднее положение для настроек скважности
-        uint currentSteep = (uint)_calculateDutySteeps();
+        uint currentSteep = (uint)_checkDutySteeps();
         _dutyArg = new setting_args_int_steep(2, "ge_dty", &dutySteeps, currentSteep);
 
         // Serial.println("Steeps count : " + String(dutySteeps.size()) + " CurSteep: " + String(currentSteep));

@@ -243,7 +243,8 @@ public:
                 root->smoothScrollToPosition(_scrollPositions[_selectedButton]);
                 eventProcessed = true;
                 break;
-
+            case control_event_type::LONG_PRESS_LEFT:
+            case control_event_type::LONG_PRESS_RIGHT:
             case control_event_type::PRESS_OK:
                 _inEditMode = true;
                 onControlEvent(eventType); // отправляем нажатие кнопке

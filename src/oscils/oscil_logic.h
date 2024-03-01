@@ -112,7 +112,8 @@ public:
 
     esp_err_t init() override
     {
-        auto ret = _adc->init(ADC_BUFFER_SIZE, _freqSetting.currentVal);
+        // Ограничиваем минимальными и максимальными значениями
+        auto ret = _adc->init(ADC_BUFFER_SIZE, range(_freqSetting.currentVal, _adc->getMinAdcSampleRate(), _adc->getMaxAdcSampleRate()));
         if (logi::err("OscilLogic", ret))
         {
             _startThread();

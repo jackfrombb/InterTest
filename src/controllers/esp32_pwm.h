@@ -23,28 +23,20 @@ class Esp32PwmController : public PwmControllerVirtual
     ledc_timer_t timer = ledc_timer_t::LEDC_TIMER_3;
     ledc_channel_t chanel = ledc_channel_t::LEDC_CHANNEL_2;
 
-    uint8_t _calculateDutySteeps() override
+    uint8_t _checkDutySteeps() override
     {
         /*
             Наша задача в этом методе установить такую битность таймера, что бы заработала генерация,
             но при этом желательно сохранить скважность на таком же или близком к нему значении
          */
 
-        // Предыдущее значение скважности или -1 если его не было
-        uint8_t prevSteepVal = -1;
+        // Значение скважности в 50% (положение в списке скважностей)
+        uint8_t defaultVal = 0;
         // Для хранения вычисляемого таймера
         ledc_timer_bit_t newTimerBit = timer_bit;
 
-        // Сохраняем предыдущее значение скважности, если оно есть
-        if (dutySteeps.size() > 0 && _dutyArg != nullptr)
-        {
-            prevSteepVal = _dutyArg->getSteepValue();
-        }
         // Очищаем
         dutySteeps.clear();
-
-        // Значение скважности (положение в списке скважностей)
-        uint8_t defaultVal = 0;
 
         if (_freqArg->currentVal > 5000000)
         {
@@ -52,12 +44,12 @@ class Esp32PwmController : public PwmControllerVirtual
             newTimerBit = ledc_timer_bit_t::LEDC_TIMER_1_BIT;
             Serial.println("Set duty 1 bit ");
         }
-        else if (_freqArg->currentVal > 2000000)
+        else if (_freqArg->currentVal > 1200000)
         {
-            dutySteeps.insert(dutySteeps.end(), {10, 20, 40, 50, 60, 80, 100}); // 4 bit 16 значений
+            dutySteeps.insert(dutySteeps.end(), {10, 20, 30, 40, 50, 60, 70, 80, 90, 100}); // 4 bit 16 значений
             newTimerBit = ledc_timer_bit_t::LEDC_TIMER_4_BIT;
             Serial.println("Set duty 4 bit ");
-            defaultVal = 3;
+            defaultVal = 4;
         }
         else if (_freqArg->currentVal > 300000)
         {
@@ -74,18 +66,12 @@ class Esp32PwmController : public PwmControllerVirtual
             defaultVal = 4;
         }
 
-        // Если разрядность таймера поменялась то пытаемся установить скважность соостветственную предыдущей
-        if (newTimerBit != timer_bit && prevSteepVal >= 0)
+        // Если настройки скважности уже инициализированны, то значит идет настройка скважности пользователем
+        // Когда таймер = 1bit то значение может быть только одно иначе применяем значение пользователя
+        // Если предыдущая раязрядность 1 бит, то тоже оставляем стандартное значение
+        if (_dutyArg != nullptr && newTimerBit != ledc_timer_bit_t::LEDC_TIMER_1_BIT && timer_bit != LEDC_TIMER_1_BIT)
         {
-            int i = 0;
-            for (auto s : dutySteeps)
-            {
-                if (s == prevSteepVal)
-                {
-                    defaultVal = i;
-                }
-                i++;
-            }
+            defaultVal = _dutyArg->currentVal;
         }
 
         // Устанавливаем положение таймера

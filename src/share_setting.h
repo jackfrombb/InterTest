@@ -141,7 +141,17 @@ struct setting_args_int_steep : public settings_args_virtual
         {
             currentVal = 0;
         }
-        logi::p("Setting steep", "Intrease. Size: " + String(values->size()) + " val: " + String(currentVal));
+        // logi::p("Setting steep", "Intrease. Size: " + String(values->size()) + " val: " + String(currentVal));
+    }
+
+    void decreaseCurrentVal()
+    {
+        int val = (int)currentVal - 1;
+        if (val < 0)
+        {
+            val = values->size() - 1;
+        }
+        currentVal = val;
     }
 
     /// @brief Возвращает значение по адресу currentVal из массива значений

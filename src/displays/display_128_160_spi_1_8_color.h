@@ -4,6 +4,16 @@
  * @file display_128_160_spi_1_8_color.h
  * @author JackFromBB (jack@boringbar.ru)
  * @brief Класс для подключения и инициализации дисплея на контроллере ST7735 TFT 128x160 (1.8, red plate with sd)
+ *
+ *  Для ST7735_TFT_128x160_1_8  идругих дислеев на библиотеке TFT_eSPI
+ *  обязательно нужно указывать в Users_setup.h пины для подключения
+ *  #define TFT_MISO -1
+ *  #define TFT_MOSI DISP_MOSI  // 35
+ *  #define TFT_SCLK DISP_SCK   // 37
+ *  #define TFT_CS DISP_CS      // 16
+ *  #define TFT_DC DISP_DC      // 33
+ *  #define TFT_RST DISP_RST   // 21
+ *  // #define TFT_BL DISP_LED  // 38
  * @version 0.1
  * @date 2024-02-15
  *
@@ -15,7 +25,7 @@
 
 #include <Arduino.h>
 
-//#include "interface/pages/views/wide_screen/wide_views_list.h" // Определение интерфейса
+// #include "interface/pages/views/wide_screen/wide_views_list.h" // Определение интерфейса
 
 #define GFXFF 1
 #define FF18 &FreeSans12pt7b

@@ -19,12 +19,17 @@ private:
     /// @brief Отрисовать ориентиры и надписи (буферезируется)
     void _drawDotBack(ElWaveform *waveform)
     {
+        if (!waveform->isNeedDrawBackground())
+        {
+            return;
+        }
+
         uint16_t width = waveform->getArea().getWidth();
         uint16_t height = waveform->getArea().getHeight();
 
         // Это два вспомогательных пикселя, которые помогают оценить расположение
-        _spr->drawPixel(width - 1, height - 1, TFT_RED);
-        _spr->drawPixel(0, 0, TFT_RED);
+        //_spr->drawPixel(width - 1, height - 1, TFT_RED);
+        //_spr->drawPixel(0, 0, TFT_RED);
 
         uint8_t widthPixelsCount = (float)width / waveform->getWidthSectionsCount();
         uint8_t heightPixelInSection = (float)height / waveform->getMaxMeasureValue();
@@ -200,8 +205,6 @@ public:
         int w = _spr->textWidth(title);
         int h = _spr->fontHeight();
 
-        _spr->drawPixel(0, 0, TFT_RED);
-
         // Serial.println("Text: " + title + " X: " + String(x) + " Y: " + String(y) + " W: " + String(w) + " H: " + String(h));
 
         switch (text->getAlignment())
@@ -252,7 +255,8 @@ public:
             uint8_t subWidth = _spr->textWidth(subText);                           // Ширина символа в пикс
             uint16_t textWidth = _spr->textWidth(sub.c_str());                     // Расстояние от начала текста до символа
 
-            _spr->drawLine(x + textWidth - 1, y + 3 + (h >> 1), x + textWidth + subWidth - 1, y + 3 + (h >> 1), TFT_RED);
+            _spr->drawLine(x + textWidth - 1, y + 4 + (h >> 1), x + textWidth + subWidth - 1, y + 4 + (h >> 1), TFT_RED);
+            _spr->drawLine(x + textWidth - 1, y + 5 + (h >> 1), x + textWidth + subWidth - 1, y + 5 + (h >> 1), TFT_RED);
             // Serial.println("Sub: " + sub);
         }
 

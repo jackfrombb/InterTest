@@ -161,7 +161,8 @@ public:
         if (_enableConvLim)
             return 20000; // Обязательно для wroom32
 
-        return 633; // Стандартно для adc dma с conv_limit_en = false. Возможно сделаю переход на single read, тогда нижняя планка может стать 1
+        return 3000; // Стандартно для adc dma с conv_limit_en = false. Возможно сделаю переход на single read, тогда нижняя планка может стать 1
+        // Почему то ниже чем 3000 ошибка
     }
 
 private:

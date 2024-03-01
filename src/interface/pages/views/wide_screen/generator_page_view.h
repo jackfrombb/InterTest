@@ -210,6 +210,9 @@ public:
                 return true;
             }
 
+            // При нажатии на ок или вращении энкодера с зажатой кнопкой отправляем событие в текущую кнопку
+            case control_event_type::LONG_PRESS_LEFT:
+            case control_event_type::LONG_PRESS_RIGHT:
             case control_event_type::PRESS_OK:
                 //_onOkPress();
                 _sendControlEventToButton(eventType);
