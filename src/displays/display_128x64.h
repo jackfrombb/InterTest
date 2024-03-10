@@ -3,21 +3,26 @@
 #include <Arduino.h>
 #include <U8g2lib.h>
 #include "u8g2_display_virtual.h" // Абстракция над всеми дисплеями библиотеки u8g2
-//#include "interface/pages/views/wide_screen/wide_views_list.h" // Определение интерфейса
+// #include "interface/pages/views/wide_screen/wide_views_list.h" // Определение интерфейса
 
 #ifdef U8X8_HAVE_HW_I2C
 #include <Wire.h>
 #endif
 
+#ifdef ESP32S
+// дисплей 0.96 OLED I2C
+#define DSP_SDA GPIO_NUM_13
+#define DSP_SCK GPIO_NUM_14
+#else
 // дисплей 0.96 OLED I2C
 #define DSP_SDA GPIO_NUM_33
 #define DSP_SCK GPIO_NUM_21
 #define DISP_VCC GPIO_NUM_16
+#endif
 
 class Display128x64_U8g2 : public U8g2DisplayVirtual
 {
 private:
-
 public:
     Display128x64_U8g2()
     {
@@ -32,14 +37,15 @@ public:
 
     void init() override
     {
-        //logi::p("Display 128x64", "Display width: " + String(_u8g2->getWidth()));
-
+        // logi::p("Display 128x64", "Display width: " + String(_u8g2->getWidth()));
+#ifdef DISP_VCC
         pinMode(DISP_VCC, OUTPUT);
         digitalWrite(DISP_VCC, 1);
+#endif
 
         _u8g2->begin();
         _u8g2->enableUTF8Print();
-        
+
         logi::p("Display 128x64", "Display init ok");
 
         U8g2DisplayVirtual::init(); // Там инициализация джвижка прорисовки
@@ -53,7 +59,7 @@ public:
     /// @return DISPLAY_INTERFACE_TYPE_UNKNOWN,DISPLAY_INTERFACE_TYPE_WIDE,DISPLAY_INTERFACE_TYPE_SLIM,
     display_interface_type getUserInterfaceType() override { return DISPLAY_INTERFACE_TYPE_WIDE; }
 
-     const uint8_t *getFontForSize(el_text_size size) override
+    const uint8_t *getFontForSize(el_text_size size) override
     {
         const uint8_t *ret = nullptr;
         switch (size)
@@ -80,5 +86,4 @@ public:
 
         return ret;
     }
-
 };

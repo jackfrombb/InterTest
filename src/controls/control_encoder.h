@@ -15,9 +15,14 @@
 #define ENC_CLCK GPIO_NUM_1
 #define ENC_DT GPIO_NUM_3
 #define ENC_SW GPIO_NUM_14 // Кнопка
-#endif
 
-#ifdef WROOM32
+#elif defined(ESP32S)
+// Энкодер
+// #define ENC_VCC GPIO_NUM_38
+#define ENC_CLCK GPIO_NUM_21
+#define ENC_DT GPIO_NUM_18
+#define ENC_SW GPIO_NUM_23 // Кнопка
+#elif defined(WROOM32)
 #define ENC_VCC GPIO_NUM_12
 #define ENC_CLCK GPIO_NUM_26
 #define ENC_DT GPIO_NUM_27
@@ -81,8 +86,9 @@ private:
 public:
     ControlEncoder()
     {
-        _enc = new EncButton(ENC_DT, ENC_CLCK, ENC_SW);
+        _enc = new EncButton(ENC_DT, ENC_CLCK, ENC_SW, INPUT_PULLUP, INPUT_PULLUP);
 
+        _enc->setEncType(EB_STEP4_LOW);
 #ifdef WROOM32
         _enc->setEncType(EB_STEP4_LOW);
 #elif defined(S2MINI)

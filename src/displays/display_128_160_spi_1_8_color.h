@@ -52,6 +52,7 @@ class Display128x160_1_8_Spi_Color : public DisplayVirtual
 {
 private:
     TFT_eSPI *tft;
+    TFT_eSprite *_spr; // Спрайт для отрисовки, должен быть назначет из движка отрисовки во время инициализации
 
 public:
     Display128x160_1_8_Spi_Color()
@@ -82,6 +83,11 @@ public:
         // delay(100);
 
         _interfaceEngine = new InterfaceEngine_ArduinoGfx(this);
+    }
+
+    void setDrawSprite(TFT_eSprite *spr)
+    {
+        _spr = spr;
     }
 
     /// @brief Получить тип подключения дисплея
@@ -124,31 +130,27 @@ public:
 
     const uint8_t *getFontForSize(el_text_size size) override
     {
-        // static uint8_t ret = 0;
-
-        // tft->setFreeFont(FF18);
-
-        // switch (size)
-        // {
-        // case EL_VOLTMETER_VALUE_LARGE:
-        //     tft->setTextSize(8);
-        //     break;
-        // case EL_TEXT_SIZE_SUPER_LARGE:
-        //     tft->setTextSize(7);
-        //     break;
-        // case EL_TEXT_SIZE_LARGE:
-        //     tft->setTextSize(6);
-        //     break;
-        // case EL_TEXT_SIZE_MIDDLE:
-        //     tft->setTextSize(4);
-        //     break;
-        // case EL_TEXT_SIZE_SMALL:
-        //     tft->setTextSize(2);
-        //     break;
-        // case EL_TEXT_SIZE_SUPER_SMALL:
-        //     tft->setTextSize(1);
-        //     break;
-        // }
+        switch (size)
+        {
+        case EL_VOLTMETER_VALUE_LARGE:
+            _spr->setTextSize(8);
+            break;
+        case EL_TEXT_SIZE_SUPER_LARGE:
+            _spr->setTextSize(7);
+            break;
+        case EL_TEXT_SIZE_LARGE:
+            _spr->setTextSize(6);
+            break;
+        case EL_TEXT_SIZE_MIDDLE:
+            _spr->setTextSize(4);
+            break;
+        case EL_TEXT_SIZE_SMALL:
+            _spr->setTextSize(2);
+            break;
+        case EL_TEXT_SIZE_SUPER_SMALL:
+            _spr->setTextSize(1);
+            break;
+        }
 
         return nullptr;
     }

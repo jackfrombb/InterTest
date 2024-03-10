@@ -90,7 +90,7 @@ ControlVirtual *control = new ControlIr();
 // Nokia PCD8544 display
 #include "displays/display_nokia_5110.h"
 DisplayVirtual *display = new Nokia5110_U8g2();
-#elif defined(OLED128x32_)
+#elif defined(OLED128x64)
 // Определение интерфейса
 #include "interface/pages/views/wide_screen/wide_views_list.h"
 // дисплей 0.96 OLED I2C
@@ -112,6 +112,9 @@ DisplayVirtual *display = new Display128x160_1_8_Spi_Color();
 #ifdef S2MINI
 #include "boards/esp32_s2mini.h"
 MainBoard *mainBoard = new Esp32S2Mini(display, control);
+#elif defined(ESP32S)
+#include "boards/esp32s.h"
+MainBoard *mainBoard = new Esp32S(display, control);
 #elif defined(WROOM32)
 #include "boards/esp32_wroom32.h"
 MainBoard *mainBoard = new Esp32Wroom32(display, control);

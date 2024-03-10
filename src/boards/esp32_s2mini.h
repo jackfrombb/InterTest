@@ -18,7 +18,7 @@ class Esp32S2Mini : public Esp32Virtual
 protected:
     const init_adc_info _adcInfo = {
         .unit = (adc_unit_t)GET_UNIT(ADC1_CHANNEL_4),
-        .chanelAdc1 = ADC1_CHANNEL_4,
+        .chanelAdc1 = ADC1_CHANNEL_6,
         .atten = ADC_ATTEN_DB_11,
         .width = ADC_WIDTH_BIT_13,
     };

@@ -17,7 +17,7 @@
 
 class Esp32Wroom32 : public Esp32Virtual
 {
-private:
+protected:
     const init_adc_info _adcInfo = {
         .unit = ADC_UNIT_1,
         .chanelAdc1 = ADC1_CHANNEL_0,

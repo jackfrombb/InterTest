@@ -32,10 +32,12 @@ private:
         //_spr->drawPixel(0, 0, TFT_RED);
 
         uint8_t widthPixelsCount = (float)width / waveform->getWidthSectionsCount();
-        uint8_t heightPixelInSection = (float)height / waveform->getMaxMeasureValue();
+        uint8_t heightPixelInSection = (float)height / waveform->getHeightSectionsCount();
 
         // Serial.println("Draw init OK");
         int voltSectionTitle = 0; // (int) waveform->getMaxMeasureValue();
+        
+        Serial.println("Height: " + String(heightPixelInSection));
 
         for (uint16_t v = height; v > 0; v -= heightPixelInSection)
         {
@@ -95,14 +97,31 @@ private:
         // voidArea(_u8g2->getBufferPtr(), width, height, 10, 10, width - 10, height - 10, true);
     }
 
-    uint16_t _getRgbColor(uint8_t red, uint8_t green, uint8_t blue)
+    void setFornt(el_text_size size)
     {
-        uint8_t _red = std::min<uint8_t>(red, 31);     //  значение красного (0-31)
-        uint8_t _green = std::min<uint8_t>(green, 64); //  значение зеленого (0-63)
-        uint8_t _blue = std::min<uint8_t>(blue, 31);   //  значение синего (0-31)
-
-        return (_red << 11) | (_green << 5) | _blue;
+        switch (size)
+        {
+        case EL_VOLTMETER_VALUE_LARGE:
+            _spr->setTextSize(5);
+            break;
+        case EL_TEXT_SIZE_SUPER_LARGE:
+            _spr->setTextSize(4);
+            break;
+        case EL_TEXT_SIZE_LARGE:
+            _spr->setTextSize(2);
+            break;
+        case EL_TEXT_SIZE_MIDDLE:
+            _spr->setTextSize(1);
+            break;
+        case EL_TEXT_SIZE_SMALL:
+            _spr->setTextSize(1);
+            break;
+        case EL_TEXT_SIZE_SUPER_SMALL:
+            _spr->setTextSize(1);
+            break;
+        }
     }
+
     /// @brief Получить цвет RGB(5:6:5)
     /// @param red значение красного
     /// @param green значение зеленого
@@ -180,14 +199,14 @@ public:
 
     void drawWaveform(ElWaveform *waveform) override
     {
-        _drawDotBack(waveform);
+        //_drawDotBack(waveform);
         _drawWaveform(waveform);
     }
 
     display_position drawText(ElText *text) override
     {
-        //_display->getFontForSize(text->getTextSize());
-        _spr->setTextSize(1);
+        setFornt(text->getTextSize());
+        //_spr->setTextSize(1);
 
         if (text->isWidthMatchParent())
         {
@@ -286,6 +305,7 @@ public:
         // _tft->drawPixel(10, 10, TFT_RED);
     }
 
+    // TODO: Сделать индикатор зарядки
     void drawBatteryIndicr(ElBattery *batteryIndcr) override
     {
     }

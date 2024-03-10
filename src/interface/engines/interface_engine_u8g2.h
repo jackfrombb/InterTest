@@ -19,6 +19,7 @@
  */
 
 #pragma once
+#include <Arduino.h>
 #include <U8g2lib.h>
 
 // #include "interface_engine.h"
@@ -58,73 +59,6 @@ private:
         uint8_t bit_index = y & 7;
         uint16_t byte_index = ((y >> 3) * width) + x;
         return pixel_position{.byteIndex = byte_index, .bitIndex = bit_index};
-    }
-
-    // Эксперимент с буфером дисплея - не использовать
-    //  Функция, которая затирает значения в буфере дисплея по координатам
-    //  Параметры: buffer - указатель на буфер дисплея, width - ширина дисплея в пикселях, height - высота дисплея в пикселях
-    //  x1, y1, x2, y2 - координаты прямоугольной области, которую нужно затереть
-    //  fill - заполнить true
-    static void voidArea(uint8_t *buffer, uint16_t width, uint16_t height,
-                         uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2, bool fill)
-    {
-        uint pixelCount = width * height;
-        uint buffrLength = pixelCount >> 3;
-
-        uint16_t start = (y1 * width) + x1;
-        uint16_t end = (y2 * width) + x2;
-
-        // Определяем индексы начального и конечного байтов в массиве
-        uint16_t startByte = start >> 3;
-        uint16_t endByte = end >> 3;
-
-        // Определяем смещения начального и конечного битов в своих байтах
-        uint8_t startBit = start & (8 - 1);
-        uint8_t endBit = end & (8 - 1);
-
-        // Инициализируем счетчик единичных битов
-        uint count = 0;
-
-        // Перебираем байты в массиве от начального до конечного
-        for (int i = startByte; i <= endByte; i++)
-        {
-            // Создаем маску для выбора нужных битов в текущем байте
-            byte mask = 0xFF; // 11111111 в двоичном виде
-
-            // Если это начальный байт, то обнуляем старшие биты до начального бита
-            if (i == startByte)
-            {
-                mask >>= startBit; // Сдвигаем маску вправо на startBit позиций
-            }
-
-            // Если это конечный байт, то обнуляем младшие биты после конечного бита
-            if (i == endByte)
-            {
-                mask <<= (7 - endBit); // Сдвигаем маску влево на 7 - endBit позиций
-                mask >>= (7 - endBit); // Сдвигаем маску обратно вправо на 7 - endBit позиций
-            }
-
-            // Применяем маску к текущему байту и считаем количество единичных битов в результате
-            byte result = buffer[i] & mask; // Побитовое И между байтом и маской
-
-            // Меняем значения битов в текущем байте на value
-            if (fill == 0)
-            {
-                buffer[i] &= ~mask; // Побитовое И с инвертированной маской
-            }
-            else
-            {
-                buffer[i] |= mask; // Побитовое ИЛИ с маской
-            }
-
-            while (result > 0)
-            {
-                count += result & 1; // Прибавляем к счетчику младший бит результата
-                result >>= 1;        // Сдвигаем результат вправо на одну позицию
-            }
-        }
-
-        // Найти адреса байтов, стартовый и конечный, затереть значения бит
     }
 
     /// @brief Стереть область на экране (находящуюся за этим слоем)
@@ -216,7 +150,7 @@ private:
             uint32_t realVolt = measures.buffer[x]; //(int)_mainBoard->rawToVoltage(buf[x]);
             uint32_t next = x == width ? 0 : measures.buffer[x + 1];
 
-            byte val = map(realVolt, 0, maxMeasureValNormalized, height - 1, 0);
+            uint8_t val = map(realVolt, 0, maxMeasureValNormalized, height - 1, 0);
 
             if (x == width + bias)
             {
@@ -224,7 +158,7 @@ private:
             }
             else
             {
-                byte val2 = map(next, 0, maxMeasureValNormalized, height - 1, 0);
+                uint8_t val2 = map(next, 0, maxMeasureValNormalized, height - 1, 0);
                 _u8g2->drawLine(x - bias, val + vBias, (x - bias) + 1, val2 + vBias);
             }
         }

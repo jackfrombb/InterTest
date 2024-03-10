@@ -13,7 +13,7 @@ private:
     uint32_t _pointsLength{};
     uint8_t _sectionCountW = 8;
     uint8_t _sectionCountH = 4;
-    float _maxMeasureValue = 4.0;
+    float _maxMeasureValue = 30;
     bool _drawDots;
     bool _drawBackGround;
     function<adc_measures_t()> _getMeasuresFunc = nullptr;
@@ -76,14 +76,16 @@ public:
         return _pointsLength;
     }
 
-    void setWidthSectionsCount(uint8_t count)
+    ElWaveform *setWidthSectionsCount(uint8_t count)
     {
         _sectionCountW = count;
+        return this;
     }
 
-    void setHeightSectionsCount(uint8_t count)
+    ElWaveform *setHeightSectionsCount(uint8_t count)
     {
         _sectionCountH = count;
+        return this;
     }
 
     void setMaxMeasureValue(float val)
