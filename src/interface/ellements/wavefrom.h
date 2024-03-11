@@ -10,12 +10,15 @@ class ElWaveform : public ElementVirtual
 {
 private:
     adc_measures_t _measures;
-    uint32_t _pointsLength{};
+    // uint32_t _pointsLength{};
+
     uint8_t _sectionCountW = 8;
     uint8_t _sectionCountH = 4;
     float _maxMeasureValue = 30;
+
     bool _drawDots;
     bool _drawBackGround;
+
     function<adc_measures_t()> _getMeasuresFunc = nullptr;
 
 public:
@@ -71,10 +74,10 @@ public:
         return this;
     }
 
-    uint32_t getPointsLength()
-    {
-        return _pointsLength;
-    }
+    // uint32_t getPointsLength()
+    // {
+    //     return _pointsLength;
+    // }
 
     ElWaveform *setWidthSectionsCount(uint8_t count)
     {

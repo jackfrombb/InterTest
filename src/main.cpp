@@ -6,7 +6,7 @@
  * Весь платформозависимый код должен быть спрятан за интерфейсами или, на крайний случай, define'ами, для возможности добавления новго железа
  * 
  * Поддержка железа на данный момент:
- * - Микроконтроллеры: esp32(wroom32, s2mini)
+ * - Микроконтроллеры: esp32(wroom32, s2mini, esp32s)
  * - Дисплеи: Nokia5110, oled, ST7735 TFT 128x160 (1.8, red plate with sd) [последний в ранней стадии добавления, но уже запускается]
  * (монохромные дисплеи на u8g2 довольно лего добавляются, главное что бы интерфейс вмещался)
  * @version 0.1
@@ -48,31 +48,23 @@
 
 #include "controllers/pwm_virtual.h" // Абстракция логики генеатора
 #include "controllers/adc_virtual.h" // Абстракция контроллера adc
-#include "board_virtual.h"           // Абстракция главной платы/контроллера
+#include "boards/board_virtual.h"           // Абстракция главной платы/контроллера
 #include "oscils/oscil_virtual.h"    // Абстракция над логикой осциллографа
 #include "oscils/oscil_logic.h"      // Основная логика считывания осциллограммы
 
 #include "hard_timer.h"       // Логика тамера прерываний
 #include "voltmeter.h"        // Логика вольтметра
-//#include "signal_generator.h" // Логика генератора сигналов [Утсаревшее. Определение переносится в MainBoard]
 
 #include "interface/pages/views/page_view.h"      // Абстракция представления страницы граф. интерфейса
 #include "interface/pages/page_virtual.h"         // Абстракция над контроллера странички
 #include "interface/ellements/ellement_virtual.h" // Абстракция элемента графического дизайна
-
-// Перенесено в класс дисплея, что бы упростить переключение железа в конфигурации
-// // Определяем UI
-// #ifdef WIDE_UI
-// #include "interface/pages/views/wide_screen/wide_views_list.h" // Обычные дисплеи типа 128:64, 84:48
-// #elif defined(SLIM_UI)
-// #include "interface/pages/views/slim_screen/slim_views_list.h" // Узкие дисплеи типа 128:32
-// #endif
 
 #ifdef BUZZ
 #include "buzzer.h" // Пищалка
 #endif
 
 #ifdef ENCODER
+// Основной способ управления
 #include "controls/control_encoder.h"
 ControlVirtual *control = new ControlEncoder();
 #elif defined(KEYPAD)

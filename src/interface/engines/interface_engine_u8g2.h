@@ -77,18 +77,17 @@ private:
         u8g2->getBufferTileWidth();
     }
 
+    bool _dotBackBuffered = false; // Флаг буферизации фона
     /// @brief Отрисовать ориентиры и надписи (буферезируется)
-    void _drawDotBack(ElWaveform *waveform)
+    void _drawDotBack(ElWaveform *waveform, uint16_t maxMeasure)
     {
-        static bool buffered = false; // Флаг буферизации фона
-
-        if (buffered)
-        {
-            uint8_t *buf = _u8g2->getBufferPtr();
-            // Размер буфера равен 8 * u8g2.getBufferTileHeight () * u8g2.getBufferTileWidth ().
-            memcpy(buf, _displayBuffer, bufferSize);
-            return;
-        }
+        // if (_dotBackBuffered)
+        // {
+        //     uint8_t *buf = _u8g2->getBufferPtr();
+        //     // Размер буфера равен 8 * u8g2.getBufferTileHeight () * u8g2.getBufferTileWidth ().
+        //     memcpy(buf, _displayBuffer, bufferSize);
+        //     return;
+        // }
 
         _u8g2->setFont(u8g2_font_4x6_tr);
 
@@ -100,34 +99,43 @@ private:
         //_u8g2->drawPixel(0, 0);
 
         uint8_t widthPixelsCount = (float)width / waveform->getWidthSectionsCount();
-        uint8_t heightPixelInSection = (float)height / waveform->getMaxMeasureValue();
+        uint8_t heightPixelInSection = height / waveform->getHeightSectionsCount();
+
+        // logi::p("Engine", "heightPixelInSection: " + String(heightPixelInSection));
 
         // Serial.println("Draw init OK");
-        int voltSectionTitle = 0; // (int) waveform->getMaxMeasureValue();
+        float voltSectionTitle = (float)maxMeasure / 1000 - 1; // (int) waveform->getMaxMeasureValue();
+        const float voltsInSection = ((float)maxMeasure / 1000 - 1) / waveform->getHeightSectionsCount();
 
-        for (uint16_t v = height; v > 0; v -= heightPixelInSection)
+        //Serial.println("Max volt: " + String(voltSectionTitle) + " Section: " + String(voltsInSection));
+
+        for (uint16_t v = 0; v <= height; v += heightPixelInSection)
         {
+            bool isTitleDrawed = false;
             for (uint16_t x = 0; x <= width; x += widthPixelsCount)
             {
                 int titlePos = width - widthPixelsCount;
 
-                if (x >= titlePos && voltSectionTitle != 0)
+                if (x >= titlePos)
                 {
                     String title = String(voltSectionTitle);
                     int xPos = titlePos;
                     int y = (int)(v + (_u8g2->getMaxCharHeight() * .5));
 
                     _u8g2->drawUTF8(xPos, y, title.c_str());
+
+                    isTitleDrawed = true;
                 }
 
-                if (waveform->isNeedDrawBackDots())
-                    _u8g2->drawPixel(x, v);
+                // if (waveform->isNeedDrawBackDots())
+                _u8g2->drawPixel(x, v);
             }
-            voltSectionTitle += 1;
+
+            voltSectionTitle -= voltsInSection;
         }
 
-        memcpy(_displayBuffer, _u8g2->getBufferPtr(), bufferSize);
-        buffered = true;
+        // memcpy(_displayBuffer, _u8g2->getBufferPtr(), bufferSize);
+        // _dotBackBuffered = true;
     }
 
     /// @brief Отрисовать график
@@ -139,11 +147,16 @@ private:
         uint16_t width = waveform->getArea().getWidth();
         uint16_t height = waveform->getArea().getHeight();
 
-        uint bias = measures.bias > measures.readedSize - width ? 0 : measures.bias; // SyncBuffer::findSignalOffset(waveform->getPoints(), waveform->getPointsLength());
+        // Смещение фронтов сигнала для синхронизации П_П_
+        uint bias = measures.bias > measures.readedSize - width ? 0 : measures.bias;
+        // Смещение для перемещения сигнала по высоте (не используется)
         int vBias = 0;
 
         //  Преобразованный предел
-        const int maxMeasureValNormalized = (int)(waveform->getMaxMeasureValue() * 1000);
+        const int maxMeasureValNormalized = max(4 * 1000, measures.max + 1); //(int)(waveform->getMaxMeasureValue() * 1000);
+
+        if (waveform->isNeedDrawBackground())
+            _drawDotBack(waveform, maxMeasureValNormalized);
 
         for (uint16_t x = bias; x < width + bias; x++)
         {
@@ -375,8 +388,6 @@ public:
 
     void drawWaveform(ElWaveform *waveform) override
     {
-        if (waveform->isNeedDrawBackground())
-            _drawDotBack(waveform);
         _drawWaveform(waveform);
     }
 
@@ -460,7 +471,7 @@ public:
             uint16_t textWidth = _u8g2->getUTF8Width(sub.c_str());                 // Расстояние от начала текста до символа
 
             _u8g2->drawLine(textX + textWidth, textY + 2, textX + textWidth + subWidth, textY + 2);
-           // Serial.println("Sub: " + sub);
+            // Serial.println("Sub: " + sub);
         }
 
         if (text->getVisualStyleFlags() & STYLE_ROUNDED_BORDER_AROUND)

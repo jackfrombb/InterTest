@@ -17,5 +17,6 @@
 
 // Настройки дисплея
 #define LOC_DISPLAY "Дисплей"
+#define LOC_ROTATION "Поворот"
 #define LOC_CONTRAST "Контраст"
 #define LOC_BRIGHTNESS "Яркость"

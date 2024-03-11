@@ -34,7 +34,7 @@ enum share_setting_type
 struct settings_args_virtual
 {
 public:
-    int16_t id = 0; // Id для определения настройки в событии
+    int16_t id = 0; // Id для определения настройки в событии (используется, когда несколько настроек обрабатываются одним методом)
     // тип настройки
     share_setting_type settings_type;
     // активна ли настройка (возможно какие то другие настройки её отключают её действие)
@@ -58,7 +58,9 @@ public:
 
         case share_setting_type::SETTING_TYPE_INT_STEEP:
         {
-            AppData::get()->saveInt(inRomTag, *((int *)getValuePtr()));
+            uint val = *((uint *)getValuePtr());
+            //Serial.println("Val: " + String(val));
+            AppData::get()->saveUInt(inRomTag, val);
             break;
         }
         case share_setting_type::SETTING_TYPE_INT_RANGE:

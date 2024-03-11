@@ -17,5 +17,6 @@
 
 // Display settings
 #define LOC_DISPLAY "Display"
+#define LOC_ROTATION "Rotation"
 #define LOC_CONTRAST "Contrast"
 #define LOC_BRIGHTNESS "Brightness"
