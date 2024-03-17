@@ -53,9 +53,16 @@ public:
         _channel[0] = adcChanel;
     }
 
+    ~Esp32AdcDma() override
+    {
+        adc_power_release();
+    }
+
     int8_t init(uint16_t bufferSize, uint sampleRate) override
     {
         AdcVirtual::init(bufferSize, sampleRate);
+
+        adc_power_acquire();
 
         _internalBuferSize = bufferSize << 1;
         _buffer8bit = (uint8_t *)calloc(_internalBuferSize, sizeof(uint8_t));
@@ -94,9 +101,9 @@ public:
             adc_pattern[i].unit = unit;
             adc_pattern[i].bit_width = SOC_ADC_DIGI_MAX_BITWIDTH;
 
-            ESP_LOGI("Esp32_adc_dma", "adc_pattern[%d].atten is :%x", i, adc_pattern[i].atten);
-            ESP_LOGI("Esp32_adc_dma", "adc_pattern[%d].channel is :%x", i, adc_pattern[i].channel);
-            ESP_LOGI("Esp32_adc_dma", "adc_pattern[%d].unit is :%x", i, adc_pattern[i].unit);
+            // ESP_LOGI("Esp32_adc_dma", "adc_pattern[%d].atten is :%x", i, adc_pattern[i].atten);
+            // ESP_LOGI("Esp32_adc_dma", "adc_pattern[%d].channel is :%x", i, adc_pattern[i].channel);
+            // ESP_LOGI("Esp32_adc_dma", "adc_pattern[%d].unit is :%x", i, adc_pattern[i].unit);
         }
 
         con.adc_pattern = adc_pattern;
@@ -128,7 +135,9 @@ public:
 
     int8_t readData(uint16_t *buffer, size_t *readedLength) override
     {
-        auto retErr = adc_digi_read_bytes(_buffer8bit, _bufferSize, readedLength, ADC_MAX_DELAY);
+        // Метод возвращает ESP_ERR_INVALID_STATE, но работает. Не знаю почему так происходит
+        auto retErr = adc_digi_read_bytes(_buffer8bit, _bufferSize, readedLength, 5);
+        //logi::p("Adc_dma", "Err: " + String(retErr));
 
         for (int i = 0; i < *readedLength; i += ADC_RESULT_SIZE)
         {
@@ -139,7 +148,7 @@ public:
             }
         }
         *readedLength = *readedLength >> 1; // Делим колво байт на 2 что бы сходились последующие расчеты
-
+        //adc_digi_stop();
         return retErr;
     }
 

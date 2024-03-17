@@ -33,7 +33,7 @@ String pages_list_getName(pages_list page)
         return LOC_SETTING; //"Настройки";//"Settings";
     }
 
-    return "Error_02";
+    return " "; // На доли секунды появляется на экране при быстрой прокрутке
 }
 
 /// @brief Контроллер для страницы. Управление основными объектами страницы здесь

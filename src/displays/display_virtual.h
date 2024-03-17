@@ -40,6 +40,13 @@ class DisplayVirtual : public ModuleVirtual, public iHaveShareSettings
 protected:
     InterfaceEngineVirtual *_interfaceEngine;
 
+    // Варианты направления дисплея
+    vector<int> _dispDirection = {0, 1, 2, 3};
+    // Аргументы настройки поворота дисплея
+    setting_args_int_steep *_rotationSettingsValue; // = setting_args_int_steep(0, "dsp_rot", &_dispDirection, 0);
+    // Настройка поворота дисплея для передачи в раздел "Настройки"
+    ShareSetting *_rotationSetting;
+
 private:
 public:
     DisplayVirtual(/* args */) : iHaveShareSettings(LOC_DISPLAY)
@@ -47,6 +54,23 @@ public:
     }
     virtual ~DisplayVirtual()
     {
+    }
+
+    void init() override
+    {
+        _rotationSettingsValue = new setting_args_int_steep(0, "dsp_rot", &_dispDirection, 0);
+        _rotationSetting = new ShareSetting(LOC_ROTATION, _rotationSettingsValue,
+                                            [this](settings_args_virtual *args)
+                                            {
+                                                setting_args_int_steep *settingArgs = (setting_args_int_steep *)args;
+                                                setDisplayDirection(settingArgs->getSteepValue());
+                                               // tft->setRotation(settingArgs->getSteepValue()); // Устанавливаем ориентацию дисплея
+
+                                                return true;
+                                            });
+
+        addSetting(_rotationSetting);
+        _rotationSetting->onChange(); // Применяем настройки поворота дисплея
     }
 
     /// @brief Получить тип подключения дисплея
@@ -78,6 +102,8 @@ public:
     {
         return getResolution().height;
     }
+
+    virtual void setDisplayDirection(uint8_t direction) = 0;
 
     virtual const uint8_t *getFontForSize(el_text_size size) = 0;
 

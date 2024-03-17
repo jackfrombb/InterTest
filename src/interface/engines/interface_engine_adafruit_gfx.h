@@ -17,7 +17,7 @@ private:
     TFT_eSprite *_spr;
 
     /// @brief Отрисовать ориентиры и надписи (буферезируется)
-    void _drawDotBack(ElWaveform *waveform)
+    void _drawDotBack(ElWaveform *waveform, uint16_t maxMeasure)
     {
         if (!waveform->isNeedDrawBackground())
         {
@@ -27,25 +27,19 @@ private:
         uint16_t width = waveform->getArea().getWidth();
         uint16_t height = waveform->getArea().getHeight();
 
-        // Это два вспомогательных пикселя, которые помогают оценить расположение
-        //_spr->drawPixel(width - 1, height - 1, TFT_RED);
-        //_spr->drawPixel(0, 0, TFT_RED);
-
         uint8_t widthPixelsCount = (float)width / waveform->getWidthSectionsCount();
         uint8_t heightPixelInSection = (float)height / waveform->getHeightSectionsCount();
 
-        // Serial.println("Draw init OK");
-        int voltSectionTitle = 0; // (int) waveform->getMaxMeasureValue();
-        
-        Serial.println("Height: " + String(heightPixelInSection));
+        float voltSectionTitle = (float)maxMeasure / 1000 - 1; // (int) waveform->getMaxMeasureValue();
+        const float voltsInSection = ((float)maxMeasure / 1000 - 1) / waveform->getHeightSectionsCount();
 
-        for (uint16_t v = height; v > 0; v -= heightPixelInSection)
+        for (uint16_t v = 0; v <= height; v += heightPixelInSection)
         {
             for (uint16_t x = 0; x <= width; x += widthPixelsCount)
             {
                 int titlePos = width - widthPixelsCount;
 
-                if (x >= titlePos && voltSectionTitle != 0)
+                if (x >= titlePos)
                 {
                     String title = String(voltSectionTitle);
                     int xPos = titlePos;
@@ -57,7 +51,7 @@ private:
                 if (waveform->isNeedDrawBackDots())
                     _spr->drawPixel(x, v, TFT_SILVER);
             }
-            voltSectionTitle += 1;
+            voltSectionTitle -= voltsInSection;
         }
     }
 
@@ -67,14 +61,15 @@ private:
     {
         auto measures = waveform->getMeasures();
 
+        //  Преобразованный предел
+        const int maxMeasureValNormalized = max(4000, measures.max + 1); //(int)(waveform->getMaxMeasureValue() * 1000);
+        _drawDotBack(waveform, maxMeasureValNormalized);
+
         uint16_t width = waveform->getArea().getWidth();
         uint16_t height = waveform->getArea().getHeight();
 
         uint bias = measures.bias > measures.readedSize - width ? 0 : measures.bias; // SyncBuffer::findSignalOffset(waveform->getPoints(), waveform->getPointsLength());
         int vBias = 0;
-
-        //  Преобразованный предел
-        const int maxMeasureValNormalized = (int)(waveform->getMaxMeasureValue() * 1000);
 
         for (uint16_t x = bias; x < width + bias; x++)
         {
@@ -199,7 +194,6 @@ public:
 
     void drawWaveform(ElWaveform *waveform) override
     {
-        //_drawDotBack(waveform);
         _drawWaveform(waveform);
     }
 

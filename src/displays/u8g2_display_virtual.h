@@ -7,13 +7,6 @@ class U8g2DisplayVirtual : public DisplayVirtual
 protected:
     U8G2 *_u8g2;
 
-    // Варианты направления дисплея
-    vector<int> _dispDirection = {0, 1, 2, 3};
-    // Аргументы настройки поворота дисплея
-    setting_args_int_steep *_rotationSettingsValue; // = setting_args_int_steep(0, "dsp_rot", &_dispDirection, 0);
-    // Настройка поворота дисплея для передачи в раздел "Настройки"
-    ShareSetting *_rotationSetting;
-
 public:
     U8g2DisplayVirtual()
     {
@@ -55,6 +48,25 @@ public:
 
         addSetting(_rotationSetting);
         _rotationSetting->onChange(); // Применяем настройки поворота дисплея
+    }
+
+    void setDisplayDirection(uint8_t direction) override
+    {
+        switch (direction)
+        {
+        case 0:
+            _u8g2->setDisplayRotation(U8G2_R0);
+            break;
+        case 1:
+            _u8g2->setDisplayRotation(U8G2_R1);
+            break;
+        case 2:
+            _u8g2->setDisplayRotation(U8G2_R2);
+            break;
+        case 3:
+            _u8g2->setDisplayRotation(U8G2_R3);
+            break;
+        }
     }
 
     /// @brief Получить разрешение дисплея

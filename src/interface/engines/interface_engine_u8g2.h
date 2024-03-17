@@ -153,7 +153,7 @@ private:
         int vBias = 0;
 
         //  Преобразованный предел
-        const int maxMeasureValNormalized = max(4 * 1000, measures.max + 1); //(int)(waveform->getMaxMeasureValue() * 1000);
+        const int maxMeasureValNormalized = max(4000, measures.max + 1); //(int)(waveform->getMaxMeasureValue() * 1000);
 
         if (waveform->isNeedDrawBackground())
             _drawDotBack(waveform, maxMeasureValNormalized);
@@ -185,6 +185,7 @@ private:
         return _display->getFontForSize(size);
     }
 
+   // Не используется. Это метод скопированный из библиотеки, что бы посмотреть как работает.
     static u8g2_uint_t u8g2_string_width(u8g2_t *u8g2, const char *str)
     {
         uint16_t e;

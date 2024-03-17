@@ -116,6 +116,7 @@ public:
         auto ret = _adc->init(ADC_BUFFER_SIZE, range(_freqSetting.currentVal, _adc->getMinAdcSampleRate(), _adc->getMaxAdcSampleRate()));
         if (logi::err("OscilLogic", ret))
         {
+            logi::p("Oscil_logic", "Init adc - OK");
             _startThread();
         }
         return ESP_OK;

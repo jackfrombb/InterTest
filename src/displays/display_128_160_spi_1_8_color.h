@@ -69,20 +69,15 @@ public:
         // Инициализация дисплея
         tft->init();
 
-        tft->setRotation(3); // Устанавливаем ориентацию дисплея
-
-        // tft->fillScreen(TFT_RED); // Проверка пикселей (только для разработки, потом сделаю пункт проверки в настройках)
-        // delay(100);
-        // tft->fillScreen(TFT_GREEN);
-        // delay(100);
-        // tft->fillScreen(TFT_BLUE);
-        // delay(100);
-        // tft->fillScreen(TFT_BLACK);
-        // delay(100);
-        // tft->fillScreen(TFT_WHITE);
-        // delay(100);
-
+        DisplayVirtual::init();
+        
         _interfaceEngine = new InterfaceEngine_ArduinoGfx(this);
+
+    }
+
+    void setDisplayDirection(uint8_t direction) override
+    {
+        tft->setRotation(direction); // Устанавливаем ориентацию дисплея
     }
 
     void setDrawSprite(TFT_eSprite *spr)
