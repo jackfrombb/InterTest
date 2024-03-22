@@ -53,7 +53,7 @@
 #include "oscils/oscil_logic.h"      // Основная логика считывания осциллограммы
 
 #include "hard_timer.h"       // Логика тамера прерываний
-#include "voltmeter.h"        // Логика вольтметра
+#include "functions/voltmeter.h" // Логика вольтметра
 
 #include "interface/pages/views/page_view.h"      // Абстракция представления страницы граф. интерфейса
 #include "interface/pages/page_virtual.h"         // Абстракция над контроллера странички
@@ -148,11 +148,6 @@ void setup()
                       "\nCore Freq: " + String(ESP.getCpuFreqMHz()) +
                       "\nHeap: " + String(ESP.getHeapSize()));
 
-
-  // Инициализация синглтона генератора (в этот момент запускается генерация, если она включена в настройках)
-  // частота и скважность берется так же из настроек
-  //SignalGenerator::init(mainBoard->getPwmPin());
-
 #ifdef BUZZ
   Serial.println("Buzzer");
   setup_buzzer();
@@ -160,6 +155,10 @@ void setup()
 
   *progress = 0.6;
   delay(300);
+
+  // Тут должна быть полноценная калибровка, но пока нет реле, 
+  // которое бы отключало иглу при включении, там просто устанавлвается значение делителя
+  //mainBoard->calibrate();
 
   *progress = 0.8;
   delay(100);

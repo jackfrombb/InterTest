@@ -110,12 +110,22 @@ public:
 
         auto ret = adc_digi_controller_configure(&con);
 
+        // adc_digi_monitor_t monitor = adc_digi_monitor_t{
+        //     .adc_unit = ADC_UNIT_1,
+        //     .channel = ADC_CHANNEL_6,
+        //     .mode = adc_digi_monitor_mode_t::ADC_DIGI_MONITOR_MAX,
+        //     .threshold = 500,
+        // };
+
+        // adc_digi_monitor_set_config(adc_digi_monitor_idx_t::ADC_DIGI_MONITOR_IDX0, &monitor);
+        // adc_digi_monitor_enable(adc_digi_monitor_idx_t::ADC_DIGI_MONITOR_IDX0, true);
+
         if (logi::err("Esp32_adc_dma - controller configure", ret))
         {
             Serial.println("Err val: " + String(ret));
             return adc_digi_start();
         }
-
+        
         return ret;
     }
 
@@ -133,11 +143,12 @@ public:
         return init(_bufferSize, sampleRate);
     }
 
+    bool isStarted = false;
     int8_t readData(uint16_t *buffer, size_t *readedLength) override
     {
         // Метод возвращает ESP_ERR_INVALID_STATE, но работает. Не знаю почему так происходит
-        auto retErr = adc_digi_read_bytes(_buffer8bit, _bufferSize, readedLength, 5);
-        //logi::p("Adc_dma", "Err: " + String(retErr));
+        auto retErr = adc_digi_read_bytes(_buffer8bit, _internalBuferSize, readedLength, 10);
+        // logi::p("Adc_dma", "Err: " + String(retErr));
 
         for (int i = 0; i < *readedLength; i += ADC_RESULT_SIZE)
         {
@@ -148,8 +159,8 @@ public:
             }
         }
         *readedLength = *readedLength >> 1; // Делим колво байт на 2 что бы сходились последующие расчеты
-        //adc_digi_stop();
-        return retErr;
+        // adc_digi_stop();
+        return 0;
     }
 
     /// @brief Получить максимальную скорость семплирования с ADC для платы

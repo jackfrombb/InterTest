@@ -89,16 +89,21 @@ public:
 
         // переменные для хранения минимальных и максимальных значений
         uint16_t max = 0.0;
-        uint16_t min = 0.0; // Постоянная состовляющая
+        uint16_t min = UINT16_MAX; // Постоянная состовляющая
         uint16_t mid = 0.0;
 
-        for (int i = 0; i < _oscil->getReadedLength(); i++)
+       // uint16_t maxRaw = 0;
+        
+
+        for (int i = 0; i < _oscil->getReadedLength()-1; i++)
         {
             // Serial.println("Raw: " + String(buffer[i]));
-
+            //Serial.println("Raw: " + String(buffer[i]));
             // Преобразуем из попугаев в микровольты
             auto val = _mainBoard->rawToVoltage(buffer[i]);
             _outBuffer[i] = val;
+
+           // Serial.println("RAW: " + String(buffer[i]) + " in: " + String(i));
 
             // Вычисляем среднее
             mid = Voltmetr::midArifm2<uint16_t>(val, _oscil->getReadedLength()); // Длину умножаем на 4, что бы значения поеньше скакали
@@ -107,6 +112,7 @@ public:
             if (val > max)
             {
                 max = val;
+                //maxRaw = buffer[i];
             }
 
             if (val < min)

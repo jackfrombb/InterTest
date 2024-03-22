@@ -69,6 +69,10 @@ public:
             ->addElement(&_downInfoGroup);
     }
 
+    uint8_t getDisplayMode(){
+        return _mainVlotType;
+    }
+
     String *getSmallLeftTextPtr()
     {
         return _smallLeftText.getTextPtr();
@@ -99,17 +103,32 @@ public:
         {
         case 0:
         default:
-            _titleForBigCenterText.setText("max");
+            _titleForBigCenterText.setText("mid:");
             break;
 
         case 1:
-            _titleForBigCenterText.setText("mid:");
+            _titleForBigCenterText.setText("max");
             break;
+
+            case 2:
+            _titleForBigCenterText.setText("min");
         }
     }
 
     bool onControlEvent(control_event_type eventType) override
     {
+        switch (eventType)
+        {
+        case control_event_type::PRESS_OK:
+            {
+                setMainVoltType(range(_mainVlotType+1, 0, 2, true)); // Увеличиваем на 1 с ограничением
+                return true; // Уведомляем, что обработали нажатие
+            }
+            break;
+        
+        default:
+            break;
+        }
         return false;
     }
 };

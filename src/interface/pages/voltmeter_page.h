@@ -19,7 +19,6 @@ private:
     String *_smallRightTextPtr = nullptr;           // Справа маленький
     adc_measures_t *_measuresWaveformPtr = nullptr; // Измерения с adc
 
-
 public:
     VoltmeterPage(MainBoard *mainBoard) : InterfacePageVirtual(mainBoard->getDisplay())
     {
@@ -61,6 +60,11 @@ public:
 
     bool onControlEvent(control_event_type eventType) override
     {
+        if (_pageView->onControlEvent(eventType))
+        {
+            return true;
+        }
+
         switch (eventType)
         {
             // Смотрю на смещения буфера
@@ -87,9 +91,33 @@ public:
         // measures.bias = bias;
 
         *_measuresWaveformPtr = measures;
-        *_bigCenterTextPtr = String(((float)measures.max / 1000.0)); // Делим на 1000 что бы получить вольты
-        *_smallLeftTextPtr = String(((float)measures.middle / 1000.0));
-        *_smallRightTextPtr = String(((float)measures.min / 1000.0));
 
+        switch (_pageView->getDisplayMode())
+        {
+        case 0:
+        {
+            *_bigCenterTextPtr = String(((float)measures.middle / 1000.0)); // Делим на 1000 что бы получить вольты
+            *_smallLeftTextPtr = String(((float)measures.max / 1000.0));
+            *_smallRightTextPtr = String(((float)measures.min / 1000.0));
+        }
+        break;
+
+        case 1:
+        {
+            *_bigCenterTextPtr = String(((float)measures.max / 1000.0)); // Делим на 1000 что бы получить вольты
+            *_smallLeftTextPtr = String(((float)measures.middle / 1000.0));
+            *_smallRightTextPtr = String(((float)measures.min / 1000.0));
+        }
+        break;
+
+        case 2:
+        {
+
+            *_bigCenterTextPtr = String(((float)measures.min / 1000.0)); // Делим на 1000 что бы получить вольты
+            *_smallLeftTextPtr = String(((float)measures.max / 1000.0));
+            *_smallRightTextPtr = String(((float)measures.middle / 1000.0));
+        }
+        break;
+        }
     }
 };

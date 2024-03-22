@@ -40,6 +40,7 @@ public:
     void init() override
     {
         _pwm = new Esp32PwmController(getPwmPin());
+        initAdc_SingleRead();
         MainBoard::init();
     }
 
@@ -92,9 +93,13 @@ public:
 
     uint32_t rawToVoltage(uint16_t reading) override
     {
-        // if (getAdcChars() != nullptr)
-        //     return esp_adc_cal_raw_to_voltage(reading, getAdcChars()); // reading * 3.3 / 4096.0; // esp_adc_cal_raw_to_voltage(reading, getAdcChars());
-        // else
-        return (uint32_t)(((float)reading * (3.2 / 4095.0)) * 1000) * 8.6170 ;
+        if (getAdcChars() != nullptr)
+            return esp_adc_cal_raw_to_voltage(reading, getAdcChars()); // reading * 3.3 / 4096.0; // esp_adc_cal_raw_to_voltage(reading, getAdcChars());
+        else
+        {
+            // (adcValue / static_cast<double>((1 << 12) - 1)) * adcMaxVoltage;
+            double val = (((double)reading / (static_cast<double>((1 << 12) - 1))) * 3.06);
+            return (uint32_t)(val * 1000);
+        }
     }
 };

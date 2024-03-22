@@ -1,6 +1,6 @@
 #pragma once
 #include "interface/pages/views/page_view.h"
-#include "voltmeter.h"
+#include "functions/voltmeter.h"
 #include <math.h>
 
 using namespace std;

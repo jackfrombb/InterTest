@@ -107,7 +107,7 @@ private:
         float voltSectionTitle = (float)maxMeasure / 1000 - 1; // (int) waveform->getMaxMeasureValue();
         const float voltsInSection = ((float)maxMeasure / 1000 - 1) / waveform->getHeightSectionsCount();
 
-        //Serial.println("Max volt: " + String(voltSectionTitle) + " Section: " + String(voltsInSection));
+        // Serial.println("Max volt: " + String(voltSectionTitle) + " Section: " + String(voltsInSection));
 
         for (uint16_t v = 0; v <= height; v += heightPixelInSection)
         {
@@ -161,18 +161,22 @@ private:
         for (uint16_t x = bias; x < width + bias; x++)
         {
             uint32_t realVolt = measures.buffer[x]; //(int)_mainBoard->rawToVoltage(buf[x]);
-            uint32_t next = x == width ? 0 : measures.buffer[x + 1];
+            uint32_t next = x == (width + bias) ? 0 : measures.buffer[x + 1];
 
             uint8_t val = map(realVolt, 0, maxMeasureValNormalized, height - 1, 0);
 
-            if (x == width + bias)
+           // Serial.println("Val:" + String(val) + " realVolt:" + String(realVolt) + " Bias: " + String(bias) + " Pos: " + String(x));
+
+            if (x == width + bias - 1)
             {
                 _u8g2->drawPixel(x - bias, val + vBias);
+            //    Serial.println("Draw px: X:" + String(x - bias) + " Y:" + String(val + vBias));
             }
             else
             {
                 uint8_t val2 = map(next, 0, maxMeasureValNormalized, height - 1, 0);
                 _u8g2->drawLine(x - bias, val + vBias, (x - bias) + 1, val2 + vBias);
+             //   Serial.println("Draw line: X:" + String(x - bias) + " Y:" + String(val + vBias));
             }
         }
 
@@ -185,7 +189,7 @@ private:
         return _display->getFontForSize(size);
     }
 
-   // Не используется. Это метод скопированный из библиотеки, что бы посмотреть как работает.
+    // Не используется. Это метод скопированный из библиотеки, что бы посмотреть как работает.
     static u8g2_uint_t u8g2_string_width(u8g2_t *u8g2, const char *str)
     {
         uint16_t e;
